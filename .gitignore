@@ -1,0 +1,5 @@
+/.tern-port
+node_modules/
+coverage/
+/importing_data.html
+/examples/new_stories.json

@@ -1,0 +1,6 @@
+Id,Title,Labels,Iteration,Iteration Start,Iteration End,Type,Estimate,Current State,Created at,Accepted at,Deadline,Requested By,Description,URL,Owned By,Owned By,Comment,Comment
+97560894,Epic story,this is a test epic,1,"May 9, 2016","May 15, 2016",feature,3,finished,"Jun 22, 2015",,,Ivan Willig,,https://www.pivotaltracker.com/story/show/97560894,Ivan Willig,,"This is a comment (Ivan Willig - Jun 23, 2015)",
+97406098,This is an test,,1,"May 9, 2016","May 15, 2016",feature,,unstarted,"Jun 19, 2015",,,Ivan Willig,This is a test,https://www.pivotaltracker.com/story/show/97406098,Ivan Willig,,"adsfasfsaf (Ivan Willig - Jun 19, 2015)","asdfasfd (Ivan Willig - Jun 19, 2015)"
+103206922,Kurt New Story,,1,"May 9, 2016","May 15, 2016",feature,2,unstarted,"Sep 11, 2015",,,Kurt Schrader,Test,https://www.pivotaltracker.com/story/show/103206922,Ivan Willig,Kurt Schrader,,
+97658800,asfasdfds,,,,,feature,,unscheduled,"Jun 23, 2015",,,Ivan Willig,,https://www.pivotaltracker.com/story/show/97658800,,,,
+97559132,This is a back log story.,,,,,feature,3,unscheduled,"Jun 22, 2015",,,Ivan Willig,This is a description. ,https://www.pivotaltracker.com/story/show/97559132,Ivan Willig,,"This is a comment... (Ivan Willig - Jun 22, 2015)",

@@ -1,0 +1,41 @@
+{
+  "name": "clubhouse",
+  "version": "0.0.1",
+  "description": "",
+  "main": "clubhouse.js",
+  "scripts": {
+    "test": "make test"
+  },
+  "author": "Clubhouse",
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "csv": "^0.4.6",
+    "documentation": "^4.0.0-beta2",
+    "eslint": "^2.9.0",
+    "eslint-config-airbnb": "^9.0.1",
+    "eslint-plugin-import": "^1.8.0",
+    "eslint-plugin-jsx-a11y": "^1.2.0",
+    "eslint-plugin-react": "^5.0.1",
+    "form-data": "^1.0.0-rc4",
+    "istanbul": "^0.4.3",
+    "jsdoc": "^3.4.0",
+    "mocha": "^2.4.5",
+    "node-csv": "^0.1.2",
+    "sinon": "^1.17.3",
+    "yakbak": "^2.4.2"
+  },
+  "dependencies": {
+    "bluebird": "^3.3.4",
+    "request": "^2.70.0",
+    "sepia": "^2.0.1"
+  },
+  "eslintConfig": {
+    "parserOptions": {
+      "ecmaVersion": 6
+    },
+    "env": {
+      "node": true
+    }
+  }
+}
