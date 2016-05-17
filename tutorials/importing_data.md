@@ -185,7 +185,7 @@ You can request an individual Project by its ID.
 clubhouse.getProject(10).then(function (project) {});
 ```
 
-You can create a Project,
+You can create a Project
 ```javascript
 clubhouse.createProject({ name: "Test" }).then(function (newProject) { console.log(newProject); });
 ```
