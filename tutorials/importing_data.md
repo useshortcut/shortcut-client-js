@@ -26,7 +26,7 @@ through the Clubhouse UI.
 #### Stories
 
 [Stories](https://clubhouse.zendesk.com/hc/en-us/articles/205587589-The-Stories-Page-and-The-Story-Card) are the basic unit of work in Clubhouse
-At minimum, Stories must have title and a Requester (this defaults to the user who created the token being used) and be assigned to a Project.
+At minimum, Stories must have a name and a Requester (this defaults to the user who created the token being used) and be assigned to a Project.
 
 ```javascript
 var story = {
@@ -34,7 +34,7 @@ var story = {
     'project_id': 274
 };
 
-clubhouse.createStory(story).then(function (story) {
+clubhouse.createStory(newStory).then(function (newStory) {
     console.log(story.id);
 });
 ```
@@ -92,7 +92,7 @@ var story = {
   "tasks": [ { "description": "this is a task", "complete": false } ]
 };
 
-clubhouse.createStory(story).then(function (new) {
+clubhouse.createStory(newStory).then(function (new) {
     console.log(new);
 }).catch(function (error) {
     console.log(error);
@@ -231,7 +231,7 @@ var story = {
     'project_id': 274
 };
 
-clubhouse.createStory(story).then(function (newStory) {
+clubhouse.createStory(newStory).then(function (newStory) {
     console.log('new story', newStory);
     return clubhouse.deleteStory(newStory.id);
 }).catch(function (error) {
@@ -417,8 +417,7 @@ Promise.props({
 });
 ```
 
-`Promise.props` is useful for building an object that has defined
-properties from the results of each Promise object.
+`Promise.props` is used to create an object that matches the properties you've defined.
 
 ```shell
 node import_to_clubhouse.js
