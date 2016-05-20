@@ -223,7 +223,7 @@ Let's go ahead and create a test Story and then immediately delete it
 to go through the whole process and make sure everything is working.
 
 ```javascript
-var Clubhouse = require('clubhouse');
+var Clubhouse = require('clubhouse-lib');
 var clubhouse = new Clubhouse('your token');
 
 var story = {
@@ -283,7 +283,7 @@ The script is as follows
 var Promise = require('bluebird');
 var _ = require('lodash');
 var fs = require('fs');
-var Clubhouse = require('Clubhouse');
+var Clubhouse = require('clubhouse-lib');
 var clubhouse = new Clubhouse('Your Clubhouse Token');
 
 function findUserByEmail(users, email) {
@@ -345,7 +345,7 @@ the Clubhouse client library.
 var Promise = require('bluebird');
 var _ = require('lodash');
 var fs = require('fs');
-var Clubhouse = require('Clubhouse');
+var Clubhouse = require('clubhouse-lib');
 var clubhouse = new Clubhouse('Your Clubhouse Token');
 ```
 
