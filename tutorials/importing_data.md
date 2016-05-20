@@ -1,89 +1,47 @@
 # Introduction
 
 This tutorial is going to walk you through importing data into your
-Clubhouse account using the REST API and the node.js client library.
-You can manage your almost all of your information in Clubhouse using
+Clubhouse account using the REST API and the Node.js client library.
+You can manage almost all of your information in Clubhouse using
 the rest API.
 
-The goal of this tutorial is to provide you with the knowledge on how
-to interact programmatically with your ClubHouse account.
+The goal of this tutorial is to provide you with the knowledge
+to interact programmatically with your Clubhouse account.
 
-This tutorial assumes a familiarity with `JavaScript`, `Node.js` and the
+This tutorial assumes a familiarity with `JavaScript`, `Node.js`, and the
 command line.
 
 ## Understanding the Clubhouse API
 
-### Basic API Interaction
-
-Lets fire up the node repl and create a new instance of the Clubhouse
-client
-
-```shell
-$ node
-```
-
-```javascript
-> var Clubhouse = require('clubhouse');
-> var clubhouse = new Clubhouse('your token');
-```
-
-Each object in Clubhouse can be `listed`, `created`, `updated`, `fetched`
-and `deleted`. For example, lets list all of the projects in your
-Clubhouse account.
-
-```javascript
-clubhouse.listProjects().then(function (projects) {
-    projects.forEach(function (project) {
-        console.log(project.id, project.name);
-    });
-});
-```
-You can request an individual project by its id.
-```javascript
-clubhouse.getProject(10).then(function (project) {});
-```
-
-You can create a project,
-```javascript
-clubhouse.createProject({ name: "Test" }).then(function (newProject) { console.log(newProject); });
-```
-And finally you can delete a project
-```javascript
-clubhouse.deleteProject(10).then(function () {}).catch(function (error) { throw error; });
-```
-
-Each method in clubhouse.js returns a
-[bluebird](http://bluebirdjs.com/docs/getting-started.html) `Promise`
-object. That means you can use any of the combinator functions provided by
-the `bluebird` library. For example if you wanted to filter all of the projects that name
-start with the word `Mobile` you would do the following,
-
-```javascript
-clubhouse.listProjects().filter(function (project) {
-    return project.name.startsWith('Mobile');
-}).then(function (projects) {
-    console.log(projects);
-});
-```
-
-Each method accepts a optional callback function that is called with an
-error and an value.
-
-```javascript
-clubhouse.listProjects(function (error, projects) {
-    if (error) { throw error };
-    console.log(projects);
-});
-```
-
 ### Key objects in Clubhouse
 
-Before we can create any stories in Clubhouse we need to understand a
-few core objects in Clubhouse.
+Before using the Clubhouse API, it is important to be familiar with the
+core objects in Clubhouse.
+
+#### Users
+
+You can't create users via the REST API. New users must be invited
+through the Clubhouse UI.
+
+#### Stories
+
+[Stories](https://clubhouse.zendesk.com/hc/en-us/articles/205587589-The-Stories-Page-and-The-Story-Card) are the basic unit of work in Clubhouse
+At minimum, Stories must have a name and a Requester (this defaults to the user who created the token being used) and be assigned to a Project.
+
+```javascript
+var story = {
+    'name': 'This is a test story',
+    'project_id': 274
+};
+
+clubhouse.createStory(newStory).then(function (newStory) {
+    console.log(story.id);
+});
+```
 
 #### Projects
-All stories in clubhouse must be assoicated with a
-[project](https://clubhouse.zendesk.com/hc/en-us/articles/205702359-The-Projects-Page).
+As mentioned above, all Stories in Clubhouse must be associated with a
+[Project](https://clubhouse.zendesk.com/hc/en-us/articles/205702359-The-Projects-Page).
 
 ```javascript
 var project = { 'name': 'This is a test project' };
@@ -94,10 +52,9 @@ clubhouse.createProject(project).then(function (project) {
 
 ```
 #### Epics
-
-You can also create a new story as a part of an epic
-[epic](https://clubhouse.zendesk.com/hc/en-us/articles/205274149-Epics-and-The-Epics-Page).
-This is optional and a story does not need to be in an epic.
+You can also assign a new Story to an
+[Epic](https://clubhouse.zendesk.com/hc/en-us/articles/205274149-Epics-and-The-Epics-Page).
+This is optional and a Story does not need to be assigned to an Epic.
 
 ```javascript
 var epic = { 'name': 'This is a test epic' };
@@ -107,17 +64,11 @@ clubhouse.createEpic(epic).then(function (new) {
 });
 ```
 
-#### Users
+#### Workflow States
 
-You can't create users via the REST API. New users must be invited
-through the UI.
-
-#### Workflow states
-
-Workflows states define the current state your story is in. If you do
-not include a workflow state when you create your story Clubhouse
-will select a default. To read more about workflow states please
-consult the [Help Desk]().
+Workflow states define the current state your Story is in. If you do
+not include a workflow state when you create your Story, Clubhouse
+will select a default. Read more about workflow states, here in the [Clubhouse Help Center](https://clubhouse.zendesk.com/hc/en-us/articles/205268889).
 
 ```javascript
 clubhouse.listWorkflowStates().then(function (workflows) {
@@ -125,13 +76,13 @@ clubhouse.listWorkflowStates().then(function (workflows) {
 });
 ```
 
-Each Workflow has a list of states and each state has an id. You want
-to use the actually workflow state instead of the workflow.
+Each organization's Workflow has a list of states and each state has an ID. You'll want
+to use the Workflow State ID rather than its name.
 
 ##### Tasks and Comments
-When you are creating your story you can also include tasks or comments
+When you are creating your Story you can also include Tasks or Comments
 inlined.  This is a convenience so you do not have to make multiple
-requests for a single story.
+requests for a single Story.
 
 ```javascript
 var story = {
@@ -141,7 +92,7 @@ var story = {
   "tasks": [ { "description": "this is a task", "complete": false } ]
 };
 
-clubhouse.createStory(story).then(function (new) {
+clubhouse.createStory(newStory).then(function (new) {
     console.log(new);
 }).catch(function (error) {
     console.log(error);
@@ -161,9 +112,9 @@ field, or referneed another object that did not exist.
 
 - `50x` Server error [TODO]
 
-These are errors on our side. Feel free to report them in Zendesk.
+These are errors on our side. Feel free to [report them](support@clubhouse.io).
 
-## Using the Clubhouse API
+## Setup Your Machine to Use the Clubhouse API
 
 ### Install Node
 
@@ -204,9 +155,71 @@ npm install clubhouse
 ```shell
 touch first_steps.js
 ```
+## Basic API Interaction
 
-### Creating your first story in Clubhouse.
-Let's go ahead and create a test story and then immediately delete it
+### Create A New Instance of the Clubhouse Client
+
+```shell
+$ node
+```
+
+```javascript
+> var Clubhouse = require('clubhouse');
+> var clubhouse = new Clubhouse('your token');
+```
+## Working With Projects
+
+Each object in Clubhouse can be `listed`, `created`, `updated`, `fetched`
+and `deleted`. For example, let's list all of the Projects in your
+Clubhouse account.
+
+```javascript
+clubhouse.listProjects().then(function (projects) {
+    projects.forEach(function (project) {
+        console.log(project.id, project.name);
+    });
+});
+```
+You can request an individual Project by its ID.
+```javascript
+clubhouse.getProject(10).then(function (project) {});
+```
+
+You can create a Project
+```javascript
+clubhouse.createProject({ name: "Test" }).then(function (newProject) { console.log(newProject); });
+```
+And, finally, you can delete a Project
+```javascript
+clubhouse.deleteProject(10).then(function () {}).catch(function (error) { throw error; });
+```
+### A Quick Note Working With the Bluebird Library
+
+Each method in clubhouse.js returns a
+[bluebird](http://bluebirdjs.com/docs/getting-started.html) `Promise`
+object. That means you can use any of the combinator functions provided by
+the `bluebird` library. For example, if you wanted to filter all of the Projects that
+start with the word `Mobile` you would do the following:
+
+```javascript
+clubhouse.listProjects().filter(function (project) {
+    return project.name.startsWith('Mobile');
+}).then(function (projects) {
+    console.log(projects);
+});
+```
+
+Each method accepts an optional callback function that is called with an
+error and a value.
+
+```javascript
+clubhouse.listProjects(function (error, projects) {
+    if (error) { throw error };
+    console.log(projects);
+});
+```
+### Creating your first Story with Clubhouse API.
+Let's go ahead and create a test Story and then immediately delete it
 to go through the whole process and make sure everything is working.
 
 ```javascript
@@ -218,7 +231,7 @@ var story = {
     'project_id': 274
 };
 
-clubhouse.createStory(story).then(function (newStory) {
+clubhouse.createStory(newStory).then(function (newStory) {
     console.log('new story', newStory);
     return clubhouse.deleteStory(newStory.id);
 }).catch(function (error) {
@@ -235,12 +248,12 @@ console. You can also check your activity feed to confirm that a story
 was created and then deleted.
 
 
-### Importing your data into Clubhouse
+### Importing your data with Clubhouse API
 
-At this point we are ready to import a collection of stories into our
-clubhouse account. The schema of the CSV file we will be using is as follows
+At this point, we are ready to import a collection of Stories into our
+Clubhouse account. The schema of the CSV file we will be using is as follows
 
-```javascript
+```JavaScript
 id
 name
 type
@@ -252,7 +265,8 @@ updated at
 estimate
 ```
 
-Download the sample data here,
+Download the sample data here
+
 ```shell
 curl
 ```
@@ -348,14 +362,14 @@ function findWorkflowStateByName(workflows, name) {
 
 ```
 
-Notice that the we take the first workflow and then iterate through
+Notice that the we take the first Workflow and then iterate through
 its states.
 
 
-We abstract parsing a story row and generating an object of values
-that the story create endpoint can accept into its own function. In
-this function we also look up the workflow state of the story and the
-requestor's id. If you don't supply a requested_by_id it will be the
+We abstract parsing a Story row and generating an object of values so
+that the Story create endpoint can accept into its own function. In
+this function we also look up the Workflow state of the Story and the
+requestor's ID. If you don't supply a requested_by_id it will be the
 user who generated the token.
 
 ```javascript
@@ -377,8 +391,8 @@ function generateStory(ctx, row) {
 }
 ```
 
-Lastly we use `Promise.props` to request the projects, epics, users
-and workflows that we need in order to create our new stories.
+Lastly, we use `Promise.props` to request the Projects, Epics, users,
+and Workflows that we need in order to create our new Stories.
 
 ```javascript
 Promise.props({
@@ -403,8 +417,7 @@ Promise.props({
 });
 ```
 
-`Promise.props` is useful for builing an object that has the define
-properties that are the resulting of each Promise object.
+`Promise.props` is used to create an object that matches the properties you've defined.
 
 ```shell
 node import_to_clubhouse.js
@@ -413,22 +426,22 @@ node import_to_clubhouse.js
 And you should see something like.
 
 ```shell
-Created 2 new stories in your clubhouse account.
+Created 2 new Stories in your Clubhouse account.
 ```
 
 ## FAQ
 
-### How do I redo my import?
+### How do I redo/undo my import?
 
-There are serveral ways one could do this. The simpliest way might be
-to simpliy keep a mapping of the story ids you have created and
-simpliy delete those stories if something goes wrong in your import process
+There are several ways to do this. The simplest way might be
+to simply keep a mapping of the Story IDs you have created and
+ delete those Stories if something goes wrong with your import.
 
-### Do you support language x?
+### Do you support (language x)?
 
 Right now we only support Node.js, but our REST API is well documented
-and it is possible to interact with anything language that supports
-making HTTP requests
+and it is possible to interact with any language that supports
+HTTP requests.
 
-### I am getting an unauthorized error
-Mostly like your token is wrong or was delete.
+### I am getting an unauthorized error.
+Check that your token was not entered incorrectly or deleted.
