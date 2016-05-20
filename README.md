@@ -3,13 +3,13 @@
 ## Install
 
 ```shell
-npm install clubhouse
+npm install clubhouse-lib
 ```
 
 ## Usage
 
 ```javascript
-var Clubhouse = require('clubhouse');
+var Clubhouse = require('clubhouse-lib');
 var clubhouse = new Clubhouse('clubhouse-token');
 ```
 

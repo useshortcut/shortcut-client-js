@@ -1,5 +1,5 @@
 {
-  "name": "clubhouse",
+  "name": "clubhouse-lib",
   "version": "0.0.1",
   "description": "",
   "main": "clubhouse.js",
@@ -27,8 +27,7 @@
   },
   "dependencies": {
     "bluebird": "^3.3.4",
-    "request": "^2.70.0",
-    "sepia": "^2.0.1"
+    "request": "^2.70.0"
   },
   "eslintConfig": {
     "parserOptions": {
