@@ -1,4 +1,4 @@
-/*global require, __dirname */
+/*global require, __dirname process */
 'use strict';
 
 let chai      = require('chai').assert;
@@ -16,9 +16,8 @@ let it         = mocha.it;
 let beforeEach = mocha.beforeEach;
 let afterEach  = mocha.afterEach;
 
-
 let generateSubject = () => {
-    return new Clubhouse('', { baseUrl: 'http://localhost:4001'});
+    return new Clubhouse(process.env.CLUBHOUSE_TOKEN, { baseUrl: 'http://localhost:4001'});
 };
 
 describe('Client', function () {
@@ -167,7 +166,7 @@ describe('Epic', function () {
         let subject = generateSubject();
 
         return subject.listEpics().then((epics) => {
-            chai.lengthOf(epics, 77);
+            chai.lengthOf(epics, 83);
         });
     });
 
@@ -212,7 +211,7 @@ describe('Epic', function () {
             return subject.deleteEpic(epic.id);
         }).then(() => {
             return subject.listEpics().then((epics) => {
-                chai.lengthOf(epics, 77);
+                chai.lengthOf(epics, 83);
             });
         });
     });

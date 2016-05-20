@@ -1,5 +1,5 @@
-var Clubhouse = require('clubhouse');
-var clubhouse = new Clubhouse('', { baseUrl: 'http://localhost:4001' });
+var Clubhouse = require('clubhouse-lib');
+var clubhouse = new Clubhouse(process.env.CLUBHOUSE_TOKEN, { baseUrl: 'http://localhost:4001' });
 
 var story = {
     'name': 'This is a test',

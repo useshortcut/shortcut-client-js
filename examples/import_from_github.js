@@ -7,7 +7,7 @@ var request = Promise.promisify(require('request'));
 
 var Clubhouse = require('../clubhouse');
 
-var clubhouse = new Clubhouse('', { baseUrl: 'http://localhost:4001' });
+var clubhouse = new Clubhouse(process.env.CLUBHOUSE_TOKEN, { baseUrl: 'http://localhost:4001' });
 
 
 function fetchGithubIssues() {

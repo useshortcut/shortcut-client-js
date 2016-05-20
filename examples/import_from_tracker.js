@@ -7,7 +7,7 @@ var csv = require('csv');
 var parse = Promise.promisify(csv.parse);
 
 var Clubhouse = require('../clubhouse');
-var clubhouse = new Clubhouse('', { baseUrl: 'http://localhost:4001' });
+var clubhouse = new Clubhouse(process.env.CLUBHOUSE_TOKEN, { baseUrl: 'http://localhost:4001' });
 
 function findUserByName(users, name) {
     return _.find(users, function (x) { return x.name === name; });

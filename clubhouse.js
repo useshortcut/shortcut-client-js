@@ -2,8 +2,6 @@
 let Promise = require('bluebird');
 let request = Promise.promisify(require('request'));
 
-Promise.promisifyAll(request);
-
 let defaultVersion = 'v1';
 let defaultBaseUrl = 'https://api.clubhouse.io';
 

@@ -147,7 +147,7 @@ token user as the author for any object you create in clubhouse.
 ### Installing the Clubhouse NPM package
 
 ```shell
-npm install clubhouse
+npm install clubhouse-lib
 ```
 
 ### Create a script
@@ -164,7 +164,7 @@ $ node
 ```
 
 ```javascript
-> var Clubhouse = require('clubhouse');
+> var Clubhouse = require('clubhouse-lib');
 > var clubhouse = new Clubhouse('your token');
 ```
 ## Working With Projects

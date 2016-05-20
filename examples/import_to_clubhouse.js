@@ -3,7 +3,7 @@
 var Promise = require('bluebird');
 var _ = require('lodash');
 var fs = require('fs');
-var Clubhouse = require('clubhouse');
+var Clubhouse = require('clubhouse-lib');
 var clubhouse = new Clubhouse('', { baseUrl: 'http://localhost:4001' });
 
 function findUserByEmail(users, email) {
