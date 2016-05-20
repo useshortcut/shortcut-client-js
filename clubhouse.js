@@ -371,18 +371,7 @@ class Clubhouse {
      * @param  {Object} values
      * @return {Promise}
      */
-    createFile(file) {
-        return this.http({
-            method: 'POST',
-            preambleCRLF: true,
-            postambleCRLF: true,
-            url: this.generateUrl('files'),
-            multipart: [{
-                'content-type': 'text/pain',
-                'body': file
-            }]
-        }).then(this.parseResponse);
-    }
+    createFile(file) {}
 
     /**
      * @param  {number} fileId

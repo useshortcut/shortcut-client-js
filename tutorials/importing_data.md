@@ -59,8 +59,8 @@ This is optional and a Story does not need to be assigned to an Epic.
 ```javascript
 var epic = { 'name': 'This is a test epic' };
 
-clubhouse.createEpic(epic).then(function (new) {
-    console.log(new.id);
+clubhouse.createEpic(epic).then(function (newEpic) {
+    console.log(newEpic.id);
 });
 ```
 

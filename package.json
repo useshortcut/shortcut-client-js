@@ -6,6 +6,7 @@
   "scripts": {
     "test": "make test"
   },
+  "homepage": "https://github.com/clubhouse/clubhouse.js",
   "author": "Clubhouse",
   "license": "MIT",
   "devDependencies": {
