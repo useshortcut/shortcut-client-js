@@ -436,18 +436,35 @@ describe('Story Links', function () {
     });
 });
 
-// TODO
-describe.skip('File', function () {
+
+describe('File', function () {
+    let stream = () => fs.createReadStream(__dirname + '/file.txt');
+    let clubhouse = generateSubject();
 
     it('can create a file', function () {
-        let clubhouse = generateSubject();
-        let file = fs.createReadStream(__dirname + '/file.txt');
+        return clubhouse.createFile(stream()).then((files) => {
+            let file = files[0];
 
-        return clubhouse.createFile(file).then((file) => {
-            console.log(file);
-            return Promise.resolve(file);
+            chai.isArray(files);
+            chai.hasOwnProperty(file, 'id');
+            return file;
         }).then((file) => {
-            console.log(file);
+            return clubhouse.deleteFile(file.id);
+        });
+    });
+
+    it('can update a file', function () {
+        return clubhouse.createFile(stream()).then((files) => {
+            let file = files[0];
+            chai.propertyVal(file, 'name', 'file.txt');
+            return file;
+        }).then((file) => {
+            return clubhouse.updateFile(file.id, { name: 'test.txt' });
+        }).then((file) => {
+            chai.propertyVal(file, 'name', 'test.txt');
+            return file;
+        }).then((file) => {
+            return clubhouse.deleteFile(file.id);
         });
     });
 

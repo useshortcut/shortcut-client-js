@@ -1,5 +1,7 @@
+/*global require */
 'use strict';
 let Promise = require('bluebird');
+let path    = require('path');
 let request = Promise.promisify(require('request'));
 
 let defaultVersion = 'v1';
@@ -371,7 +373,18 @@ class Clubhouse {
      * @param  {Object} values
      * @return {Promise}
      */
-    createFile(file) {}
+    createFile(file, cb) {
+        return this.wrapCallback(cb, this.http({
+            uri: this.generateUrl('files'),
+            method: 'POST',
+            formData: {
+                file: {
+                    value: file,
+                    options: { filename: path.basename(file.path).toString() }
+                }
+            }
+        })).then(this.parseResponse).then((x) => JSON.parse(x) );
+    }
 
     /**
      * @param  {number} fileId
