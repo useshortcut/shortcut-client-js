@@ -34,7 +34,7 @@ var story = {
     'project_id': 274
 };
 
-clubhouse.createStory(newStory).then(function (newStory) {
+clubhouse.createStory(story).then(function (story) {
     console.log(story.id);
 });
 ```
