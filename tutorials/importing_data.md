@@ -92,8 +92,8 @@ var story = {
   "tasks": [ { "description": "this is a task", "complete": false } ]
 };
 
-clubhouse.createStory(newStory).then(function (new) {
-    console.log(new);
+clubhouse.createStory(story).then(function (newStory) {
+    console.log(newStory.id);
 }).catch(function (error) {
     console.log(error);
 });
@@ -268,7 +268,7 @@ estimate
 Download the sample data here
 
 ```shell
-curl
+curl -XGET https://raw.githubusercontent.com/clubhouse/clubhouse.js/master/examples/another_test_20160511_1636.csv >> stories.csv
 ```
 
 Create your script
