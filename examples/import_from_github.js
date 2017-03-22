@@ -5,10 +5,8 @@ var _ = require('lodash');
 var fs = require('fs');
 var request = Promise.promisify(require('request'));
 
-var Clubhouse = require('../clubhouse');
-
-var clubhouse = new Clubhouse(process.env.CLUBHOUSE_TOKEN, { baseUrl: 'http://localhost:4001' });
-
+var Clubhouse = require('clubhouse-lib');
+var clubhouse = new Clubhouse(process.env.CLUBHOUSE_TOKEN);
 
 function fetchGithubIssues() {
     var username = 'iwillig',
@@ -19,12 +17,10 @@ function fetchGithubIssues() {
 }
 
 function generateStory(ctx, issue) {
-
     return {
         name: ''
     };
 }
-
 
 Promise.props({
     githubIssues: fetchGithubIssues(),
