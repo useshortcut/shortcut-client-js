@@ -9,7 +9,7 @@ var fs = Promise.promisifyAll(require('fs'));
 var csv = require('csv');
 var csvParse = Promise.promisify(csv.parse);
 
-var Clubhouse = require('../clubhouse');
+var Clubhouse = require('clubhouse-lib');
 var clubhouse = new Clubhouse(process.env.CLUBHOUSE_TOKEN);
 
 function findUserByName(users, name) {
@@ -34,12 +34,14 @@ function generateStory(ctx, story) {
     var requester = findUserByName(ctx.users, story['Requested By']);
     var workflowState = findWorkflowStateByName(ctx.workflows, workflowMapping[story['Current State']]);
     var estimate = parseInt(story.Estimate);
-    var mappedStory =  { name: story.Title,
-                         project_id: ctx.projects[0].id,
-                         description: story.Description,
-                         story_type: story.Type,
-                         workflow_state_id: workflowState.id,
-                         requested_by_id: requester.id };
+    var mappedStory = {
+        name: story.Title,
+        project_id: ctx.projects[0].id,
+        description: story.Description,
+        story_type: story.Type,
+        workflow_state_id: workflowState.id,
+        requested_by_id: requester.id
+    };
 
     if (!isNaN(estimate)) {
         mappedStory.estimate = estimate;
