@@ -10,7 +10,10 @@ class TestFactory {
   }
   makeRequest(url: string, method: ?string, body: ?any): Promise<*> {
     this.requests.push({ url, method, body });
-    return Promise.resolve({ body });
+    return Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve(body),
+    });
   }
 }
 
