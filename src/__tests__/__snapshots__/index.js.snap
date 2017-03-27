@@ -1,0 +1,55 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`#Client .createProject creates a new project 1`] = `
+Array [
+  Object {
+    "body": Object {
+      "name": "test",
+    },
+    "method": "POST",
+    "url": "http://localhost:4001/api/beta/projects",
+  },
+]
+`;
+
+exports[`#Client .deleteProject deletes a existing project 1`] = `
+Array [
+  Object {
+    "body": undefined,
+    "method": "DELETE",
+    "url": "http://localhost:4001/api/beta/projects/1",
+  },
+]
+`;
+
+exports[`#Client .getProject requests a single project 1`] = `
+Array [
+  Object {
+    "body": undefined,
+    "method": undefined,
+    "url": "http://localhost:4001/api/beta/projects/1234",
+  },
+]
+`;
+
+exports[`#Client .listProjects returns a list of projects with a clubhouse account 1`] = `
+Array [
+  Object {
+    "body": undefined,
+    "method": undefined,
+    "url": "http://localhost:4001/api/beta/projects",
+  },
+]
+`;
+
+exports[`#Client .updateProject updates a existing project 1`] = `
+Array [
+  Object {
+    "body": Object {
+      "name": "test",
+    },
+    "method": "PUT",
+    "url": "http://localhost:4001/api/beta/projects/12",
+  },
+]
+`;
