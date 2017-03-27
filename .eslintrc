@@ -1,0 +1,17 @@
+{
+  "extends": [
+    "airbnb"
+  ],
+  "parser": "babel-eslint",
+  "plugins": [
+    "import",
+    "flowtype",
+    "jest"
+  ],
+  "env": {
+    "jest": true
+  },
+   "rules": {
+      "no-undef": 0
+   }
+}
