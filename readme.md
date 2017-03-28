@@ -1,4 +1,4 @@
-# Clubhouse.js
+# Clubhouse-lib
 
 A promise based interface to the Clubhouse API
 
