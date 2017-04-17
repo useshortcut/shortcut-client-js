@@ -17,10 +17,14 @@ class TestFactory {
   }
 }
 
-const makeClient = (factory: TestFactory) => new Client({
-  baseURL: 'http://localhost:4001',
-  version: 'beta',
-}, factory);
+const makeClient = (factory: TestFactory) =>
+  new Client(
+    {
+      baseURL: 'http://localhost:4001',
+      version: 'beta',
+    },
+    factory,
+  );
 
 describe('#Client', () => {
   it('return a new instance with the correct defaults', () => {

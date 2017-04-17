@@ -27,14 +27,13 @@ const API_BASE_URL: string = 'https://api.clubhouse.io';
 const API_VERSION: string = 'beta';
 
 const parseResponse = (response: Response): Promise<*> =>
-  response.json()
-    .then((json: Object) => {
-      if (response.ok) {
-        return json;
-      }
+  response.json().then((json: Object) => {
+    if (response.ok) {
+      return json;
+    }
 
-      return Promise.reject(new ClientError(response, json));
-    });
+    return Promise.reject(new ClientError(response, json));
+  });
 
 class TokenRequestFactory implements RequestFactory {
   token: string;
@@ -59,9 +58,9 @@ class TokenRequestFactory implements RequestFactory {
 }
 /** */
 type ClientConfig = {
-  baseURL: string;
-  version: string;
-}
+  baseURL: string,
+  version: string,
+};
 
 const defaultConfig = {
   baseURL: API_BASE_URL,
@@ -76,7 +75,10 @@ class Client {
   version: string;
   requestFactory: RequestFactory;
 
-  constructor({ baseURL, version }: ClientConfig = defaultConfig, requestFactory: RequestFactory) {
+  constructor(
+    { baseURL, version }: ClientConfig = defaultConfig,
+    requestFactory: RequestFactory,
+  ) {
     this.baseURL = baseURL;
     this.version = version;
     this.requestFactory = requestFactory;
@@ -100,14 +102,24 @@ class Client {
     return this.requestFactory.makeRequest(URL).then(parseResponse);
   }
 
-  createResource<ResponseType>(uri: string, params: Object): Promise<ResponseType> {
+  createResource<ResponseType>(
+    uri: string,
+    params: Object,
+  ): Promise<ResponseType> {
     const URL = this.generateUrl(uri);
-    return this.requestFactory.makeRequest(URL, 'POST', params).then(parseResponse);
+    return this.requestFactory
+      .makeRequest(URL, 'POST', params)
+      .then(parseResponse);
   }
 
-  updateResource<ResponseType>(uri: string, params: Object): Promise<ResponseType> {
+  updateResource<ResponseType>(
+    uri: string,
+    params: Object,
+  ): Promise<ResponseType> {
     const URL = this.generateUrl(uri);
-    return this.requestFactory.makeRequest(URL, 'PUT', params).then(parseResponse);
+    return this.requestFactory
+      .makeRequest(URL, 'PUT', params)
+      .then(parseResponse);
   }
 
   deleteResource<ResponseType>(uri: string): Promise<ResponseType> {
@@ -281,7 +293,10 @@ class Client {
   }
 
   /** */
-  updateLinkedFile(linkedFileID: ID, params: LinkedFileChange): Promise<LinkedFile> {
+  updateLinkedFile(
+    linkedFileID: ID,
+    params: LinkedFileChange,
+  ): Promise<LinkedFile> {
     return this.updateResource(`linked-files/${linkedFileID}`, params);
   }
 

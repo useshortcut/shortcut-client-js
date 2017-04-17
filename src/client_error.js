@@ -1,6 +1,8 @@
+/* @flow */
+
 export default class ClientError extends Error {
-  response: any;
-  body: any;
+  response: Response;
+  body: Object;
 
   constructor(response: Response, body: Object) {
     super(response.statusText);
