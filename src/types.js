@@ -217,6 +217,7 @@ export type WorkflowState = {
   type: WorkflowStateTypes;
   name: string;
   id: ID;
+  position: number;
 }
 
 export type Workflow = {
