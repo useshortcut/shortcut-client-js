@@ -216,6 +216,7 @@ export type WorkflowStateTypes = 'unstarted' | 'started' | 'done';
 export type WorkflowState = {
   type: WorkflowStateTypes;
   name: string;
+  id: ID;
 }
 
 export type Workflow = {
