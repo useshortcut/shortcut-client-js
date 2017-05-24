@@ -218,7 +218,7 @@ class Client {
   }
 
   /** */
-  createStoryComment(storyID: ID, text: String): Promise<StoryComment> {
+  createStoryComment(storyID: ID, text: string): Promise<StoryComment> {
     return this.createResource(`stories/${storyID}/comment`, { text });
   }
 

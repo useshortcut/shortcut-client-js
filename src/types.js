@@ -4,8 +4,8 @@ export type ID = string | number;
 
 interface Entity {
   id: ID,
-  created_at: String,
-  updated_at: String,
+  created_at: string,
+  updated_at: string,
 }
 
 export interface RequestFactory {
@@ -181,8 +181,8 @@ export type EpicChange = {
 
 export type StoryComment = {
   id: ID,
-  created_at: String,
-  updated_at: String,
+  created_at: string,
+  updated_at: string,
 };
 
 /* Task */
