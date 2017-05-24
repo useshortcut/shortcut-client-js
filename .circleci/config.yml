@@ -1,0 +1,33 @@
+version: 2
+jobs:
+  build:
+    working_directory: /clubhouse-lib
+    docker:
+      - image: clubhouseio/clubhouse-node-flow-primary:0.0.1
+        environment:
+          ENV: CI
+          TERM: dumb # See: https://github.com/facebook/flow/pull/3305
+          JEST_JUNIT_OUTPUT: ./artifacts/junit.xml
+    steps:
+      - checkout
+      - run:
+          name: Pre-Dependencies
+          command: mkdir -p /clubhouse-lib/artifacts
+      - restore_cache:
+          keys:
+            - v1-dependency-cache-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - v1-dependency-cache-{{ .Branch }}
+            - v1-dependency-cache-master-{{ checksum "yarn.lock" }}
+            - v1-dependency-cache-master
+      - run:
+          name: Install Node Modules
+          command: yarn install
+      - save_cache:
+          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "yarn.lock" }}
+          paths:
+            - /clubhouse-lib/node_modules
+      - run:
+          name: Run unit tests
+          command: yarn run ci
+      - store_test_results:
+          path: /clubhouse-lib/artifacts

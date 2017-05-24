@@ -2,6 +2,8 @@
 
 A promise based interface to the Clubhouse API
 
+[![CircleCI](https://circleci.com/gh/clubhouse/clubhouse-lib.svg?style=svg)](https://circleci.com/gh/clubhouse/clubhouse-lib)
+
 ## Install
 
 ```shell
