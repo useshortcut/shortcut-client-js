@@ -1,6 +1,8 @@
 /* @flow */
-import fetch from 'node-fetch';
+
+import 'isomorphic-fetch';
 import ClientError from './client_error';
+
 import type {
   Project,
   ProjectChange,
