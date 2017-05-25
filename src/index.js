@@ -1,6 +1,5 @@
 /* @flow */
 
-import configureFetchPonyfill from 'fetch-ponyfill';
 import ClientError from './client_error';
 
 import type {
@@ -24,6 +23,9 @@ import type {
   RequestFactory,
   ID,
 } from './types';
+
+require('es6-promise').polyfill();
+require('fetch-everywhere');
 
 const API_BASE_URL: string = 'https://api.clubhouse.io';
 const API_VERSION: string = 'beta';
@@ -54,8 +56,6 @@ class TokenRequestFactory implements RequestFactory {
       Accept: 'application/json',
       'Content-Type': 'application/json; charset=utf-8',
     };
-
-    const fetch = self.fetch || configureFetchPonyfill().fetch;
 
     return fetch(urlWithToken, {
       body: JSON.stringify(body),
