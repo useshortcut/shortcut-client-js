@@ -1,6 +1,6 @@
 /* @flow */
 
-import 'isomorphic-fetch';
+import { fetch } from 'fetch-ponyfill';
 import ClientError from './client_error';
 
 import type {
