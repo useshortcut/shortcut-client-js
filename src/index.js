@@ -1,6 +1,6 @@
 /* @flow */
 
-import { fetch } from 'fetch-ponyfill';
+import configureFetchPonyfill from 'fetch-ponyfill';
 import ClientError from './client_error';
 
 import type {
@@ -54,6 +54,8 @@ class TokenRequestFactory implements RequestFactory {
       Accept: 'application/json',
       'Content-Type': 'application/json; charset=utf-8',
     };
+
+    const fetch = self.fetch || configureFetchPonyfill().fetch;
 
     return fetch(urlWithToken, {
       body: JSON.stringify(body),
