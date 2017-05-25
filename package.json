@@ -1,6 +1,6 @@
 {
   "name": "clubhouse-lib",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A Promise based library to the Clubhouse REST API",
   "files": [
     "build"
