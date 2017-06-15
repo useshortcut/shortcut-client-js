@@ -227,7 +227,7 @@ class Client {
 
   /** */
   createStoryComment(storyID: ID, text: string): Promise<StoryComment> {
-    return this.createResource(`stories/${storyID}/comment`, { text });
+    return this.createResource(`stories/${storyID}/comments`, { text });
   }
 
   /** */
