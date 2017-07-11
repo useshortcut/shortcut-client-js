@@ -2,7 +2,7 @@
 
 export type ID = string | number;
 
-interface Entity {
+export interface Entity {
   id: ID,
   created_at: string,
   updated_at: string,
