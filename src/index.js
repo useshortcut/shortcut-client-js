@@ -46,11 +46,7 @@ class TokenRequestFactory implements RequestFactory {
     this.token = token;
   }
 
-  makeRequest(
-    url: string,
-    method?: MethodType = 'GET',
-    body?: Object,
-  ): Promise<*> {
+  makeRequest(url: string, method?: string = 'GET', body?: Object): Promise<*> {
     const urlWithToken = `${url}?token=${this.token}`;
     const headers = {
       Accept: 'application/json',
