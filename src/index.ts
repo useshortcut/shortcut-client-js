@@ -1,8 +1,6 @@
-/* @flow */
-
 import ClientError from './client_error';
 
-import type {
+import {
   Project,
   ProjectChange,
   Story,
@@ -24,13 +22,12 @@ import type {
   ID,
 } from './types';
 
-require('es6-promise').polyfill();
 require('fetch-everywhere');
 
 const API_BASE_URL: string = 'https://api.clubhouse.io';
 const API_VERSION: string = 'beta';
 
-const parseResponse = (response: Response): Promise<*> =>
+const parseResponse = (response: Response): Promise<any> =>
   response.json().then((json: Object) => {
     if (response.ok) {
       return json;
@@ -46,7 +43,7 @@ class TokenRequestFactory implements RequestFactory {
     this.token = token;
   }
 
-  makeRequest(url: string, method?: string = 'GET', body?: Object): Promise<*> {
+  makeRequest(url: string, method: string = 'GET', body?: object): Promise<any> {
     const urlWithToken = `${url}?token=${this.token}`;
     const headers = {
       Accept: 'application/json',
@@ -61,7 +58,7 @@ class TokenRequestFactory implements RequestFactory {
   }
 }
 /** */
-type ClientConfig = {
+export type ClientConfig = {
   baseURL: string,
   version: string,
 };
@@ -74,7 +71,7 @@ const defaultConfig = {
 /**
  * @class Client
 */
-class Client {
+export default class Client {
   baseURL: string;
   version: string;
   requestFactory: RequestFactory;
@@ -88,7 +85,7 @@ class Client {
     this.requestFactory = requestFactory;
   }
   /** */
-  static create(token: string, options: ?ClientConfig): Client {
+  static create(token: string, options?: ClientConfig): Client {
     return new Client(options || defaultConfig, new TokenRequestFactory(token));
   }
 
@@ -309,5 +306,3 @@ class Client {
     return this.deleteResource(`linked-files/${linkedFileID}`);
   }
 }
-
-module.exports = Client;

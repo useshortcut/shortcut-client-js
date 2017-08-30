@@ -1,5 +1,3 @@
-/* @flow */
-
 export type ID = string | number;
 
 export interface Entity {
@@ -9,7 +7,7 @@ export interface Entity {
 }
 
 export interface RequestFactory {
-  makeRequest(uri: string, method?: string, body?: Object): Promise<*>,
+  makeRequest(uri: string, method?: string, body?: Object): Promise<any>,
 }
 
 /* Users */
@@ -38,7 +36,7 @@ export type Project = {
   id: ID,
   name: string,
   entity_type: string,
-  description: ?string,
+  description?: string,
   abbreviation: string,
   color: string,
   iteration_length: number,
@@ -119,7 +117,6 @@ export type StoryChange = {
   after_id?: number,
   before_id?: number,
   branch_ids?: Array<ID>,
-  file_ids?: Array<ID>,
   project_id?: ID,
   requested_by_id?: ID,
   owner_ids?: Array<ID>,

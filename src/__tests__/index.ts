@@ -1,14 +1,12 @@
-/* @flow */
-
 import Client from '../index';
 
 class TestFactory {
-  requests: Object[];
+  requests: object[];
 
-  constructor(requests: Object[]) {
+  constructor(requests: object[]) {
     this.requests = requests;
   }
-  makeRequest(url: string, method: ?string, body: ?any): Promise<*> {
+  makeRequest(url: string, method?: string, body?: any): Promise<any> {
     this.requests.push({ url, method, body });
     return Promise.resolve({
       ok: true,
