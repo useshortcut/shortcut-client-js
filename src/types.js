@@ -3,13 +3,13 @@
 export type ID = string | number;
 
 export interface Entity {
-  id: ID,
-  created_at: string,
-  updated_at: string,
+  id: ID;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface RequestFactory {
-  makeRequest(uri: string, method?: string, body?: Object): Promise<*>,
+  makeRequest(uri: string, method?: string, body?: Object): Promise<*>;
 }
 
 /* Users */
