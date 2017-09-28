@@ -1,30 +1,7 @@
 /* @flow */
 
 import Client from '../index';
-
-class TestFactory {
-  requests: Object[];
-
-  constructor(requests: Object[]) {
-    this.requests = requests;
-  }
-  makeRequest(url: string, method: ?string, body: ?any): Promise<*> {
-    this.requests.push({ url, method, body });
-    return Promise.resolve({
-      ok: true,
-      json: () => Promise.resolve(body),
-    });
-  }
-}
-
-const makeClient = (factory: TestFactory) =>
-  new Client(
-    {
-      baseURL: 'http://localhost:4001',
-      version: 'beta',
-    },
-    factory,
-  );
+import { createTestClient } from './utils';
 
 describe('#Client', () => {
   it('return a new instance with the correct defaults', () => {
@@ -35,7 +12,10 @@ describe('#Client', () => {
   describe('.listProjects', () => {
     it('returns a list of projects with a clubhouse account', async () => {
       const requests = [];
-      const client = makeClient(new TestFactory(requests));
+      const client = createTestClient(request => {
+        requests.push(request);
+        return Promise.resolve({ status: 200, body: [] });
+      });
 
       await client.listProjects();
 
@@ -46,7 +26,10 @@ describe('#Client', () => {
   describe('.getProject', () => {
     it('requests a single project', async () => {
       const requests = [];
-      const client = makeClient(new TestFactory(requests));
+      const client = createTestClient(request => {
+        requests.push(request);
+        return Promise.resolve({ status: 200, body: { id: 1234 } });
+      });
 
       await client.getProject(1234);
 
@@ -57,7 +40,10 @@ describe('#Client', () => {
   describe('.createProject', () => {
     it('creates a new project', async () => {
       const requests = [];
-      const client = makeClient(new TestFactory(requests));
+      const client = createTestClient(request => {
+        requests.push(request);
+        return Promise.resolve({ status: 200, body: { name: 'test' } });
+      });
 
       await client.createProject({ name: 'test' });
 
@@ -68,7 +54,10 @@ describe('#Client', () => {
   describe('.updateProject', () => {
     it('updates a existing project', async () => {
       const requests = [];
-      const client = makeClient(new TestFactory(requests));
+      const client = createTestClient(request => {
+        requests.push(request);
+        return Promise.resolve({ status: 200, body: { name: 'test' } });
+      });
 
       await client.updateProject(12, { name: 'test' });
 
@@ -79,7 +68,10 @@ describe('#Client', () => {
   describe('.deleteProject', () => {
     it('deletes a existing project', async () => {
       const requests = [];
-      const client = makeClient(new TestFactory(requests));
+      const client = createTestClient(request => {
+        requests.push(request);
+        return Promise.resolve({ status: 200, body: {} });
+      });
 
       await client.deleteProject(1);
 
