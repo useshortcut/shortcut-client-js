@@ -29,7 +29,6 @@ import type {
 } from './types';
 
 require('es6-promise').polyfill();
-require('fetch-everywhere');
 
 const API_BASE_URL: string = 'https://api.clubhouse.io';
 const API_VERSION: string = 'beta';
