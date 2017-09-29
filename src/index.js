@@ -28,8 +28,6 @@ import type {
   ID,
 } from './types';
 
-require('es6-promise').polyfill();
-
 const API_BASE_URL: string = 'https://api.clubhouse.io';
 const API_VERSION: string = 'beta';
 
