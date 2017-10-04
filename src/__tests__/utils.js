@@ -29,6 +29,8 @@ export class TestRequestFactory implements RequestFactory<TestRequest> {
   });
 }
 
+type PromiseResolver<Input, Output> = Input => Promise<Output>;
+
 export class TestRequestPerformer
   implements RequestPerformer<TestRequest, TestResponse> {
   static resolve = (request: TestRequest, response: TestResponse) =>
@@ -37,11 +39,11 @@ export class TestRequestPerformer
   static reject = (request: TestRequest, response: TestResponse) =>
     new TestRequestPerformer(() => Promise.reject(response));
 
-  constructor(resolver: (request: TestRequest) => Promise<TestResponse>) {
+  constructor(resolver: PromiseResolver<TestRequest, TestResponse>) {
     this.resolver = resolver;
   }
 
-  resolver: (request: TestRequest) => Promise<TestResponse>;
+  resolver: PromiseResolver<TestRequest, TestResponse>;
 
   performRequest = (request: TestRequest): Promise<TestResponse> =>
     this.resolver(request);
@@ -54,11 +56,11 @@ export class TestResponseParser implements ResponseParser<TestResponse> {
   static reject = (response: TestResponse, result: *) =>
     new TestRequestPerformer(() => Promise.reject(result));
 
-  constructor(resolver: (response: TestResponse) => Promise<*>) {
+  constructor(resolver: PromiseResolver<TestResponse, *>) {
     this.resolver = resolver;
   }
 
-  resolver: (response: TestResponse) => Promise<*>;
+  resolver: PromiseResolver<TestResponse, *>;
 
   parseResponse = (response: TestResponse): Promise<*> =>
     this.resolver(response);
