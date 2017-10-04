@@ -7,7 +7,7 @@ Array [
       "name": "test",
     },
     "method": "POST",
-    "url": "http://localhost:4001/api/beta/projects",
+    "uri": "http://localhost:4001/api/beta/projects",
   },
 ]
 `;
@@ -17,7 +17,7 @@ Array [
   Object {
     "body": undefined,
     "method": "DELETE",
-    "url": "http://localhost:4001/api/beta/projects/1",
+    "uri": "http://localhost:4001/api/beta/projects/1",
   },
 ]
 `;
@@ -27,7 +27,7 @@ Array [
   Object {
     "body": undefined,
     "method": undefined,
-    "url": "http://localhost:4001/api/beta/projects/1234",
+    "uri": "http://localhost:4001/api/beta/projects/1234",
   },
 ]
 `;
@@ -37,7 +37,7 @@ Array [
   Object {
     "body": undefined,
     "method": undefined,
-    "url": "http://localhost:4001/api/beta/projects",
+    "uri": "http://localhost:4001/api/beta/projects",
   },
 ]
 `;
@@ -49,7 +49,7 @@ Array [
       "name": "test",
     },
     "method": "PUT",
-    "url": "http://localhost:4001/api/beta/projects/12",
+    "uri": "http://localhost:4001/api/beta/projects/12",
   },
 ]
 `;

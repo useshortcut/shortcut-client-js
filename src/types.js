@@ -8,8 +8,16 @@ export interface Entity {
   updated_at: string;
 }
 
-export interface RequestFactory {
-  makeRequest(uri: string, method?: string, body?: Object): Promise<*>;
+export interface RequestFactory<T> {
+  createRequest(uri: string, method?: string, body?: Object): T;
+}
+
+export interface RequestPerformer<T, U> {
+  performRequest(request: T): Promise<U>;
+}
+
+export interface ResponseParser<U> {
+  parseResponse(response: U): Promise<*>;
 }
 
 /* Users */

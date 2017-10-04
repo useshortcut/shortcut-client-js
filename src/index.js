@@ -1,6 +1,8 @@
 /* @flow */
 
-import ClientError from './client_error';
+import TokenRequestFactory from './TokenRequestFactory';
+import FetchRequestPerformer from './FetchRequestPerformer';
+import FetchRequestParser from './FetchRequestParser';
 
 import type {
   Project,
@@ -21,45 +23,14 @@ import type {
   LinkedFile,
   LinkedFileChange,
   RequestFactory,
+  RequestPerformer,
+  ResponseParser,
   ID,
 } from './types';
-
-require('es6-promise').polyfill();
-require('fetch-everywhere');
 
 const API_BASE_URL: string = 'https://api.clubhouse.io';
 const API_VERSION: string = 'beta';
 
-const parseResponse = (response: Response): Promise<*> =>
-  response.json().then((json: Object) => {
-    if (response.ok) {
-      return json;
-    }
-
-    return Promise.reject(new ClientError(response, json));
-  });
-
-class TokenRequestFactory implements RequestFactory {
-  token: string;
-
-  constructor(token: string) {
-    this.token = token;
-  }
-
-  makeRequest(url: string, method?: string = 'GET', body?: Object): Promise<*> {
-    const urlWithToken = `${url}?token=${this.token}`;
-    const headers = {
-      Accept: 'application/json',
-      'Content-Type': 'application/json; charset=utf-8',
-    };
-
-    return fetch(urlWithToken, {
-      body: JSON.stringify(body),
-      headers,
-      method,
-    });
-  }
-}
 /** */
 type ClientConfig = {
   baseURL: string,
@@ -74,61 +45,81 @@ const defaultConfig = {
 /**
  * @class Client
 */
-class Client {
+class Client<RequestType, ResponseType> {
   baseURL: string;
   version: string;
-  requestFactory: RequestFactory;
+
+  requestFactory: RequestFactory<RequestType>;
+  requestPerformer: RequestPerformer<RequestType, ResponseType>;
+  responseParser: ResponseParser<ResponseType>;
 
   constructor(
     { baseURL, version }: ClientConfig = defaultConfig,
-    requestFactory: RequestFactory,
+    requestFactory: RequestFactory<RequestType>,
+    requestPerformer: RequestPerformer<RequestType, ResponseType>,
+    responseParser: ResponseParser<ResponseType>,
   ) {
     this.baseURL = baseURL;
     this.version = version;
     this.requestFactory = requestFactory;
+    this.requestPerformer = requestPerformer;
+    this.responseParser = responseParser;
   }
   /** */
-  static create(token: string, options: ?ClientConfig): Client {
-    return new Client(options || defaultConfig, new TokenRequestFactory(token));
+  static create(
+    token: string,
+    options: ?ClientConfig,
+  ): Client<Request, Response> {
+    return new Client(
+      options || defaultConfig,
+      new TokenRequestFactory(token),
+      new FetchRequestPerformer(),
+      new FetchRequestParser(),
+    );
   }
 
   generateUrl(uri: string): string {
     return `${this.baseURL}/api/${this.version}/${uri}`;
   }
 
-  listResource<ResponseType>(uri: string): Promise<Array<ResponseType>> {
+  listResource<T>(uri: string): Promise<Array<T>> {
     const URL = this.generateUrl(uri);
-    return this.requestFactory.makeRequest(URL).then(parseResponse);
+    const request = this.requestFactory.createRequest(URL);
+    return this.requestPerformer
+      .performRequest(request)
+      .then(this.responseParser.parseResponse);
   }
 
-  getResource<ResponseType>(uri: string): Promise<ResponseType> {
+  getResource<T>(uri: string): Promise<T> {
     const URL = this.generateUrl(uri);
-    return this.requestFactory.makeRequest(URL).then(parseResponse);
+    const request = this.requestFactory.createRequest(URL);
+    return this.requestPerformer
+      .performRequest(request)
+      .then(this.responseParser.parseResponse);
   }
 
-  createResource<ResponseType>(
-    uri: string,
-    params: Object,
-  ): Promise<ResponseType> {
+  createResource<T>(uri: string, params: Object): Promise<T> {
     const URL = this.generateUrl(uri);
-    return this.requestFactory
-      .makeRequest(URL, 'POST', params)
-      .then(parseResponse);
+    const request = this.requestFactory.createRequest(URL, 'POST', params);
+    return this.requestPerformer
+      .performRequest(request)
+      .then(this.responseParser.parseResponse);
   }
 
-  updateResource<ResponseType>(
-    uri: string,
-    params: Object,
-  ): Promise<ResponseType> {
+  updateResource<T>(uri: string, params: Object): Promise<T> {
     const URL = this.generateUrl(uri);
-    return this.requestFactory
-      .makeRequest(URL, 'PUT', params)
-      .then(parseResponse);
+    const request = this.requestFactory.createRequest(URL, 'PUT', params);
+    return this.requestPerformer
+      .performRequest(request)
+      .then(this.responseParser.parseResponse);
   }
 
-  deleteResource<ResponseType>(uri: string): Promise<ResponseType> {
-    const URI = this.generateUrl(uri);
-    return this.requestFactory.makeRequest(URI, 'DELETE').then(parseResponse);
+  deleteResource<T>(uri: string): Promise<T> {
+    const URL = this.generateUrl(uri);
+    const request = this.requestFactory.createRequest(URL, 'DELETE');
+    return this.requestPerformer
+      .performRequest(request)
+      .then(this.responseParser.parseResponse);
   }
 
   /** */
