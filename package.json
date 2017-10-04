@@ -1,14 +1,15 @@
 {
   "name": "clubhouse-lib",
-  "version": "0.1.7",
+  "version": "0.2.0",
   "description": "A Promise based library to the Clubhouse REST API",
-  "files": ["build"],
+  "files": [
+    "build"
+  ],
   "main": "build/index.js",
   "repository": "",
   "license": "MIT",
   "scripts": {
-    "build":
-      "babel src --out-dir build --ignore '**/__tests__/**' && npm run build-flow",
+    "build": "babel src --out-dir build --ignore '**/__tests__/**' && npm run build-flow",
     "build-flow": "flow-copy-source -v -i '**/__tests__/**' src build",
     "lint": "eslint src",
     "prepublish": "npm run build",
