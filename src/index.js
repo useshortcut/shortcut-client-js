@@ -45,19 +45,19 @@ const defaultConfig = {
 /**
  * @class Client
 */
-class Client<T, U> {
+class Client<RequestType, ResponseType> {
   baseURL: string;
   version: string;
 
-  requestFactory: RequestFactory<T>;
-  requestPerformer: RequestPerformer<T, U>;
-  responseParser: ResponseParser<U>;
+  requestFactory: RequestFactory<RequestType>;
+  requestPerformer: RequestPerformer<RequestType, ResponseType>;
+  responseParser: ResponseParser<ResponseType>;
 
   constructor(
     { baseURL, version }: ClientConfig = defaultConfig,
-    requestFactory: RequestFactory<T>,
-    requestPerformer: RequestPerformer<T, U>,
-    responseParser: ResponseParser<U>,
+    requestFactory: RequestFactory<RequestType>,
+    requestPerformer: RequestPerformer<RequestType, ResponseType>,
+    responseParser: ResponseParser<ResponseType>,
   ) {
     this.baseURL = baseURL;
     this.version = version;
@@ -82,7 +82,7 @@ class Client<T, U> {
     return `${this.baseURL}/api/${this.version}/${uri}`;
   }
 
-  listResource<ResponseType>(uri: string): Promise<Array<ResponseType>> {
+  listResource<T>(uri: string): Promise<Array<T>> {
     const URL = this.generateUrl(uri);
     const request = this.requestFactory.createRequest(URL);
     return this.requestPerformer
@@ -90,7 +90,7 @@ class Client<T, U> {
       .then(this.responseParser.parseResponse);
   }
 
-  getResource<ResponseType>(uri: string): Promise<ResponseType> {
+  getResource<T>(uri: string): Promise<T> {
     const URL = this.generateUrl(uri);
     const request = this.requestFactory.createRequest(URL);
     return this.requestPerformer
@@ -98,10 +98,7 @@ class Client<T, U> {
       .then(this.responseParser.parseResponse);
   }
 
-  createResource<ResponseType>(
-    uri: string,
-    params: Object,
-  ): Promise<ResponseType> {
+  createResource<T>(uri: string, params: Object): Promise<T> {
     const URL = this.generateUrl(uri);
     const request = this.requestFactory.createRequest(URL, 'POST', params);
     return this.requestPerformer
@@ -109,10 +106,7 @@ class Client<T, U> {
       .then(this.responseParser.parseResponse);
   }
 
-  updateResource<ResponseType>(
-    uri: string,
-    params: Object,
-  ): Promise<ResponseType> {
+  updateResource<T>(uri: string, params: Object): Promise<T> {
     const URL = this.generateUrl(uri);
     const request = this.requestFactory.createRequest(URL, 'PUT', params);
     return this.requestPerformer
@@ -120,7 +114,7 @@ class Client<T, U> {
       .then(this.responseParser.parseResponse);
   }
 
-  deleteResource<ResponseType>(uri: string): Promise<ResponseType> {
+  deleteResource<T>(uri: string): Promise<T> {
     const URL = this.generateUrl(uri);
     const request = this.requestFactory.createRequest(URL, 'DELETE');
     return this.requestPerformer
