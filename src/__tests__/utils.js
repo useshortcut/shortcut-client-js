@@ -14,7 +14,15 @@ type TestRequest = {
   body?: Object,
 };
 
-type JSON = Object | Array<JSON> | number | string;
+// As per ECMA-404 spec: http://www.json.org/
+// and RFC-7159 spec: https://tools.ietf.org/html/rfc7159
+type JSON =
+  | { [keys: string]: JSON }
+  | Array<JSON>
+  | string
+  | number
+  | boolean
+  | null;
 
 type TestResponse = {
   status: number,
