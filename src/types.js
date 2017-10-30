@@ -328,3 +328,16 @@ export type Fact = {
   at: string,
   scope: string,
 };
+
+/* Teams */
+
+export type Team = {
+  created_at: string,
+  description: string,
+  id: ID,
+  name: string,
+  position: number,
+  project_ids: Array<ID>,
+  updated_at: string,
+  workflow: Workflow,
+};

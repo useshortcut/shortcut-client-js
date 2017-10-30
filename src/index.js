@@ -5,27 +5,28 @@ import FetchRequestPerformer from './FetchRequestPerformer';
 import FetchRequestParser from './FetchRequestParser';
 
 import type {
-  Project,
-  ProjectChange,
-  Story,
-  StoryChange,
-  Member,
   Epic,
   EpicChange,
-  StoryComment,
-  Task,
-  TaskChange,
-  Workflow,
-  StoryLinkChange,
-  StoryLink,
   File,
   FileChange,
+  ID,
   LinkedFile,
   LinkedFileChange,
+  Member,
+  Project,
+  ProjectChange,
   RequestFactory,
   RequestPerformer,
   ResponseParser,
-  ID,
+  Story,
+  StoryChange,
+  StoryComment,
+  StoryLink,
+  StoryLinkChange,
+  Task,
+  TaskChange,
+  Team,
+  Workflow,
 } from './types';
 
 const API_BASE_URL: string = 'https://api.clubhouse.io';
@@ -298,6 +299,16 @@ class Client<RequestType, ResponseType> {
   /** */
   deleteLinkedFile(linkedFileID: ID): Promise<{}> {
     return this.deleteResource(`linked-files/${linkedFileID}`);
+  }
+
+  /** */
+  listTeams(): Promise<Array<Team>> {
+    return this.listResource('teams');
+  }
+
+  /** */
+  getTeam(teamID: ID): Promise<Team> {
+    return this.getResource(`teams/${teamID}`);
   }
 }
 
