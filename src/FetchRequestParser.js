@@ -11,6 +11,8 @@ class FetchRequestParser implements ResponseParser<Response> {
       }
 
       return Promise.reject(new ClientError(response, json));
+    }).catch(() => {
+      return Promise.reject(new ClientError(response));
     });
 }
 
