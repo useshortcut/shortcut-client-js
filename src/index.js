@@ -91,9 +91,11 @@ class Client<RequestType, ResponseType> {
       .then(this.responseParser.parseResponse);
   }
 
-  getResource<T>(uri: string): Promise<T> {
+  getResource<T>(uri: string, params: ?Object): Promise<T> {
     const URL = this.generateUrl(uri);
-    const request = this.requestFactory.createRequest(URL);
+    const request = params
+      ? this.requestFactory.createRequest(URL, 'GET', params)
+      : this.requestFactory.createRequest(URL);
     return this.requestPerformer
       .performRequest(request)
       .then(this.responseParser.parseResponse);
