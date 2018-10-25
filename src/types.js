@@ -112,7 +112,7 @@ export type Story = {
   completed_at: string,
   completed_at_override: string,
   blocked: boolean,
-  blocker: boolean;
+  blocker: boolean,
   estimate: number,
   deadline: string,
   project_id: number,
