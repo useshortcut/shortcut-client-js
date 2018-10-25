@@ -105,18 +105,21 @@ export type Story = {
   started: boolean,
   started_at: string,
   started_at_override: string,
-  completed: string,
+  completed: boolean,
   completed_at: string,
   completed_at_override: string,
   blocked: boolean,
-  estimate: boolean,
+  blocker: boolean;
+  estimate: number,
   deadline: string,
   project_id: number,
   label: Array<Label>,
   requested_by_id: ID,
   owner_ids: Array<ID>,
+  follower_ids: Array<ID>,
   epic_id: number,
   tasks_id: Array<ID>,
+  app_url: string,
 };
 
 export type StoryChange = {
