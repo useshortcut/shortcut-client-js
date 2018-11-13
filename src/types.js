@@ -91,6 +91,8 @@ export type Label = {
 
 /* Storys */
 
+export type StoryType = 'bug' | 'chore' | 'feature';
+
 export type Story = {
   entity_type: string,
   created_at: string,
@@ -98,32 +100,36 @@ export type Story = {
   id: ID,
   external_id: string,
   name: string,
-  story_type: string,
+  story_type: StoryType,
   description: string,
+  archived: boolean,
   position: number,
   workflow_state_id: number,
   started: boolean,
   started_at: string,
   started_at_override: string,
-  completed: string,
+  completed: boolean,
   completed_at: string,
   completed_at_override: string,
   blocked: boolean,
-  estimate: boolean,
+  blocker: boolean,
+  estimate: number,
   deadline: string,
   project_id: number,
   label: Array<Label>,
   requested_by_id: ID,
   owner_ids: Array<ID>,
+  follower_ids: Array<ID>,
   epic_id: number,
   tasks_id: Array<ID>,
+  app_url: string,
 };
 
 export type StoryChange = {
   name?: string,
   created_at?: string,
   updated_at?: string,
-  archived?: string,
+  archived?: boolean,
   after_id?: number,
   before_id?: number,
   branch_ids?: Array<ID>,
@@ -133,6 +139,7 @@ export type StoryChange = {
   owner_ids?: Array<ID>,
   follower_ids?: Array<ID>,
   epic_id?: ID,
+  story_type: StoryType,
   estimate?: number,
   deadline?: string,
   labels?: Array<Label>,
