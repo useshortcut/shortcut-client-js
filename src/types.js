@@ -89,7 +89,7 @@ export type Label = {
   stats: any,
 };
 
-/* Storys */
+/* Stories */
 
 export type StoryType = 'bug' | 'chore' | 'feature';
 
