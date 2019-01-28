@@ -117,9 +117,9 @@ class Client<RequestType, ResponseType> {
       .then(this.responseParser.parseResponse);
   }
 
-  deleteResource<T>(uri: string): Promise<T> {
+  deleteResource<T>(uri: string, params?: Object): Promise<T> {
     const URL = this.generateUrl(uri);
-    const request = this.requestFactory.createRequest(URL, 'DELETE');
+    const request = this.requestFactory.createRequest(URL, 'DELETE', params);
     return this.requestPerformer
       .performRequest(request)
       .then(this.responseParser.parseResponse);
