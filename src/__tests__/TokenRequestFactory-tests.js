@@ -15,7 +15,10 @@ describe('TokenRequestFactory', () => {
           query: 'project:mobile',
         },
       );
-      expect(request.url).toEqual('https://api.clubhouse.io/beta/search/stories?query=project%3Amobile&token=abc-123');
+
+      expect(request.url).toEqual(
+        'https://api.clubhouse.io/beta/search/stories?query=project%3Amobile&token=abc-123',
+      );
       // $FlowFixMe
       expect(request.body).toBeUndefined();
     });
@@ -31,7 +34,9 @@ describe('TokenRequestFactory', () => {
           query: 'project:mobile',
         },
       );
-      expect(request.url).toEqual('https://api.clubhouse.io/beta/search/stories');
+      expect(request.url).toEqual(
+        'https://api.clubhouse.io/beta/search/stories',
+      );
       // $FlowFixMe
       expect(JSON.parse(request.body)).toEqual({
         query: 'project:mobile',
