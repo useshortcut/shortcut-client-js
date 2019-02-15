@@ -55,6 +55,7 @@
   },
   "dependencies": {
     "fetch-everywhere": "^1.0.5",
-    "query-string": "^6.2.0"
+    "query-string": "^6.2.0",
+    "universal-url": "^2.0.0"
   }
 }
