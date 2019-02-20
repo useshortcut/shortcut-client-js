@@ -30,8 +30,15 @@ type TestResponse = {
 };
 
 export class TestRequestFactory implements RequestFactory<TestRequest> {
+  baseURL: string = 'http://localhost:4001';
+  version: string = 'beta';
+
+  prefixURI(uri: string) {
+    return `${this.baseURL}/api/${this.version}/${uri}`;
+  }
+
   createRequest = (uri: string, method?: string, body?: Object) => ({
-    uri,
+    uri: this.prefixURI(uri),
     method,
     body,
   });
@@ -80,10 +87,6 @@ export const createTestClient = (
     Promise.resolve(response),
 ) =>
   new Client(
-    {
-      baseURL: 'http://localhost:4001',
-      version: 'beta',
-    },
     new TestRequestFactory(),
     new TestRequestPerformer(requestPerformer),
     new TestResponseParser(responseParser),
