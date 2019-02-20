@@ -23,6 +23,7 @@ import type {
   StoryComment,
   StoryLink,
   StoryLinkChange,
+  StorySearchResult,
   Task,
   TaskChange,
   Team,
@@ -178,6 +179,20 @@ class Client<RequestType, ResponseType> {
   /** */
   listStories(projectID: ID): Promise<Array<Story>> {
     return this.listResource(`projects/${projectID}/stories`);
+  }
+
+  /** */
+  searchStories(
+    query: String,
+    pageSize: number = 25,
+  ): Promise<StorySearchResult> {
+    return this.getResource(`search/stories`, {
+      query,
+      page_size: pageSize,
+    }).then(result => ({
+      ...result,
+      fetchNext: () => this.getResource(result.next),
+    }));
   }
 
   /** */

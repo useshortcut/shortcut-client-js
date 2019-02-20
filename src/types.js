@@ -150,6 +150,11 @@ export type StoryChange = {
   linked_file_ids?: Array<ID>,
 };
 
+export type StorySearchResult = {
+  data: Array<Story>,
+  fetchNext: () => Promise<StorySearchResult>,
+};
+
 /* Epic */
 
 export type EpicStates = 'to do' | 'in progress' | 'done';
