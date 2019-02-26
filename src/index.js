@@ -186,13 +186,20 @@ class Client<RequestType, ResponseType> {
     query: String,
     pageSize: number = 25,
   ): Promise<StorySearchResult> {
+    const processResult = result => {
+      if (result.next) {
+        return {
+          ...result,
+          fetchNext: () => this.getResource(result.next).then(processResult),
+        };
+      }
+      return result;
+    };
+
     return this.getResource(`search/stories`, {
       query,
       page_size: pageSize,
-    }).then(result => ({
-      ...result,
-      fetchNext: () => this.getResource(result.next),
-    }));
+    }).then(processResult);
   }
 
   /** */
