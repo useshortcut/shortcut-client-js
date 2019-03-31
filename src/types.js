@@ -159,13 +159,13 @@ export type LinkedFileChange = {
 
 export type StoryComment = {
   id: ID,
-  author_id: string,
+  author_id: ID,
   created_at: Date,
   entity_type: string,
   external_id: string,
-  mention_ids: string[],
+  mention_ids: Array<ID>,
   position: number,
-  story_id: number,
+  story_id: ID,
   text: string,
   updated_at: Date,
 };

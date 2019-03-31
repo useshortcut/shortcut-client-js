@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 
 const fs = require('fs');
-fs.readFile('src/index.js', 'utf8', (err, data) => {
+
+const input = 'src/index.js';
+const output = 'typings/index.d.ts';
+
+fs.readFile(input, 'utf8', (err, data) => {
   if (err) {
     return console.log(err);
   }
@@ -33,7 +37,7 @@ ${client}
 export function create(token: string, config?: any): Client
 ${types}
 `;
-    fs.writeFile('build/index.d.ts', result, 'utf8', err => {
+    fs.writeFile(output, result, 'utf8', err => {
       if (err) return console.log(err);
     });
   });

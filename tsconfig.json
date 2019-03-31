@@ -13,7 +13,5 @@
     "noEmit": true,
     "forceConsistentCasingInFileNames": true
   },
-  "files": [
-    "build/index.d.ts"
-  ]
+  "include": ["./typings/"]
 }

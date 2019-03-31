@@ -3,7 +3,8 @@
   "version": "0.5.0",
   "description": "A Promise based library to the Clubhouse REST API",
   "files": [
-    "build"
+    "build",
+    "typings"
   ],
   "main": "build/index.js",
   "repository": "",
@@ -11,14 +12,15 @@
   "scripts": {
     "build": "babel src --out-dir build --ignore '**/__tests__/**' && npm run build:flow && npm run build:typescript",
     "build:flow": "flow-copy-source -v -i '**/__tests__/**' src build",
-    "build:typescript": "scripts/generate-typescript-definition.js && tsc",
+    "build:typescript": "scripts/ts-generate-definition.js && tsc",
     "lint": "eslint src",
     "prepublish": "npm run build",
     "test": "jest",
     "test:format": "prettier --list-different --single-quote --trailing-comma all --write src/**/*.js",
+    "test:typescript": "scripts/ts-check.sh",
     "flow": "flow",
     "format": "prettier --single-quote --trailing-comma all --write src/**/*.js",
-    "ci": "npm run lint && npm run build && npm run flow && npm test && npm run test:format"
+    "ci": "npm run lint && npm run flow && npm test && npm run test:format && npm run test:typescript && npm run build"
   },
   "devDependencies": {
     "@types/node": "^10.11.3",
@@ -62,5 +64,5 @@
     "query-string": "^6.2.0",
     "universal-url": "^2.0.0"
   },
-  "typings": "build/index.d.ts"
+  "typings": "typings/index.d.ts"
 }
