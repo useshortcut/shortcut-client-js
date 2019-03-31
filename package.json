@@ -9,15 +9,16 @@
   "repository": "",
   "license": "MIT",
   "scripts": {
-    "build": "babel src --out-dir build --ignore '**/__tests__/**' && npm run build-flow && npm run build-typescript",
-    "build-flow": "flow-copy-source -v -i '**/__tests__/**' src build",
-    "build-typescript": "scripts/generate-typescript-definition.js && tsc",
+    "build": "babel src --out-dir build --ignore '**/__tests__/**' && npm run build:flow && npm run build:typescript",
+    "build:flow": "flow-copy-source -v -i '**/__tests__/**' src build",
+    "build:typescript": "scripts/generate-typescript-definition.js && tsc",
     "lint": "eslint src",
     "prepublish": "npm run build",
     "test": "jest",
+    "test:format": "prettier --list-different --single-quote --trailing-comma all --write src/**/*.js",
     "flow": "flow",
-    "prettier": "prettier --single-quote --trailing-comma all --write src/**/*.js",
-    "ci": "npm run lint && npm run build && npm run flow && npm test"
+    "format": "prettier --single-quote --trailing-comma all --write src/**/*.js",
+    "ci": "npm run lint && npm run build && npm run flow && npm test && npm run test:format"
   },
   "devDependencies": {
     "@types/node": "^10.11.3",
