@@ -15,7 +15,7 @@ _main() {
 
   if [[ "$(shasum "${definition_file}")" != "${current_checksum}" ]]; then
     echo "FAILURE: Updated typescript definition file has been generated/changed.
-Please commit the file: '${definition_file}' to fix the build."
+         Please commit the updated file '${definition_file}' to fix the build."
     exit 1
   fi
 }
