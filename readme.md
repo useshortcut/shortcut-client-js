@@ -13,7 +13,7 @@ npm install --save clubhouse-lib
 ## Usage
 
 ```javascript
-import Clubhouse from 'clubhouse-lib';
+import * as Clubhouse from 'clubhouse-lib';
 
 const client = Clubhouse.create('your token value');
 
