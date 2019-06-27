@@ -195,43 +195,146 @@ export type TaskChange = {
   external_id?: string,
 };
 
+/* Identity */
+
+export type Identity = {
+  entity_type: string,
+  name: string | null,
+  type: string | null,
+};
+
+/* PullRequest */
+
+export type PullRequest = {
+  branch_id: number,
+  closed: boolean,
+  created_at: string,
+  entity_type: string,
+  id: number,
+  num_added: number,
+  num_commits: number,
+  num_modified: number,
+  num_removed: number,
+  number: number,
+  target_branch_id: number,
+  title: string,
+  updated_at: string,
+  url: string,
+};
+
+/* Branch */
+
+export type Branch = {
+  created_at: string | null,
+  deleted: boolean,
+  entity_type: string,
+  id: number | null,
+  merged_branch_ids: Array<number>,
+  name: string,
+  persistent: boolean,
+  pull_requests: Array<PullRequest>,
+  repository_id: number | null,
+  updated_at: string | null,
+  url: string,
+};
+
+/* Comment */
+
+export type Comment = {
+  author_id: string | null,
+  created_at: string,
+  entity_type: string,
+  external_id: string | null,
+  id: number,
+  mention_ids: Array<string>,
+  position: number,
+  story_id: number,
+  text: string,
+  updated_at: string | null,
+};
+
+/* Commit */
+
+export type Commit = {
+  author_email: string,
+  author_id: string | null,
+  author_identity: Identity,
+  created_at: string,
+  entity_type: string,
+  hash: string,
+  id: number | null,
+  merged_branch_ids: Array<number>,
+  message: string,
+  repository_id: number | null,
+  timestamp: string,
+  updated_at: string | null,
+  url: string,
+};
+
+/* StoryLink */
+export type StoryLinkVerb = 'blocks' | 'duplicates' | 'relates to';
+
+export type StoryLink = {
+  id: ID,
+  created_at: string,
+  updated_at: string,
+  type: string,
+  subject_id: ID,
+  object_id: ID,
+  verb: StoryLinkVerb,
+};
+
+export type StoryLinkChange = {
+  object_id: ID,
+  verb_id: ID,
+  verb: StoryLinkVerb,
+};
+
 /* Stories */
 
 export type StoryType = 'bug' | 'chore' | 'feature';
 
-export type Story = {
-  entity_type: string,
-  created_at: string,
-  updated_at: string,
-  id: ID,
-  external_id: string,
-  name: string,
-  story_type: StoryType,
-  description: string,
+export type StorySearch = {
+  app_url: string,
   archived: boolean,
-  position: number,
-  workflow_state_id: ID,
-  started: boolean,
-  started_at: string,
-  started_at_override: string,
-  completed: boolean,
-  completed_at: string,
-  completed_at_override: string,
   blocked: boolean,
   blocker: boolean,
-  estimate: number,
+  completed_at_override: string,
+  completed_at: string,
+  completed: boolean,
+  created_at: string,
   deadline: string,
-  project_id: ID,
-  comments: Array<StoryComment>,
-  files: Array<File>,
-  labels: Array<Label>,
-  tasks: Array<Task>,
-  requested_by_id: ID,
-  owner_ids: Array<ID>,
-  follower_ids: Array<ID>,
+  description: string,
+  entity_type: string,
   epic_id: ID,
-  tasks_id: Array<ID>,
-  app_url: string,
+  estimate: number,
+  external_id: string,
+  follower_ids: Array<ID>,
+  id: ID,
+  labels: Array<Label>,
+  mention_ids: Array<ID>,
+  moved_at: ID,
+  name: string,
+  owner_ids: Array<ID>,
+  position: number,
+  project_id: ID,
+  requested_by_id: ID,
+  started_at_override: string,
+  started_at: string,
+  started: boolean,
+  story_links: Array<StoryLink>,
+  story_type: StoryType,
+  updated_at: string,
+  workflow_state_id: ID,
+};
+
+export type Story = StorySearch & {
+  branches: Array<Branch>,
+  comments: Array<Comment>,
+  commits: Array<Commit>,
+  files: Array<File>,
+  linked_files: Array<LinkedFile>,
+  tasks: Array<Task>,
 };
 
 export type StoryChange = {
@@ -258,7 +361,7 @@ export type StoryChange = {
 };
 
 export type StorySearchResult = {
-  data: Array<Story>,
+  data: Array<StorySearch>,
   next?: string,
   fetchNext: () => Promise<StorySearchResult>,
 };
@@ -332,25 +435,6 @@ export type Workflow = {
   description: string,
   name: string,
   states: Array<WorkflowState>,
-};
-
-/* StoryLink */
-export type StoryLinkVerb = 'blocks' | 'duplicates' | 'relates to';
-
-export type StoryLink = {
-  id: ID,
-  created_at: string,
-  updated_at: string,
-  type: string,
-  subject_id: ID,
-  object_id: ID,
-  verb: StoryLinkVerb,
-};
-
-export type StoryLinkChange = {
-  object_id: ID,
-  verb_id: ID,
-  verb: StoryLinkVerb,
 };
 
 /* Milestones */
