@@ -23,6 +23,7 @@ import type {
   StoryComment,
   StoryLink,
   StoryLinkChange,
+  StorySearchResult,
   Task,
   TaskChange,
   Team,
@@ -45,23 +46,17 @@ const defaultConfig = {
 
 /**
  * @class Client
-*/
+ */
 class Client<RequestType, ResponseType> {
-  baseURL: string;
-  version: string;
-
   requestFactory: RequestFactory<RequestType>;
   requestPerformer: RequestPerformer<RequestType, ResponseType>;
   responseParser: ResponseParser<ResponseType>;
 
   constructor(
-    { baseURL, version }: ClientConfig = defaultConfig,
     requestFactory: RequestFactory<RequestType>,
     requestPerformer: RequestPerformer<RequestType, ResponseType>,
     responseParser: ResponseParser<ResponseType>,
   ) {
-    this.baseURL = baseURL;
-    this.version = version;
     this.requestFactory = requestFactory;
     this.requestPerformer = requestPerformer;
     this.responseParser = responseParser;
@@ -69,55 +64,48 @@ class Client<RequestType, ResponseType> {
   /** */
   static create(
     token: string,
-    options: ?ClientConfig,
+    config?: ClientConfig = defaultConfig,
   ): Client<Request, Response> {
+    const { baseURL, version } = config;
     return new Client(
-      options || defaultConfig,
-      new TokenRequestFactory(token),
+      new TokenRequestFactory(token, baseURL, version),
       new FetchRequestPerformer(),
       new FetchRequestParser(),
     );
   }
 
-  generateUrl(uri: string): string {
-    return `${this.baseURL}/api/${this.version}/${uri}`;
-  }
-
   listResource<T>(uri: string): Promise<Array<T>> {
-    const URL = this.generateUrl(uri);
-    const request = this.requestFactory.createRequest(URL);
+    const request = this.requestFactory.createRequest(uri);
     return this.requestPerformer
       .performRequest(request)
       .then(this.responseParser.parseResponse);
   }
 
-  getResource<T>(uri: string): Promise<T> {
-    const URL = this.generateUrl(uri);
-    const request = this.requestFactory.createRequest(URL);
+  getResource<T>(uri: string, params: ?Object): Promise<T> {
+    const request = params
+      ? this.requestFactory.createRequest(uri, 'GET', params)
+      : this.requestFactory.createRequest(uri);
     return this.requestPerformer
       .performRequest(request)
       .then(this.responseParser.parseResponse);
   }
 
   createResource<T>(uri: string, params: Object): Promise<T> {
-    const URL = this.generateUrl(uri);
-    const request = this.requestFactory.createRequest(URL, 'POST', params);
+    const request = this.requestFactory.createRequest(uri, 'POST', params);
     return this.requestPerformer
       .performRequest(request)
       .then(this.responseParser.parseResponse);
   }
 
   updateResource<T>(uri: string, params: Object): Promise<T> {
-    const URL = this.generateUrl(uri);
-    const request = this.requestFactory.createRequest(URL, 'PUT', params);
+    const request = this.requestFactory.createRequest(uri, 'PUT', params);
     return this.requestPerformer
       .performRequest(request)
       .then(this.responseParser.parseResponse);
   }
 
-  deleteResource<T>(uri: string): Promise<T> {
-    const URL = this.generateUrl(uri);
-    const request = this.requestFactory.createRequest(URL, 'DELETE');
+  deleteResource<T>(uri: string, params?: Object): Promise<T> {
+    const request = this.requestFactory.createRequest(uri, 'DELETE', params);
     return this.requestPerformer
       .performRequest(request)
       .then(this.responseParser.parseResponse);
@@ -191,6 +179,23 @@ class Client<RequestType, ResponseType> {
   /** */
   listStories(projectID: ID): Promise<Array<Story>> {
     return this.listResource(`projects/${projectID}/stories`);
+  }
+
+  /** */
+  searchStories(query: String, pageSize?: number): Promise<StorySearchResult> {
+    const processResult = result => {
+      if (result.next) {
+        return {
+          ...result,
+          fetchNext: () => this.getResource(result.next).then(processResult),
+        };
+      }
+      return result;
+    };
+    return this.getResource(`search/stories`, {
+      query,
+      page_size: pageSize || 25,
+    }).then(processResult);
   }
 
   /** */

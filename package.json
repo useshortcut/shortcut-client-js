@@ -1,23 +1,29 @@
 {
   "name": "clubhouse-lib",
-  "version": "0.2.1",
+  "version": "0.6.0",
   "description": "A Promise based library to the Clubhouse REST API",
   "files": [
-    "build"
+    "build",
+    "typings"
   ],
   "main": "build/index.js",
   "repository": "",
   "license": "MIT",
   "scripts": {
-    "build": "babel src --out-dir build --ignore '**/__tests__/**' && npm run build-flow",
-    "build-flow": "flow-copy-source -v -i '**/__tests__/**' src build",
+    "build": "babel src --out-dir build --ignore '**/__tests__/**' && npm run build:flow && npm run build:typescript",
+    "build:flow": "flow-copy-source -v -i '**/__tests__/**' src build",
+    "build:typescript": "scripts/ts-generate-definition.js && tsc",
     "lint": "eslint src",
     "prepublish": "npm run build",
     "test": "jest",
+    "test:format": "prettier --list-different --single-quote --trailing-comma all --write src/**/*.js",
+    "test:typescript": "scripts/ts-check.sh",
     "flow": "flow",
-    "ci": "npm run lint && npm run flow && npm test"
+    "format": "prettier --single-quote --trailing-comma all --write src/**/*.js",
+    "ci": "npm run lint && npm run flow && npm test && npm run test:format && npm run test:typescript && npm run build"
   },
   "devDependencies": {
+    "@types/node": "^10.11.3",
     "babel-cli": "^6.26.0",
     "babel-eslint": "^8.0.1",
     "babel-plugin-transform-flow-strip-types": "^6.22.0",
@@ -41,8 +47,9 @@
     "flow-bin": "^0.55.0",
     "flow-copy-source": "^1.2.1",
     "jest": "^21.2.0",
-    "prettier": "^1.7.1",
-    "save": "^2.3.1"
+    "prettier": "^1.16.4",
+    "save": "^2.3.1",
+    "typescript": "^3.4.0"
   },
   "jest": {
     "testEnvironment": "node",
@@ -53,6 +60,9 @@
     ]
   },
   "dependencies": {
-    "fetch-everywhere": "^1.0.5"
-  }
+    "fetch-everywhere": "^1.0.5",
+    "query-string": "^6.2.0",
+    "universal-url": "^2.0.0"
+  },
+  "typings": "typings/index.d.ts"
 }
