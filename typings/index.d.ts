@@ -340,7 +340,7 @@ export type StoryLinkChange = {
 
 export type StoryType = 'bug' | 'chore' | 'feature';
 
-export type StorySearch = {
+export type StorySlim = {
   app_url: string;
   archived: boolean;
   blocked: boolean;
@@ -374,7 +374,7 @@ export type StorySearch = {
   workflow_state_id: ID;
 };
 
-export type Story = StorySearch & {
+export type Story = StorySlim & {
   branches: Array<Branch>;
   comments: Array<Comment>;
   commits: Array<Commit>;
@@ -407,7 +407,7 @@ export type StoryChange = {
 };
 
 export type StorySearchResult = {
-  data: Array<StorySearch>;
+  data: Array<StorySlim>;
   next: null | string;
   fetchNext: () => Promise<StorySearchResult>;
 };
