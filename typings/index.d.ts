@@ -57,7 +57,7 @@ export interface Entity {
 export interface RequestFactory<T> {
   baseURL: string;
   version: string;
-  createRequest(uri: string, method: null | string, body?: Object): T;
+  createRequest(uri: string, method?: string, body?: Object): T;
   prefixURI(uri: string): string;
 }
 
@@ -90,9 +90,9 @@ export type Member = {
   disabled: boolean;
   profile: Profile;
   overrides: {
-    email_address: null | string;
-    gravatar_hash: null | string;
-    display_icon: null | string;
+    email_address?: string;
+    gravatar_hash?: string;
+    display_icon?: string;
   };
 };
 
@@ -102,7 +102,7 @@ export type Project = {
   id: ID;
   name: string;
   entity_type: string;
-  description: null | string;
+  description: string | null;
   abbreviation: string;
   color: string;
   iteration_length: number;
@@ -140,8 +140,8 @@ export type Label = {
   created_at: string;
   updated_at: string;
   name: string;
-  color: null | string;
-  external_id: null | string;
+  color: string | null;
+  external_id: string | null;
   stats: any;
 };
 
@@ -225,8 +225,8 @@ export type Task = {
   completed: boolean;
   completed_at: string;
   description: string;
-  external_id: null | string;
-  mention_ids: null | Array<ID>;
+  external_id: string | null;
+  mention_ids: Array<ID> | null;
   story_id: ID;
   position: number;
 };
@@ -245,8 +245,8 @@ export type TaskChange = {
 
 export type Identity = {
   entity_type: string;
-  name: null | string;
-  type: null | string;
+  name: string | null;
+  type: string | null;
 };
 
 /* PullRequest */
@@ -258,8 +258,8 @@ export type PullRequest = {
   entity_type: string;
   id: number;
   num_added: number;
-  num_commits: null | number;
-  num_modified: null | number;
+  num_commits: number | null;
+  num_modified: number | null;
   num_removed: number;
   number: number;
   target_branch_id: number;
@@ -271,49 +271,49 @@ export type PullRequest = {
 /* Branch */
 
 export type Branch = {
-  created_at: null | string;
+  created_at: string | null;
   deleted: boolean;
   entity_type: string;
-  id: null | number;
+  id: number | null;
   merged_branch_ids: Array<number>;
   name: string;
   persistent: boolean;
   pull_requests: Array<PullRequest>;
-  repository_id: null | number;
-  updated_at: null | string;
+  repository_id: number | null;
+  updated_at: string | null;
   url: string;
 };
 
 /* Comment */
 
 export type Comment = {
-  author_id: null | string;
+  author_id: string | null;
   created_at: string;
   entity_type: string;
-  external_id: null | string;
+  external_id: string | null;
   id: number;
   mention_ids: Array<string>;
   position: number;
   story_id: number;
   text: string;
-  updated_at: null | string;
+  updated_at: string | null;
 };
 
 /* Commit */
 
 export type Commit = {
   author_email: string;
-  author_id: null | string;
+  author_id: string | null;
   author_identity: Identity;
   created_at: string;
   entity_type: string;
   hash: string;
-  id: null | number;
+  id: number | null;
   merged_branch_ids: Array<number>;
   message: string;
-  repository_id: null | number;
+  repository_id: number | null;
   timestamp: string;
-  updated_at: null | string;
+  updated_at: string | null;
   url: string;
 };
 
@@ -345,32 +345,32 @@ export type StorySlim = {
   archived: boolean;
   blocked: boolean;
   blocker: boolean;
-  completed_at_override: null | string;
-  completed_at: null | string;
+  completed_at_override: string | null;
+  completed_at: string | null;
   completed: boolean;
   created_at: string;
-  deadline: null | string;
+  deadline: string | null;
   description: string;
   entity_type: string;
-  epic_id: null | ID;
-  estimate: null | number;
-  external_id: null | string;
+  epic_id: ID | null;
+  estimate: number | null;
+  external_id: string | null;
   follower_ids: Array<ID>;
   id: ID;
   labels: Array<Label>;
   mention_ids: Array<ID>;
-  moved_at: null | ID;
+  moved_at: ID | null;
   name: string;
   owner_ids: Array<ID>;
   position: number;
   project_id: ID;
   requested_by_id: ID;
-  started_at_override: null | string;
-  started_at: null | string;
+  started_at_override: string | null;
+  started_at: string | null;
   started: boolean;
   story_links: Array<StoryLink>;
   story_type: StoryType;
-  updated_at: null | string;
+  updated_at: string | null;
   workflow_state_id: ID;
 };
 
@@ -408,7 +408,7 @@ export type StoryChange = {
 
 export type StorySearchResult = {
   data: Array<StorySlim>;
-  next: null | string;
+  next: string | null;
   fetchNext: () => Promise<StorySearchResult>;
 };
 
@@ -419,7 +419,7 @@ export type EpicStates = 'to do' | 'in progress' | 'done';
 export type Epic = {
   entity_type: string;
   id: ID;
-  external_id: null | string;
+  external_id: string | null;
   name: string;
   description: string;
   created_at: string;
@@ -427,14 +427,14 @@ export type Epic = {
   deadline: string;
   state: EpicStates;
   position: number;
-  archived: null | string;
+  archived: string | null;
   started: boolean;
   started_at: string;
   started_at_override: string;
   completed: boolean;
-  completed_at: null | string;
-  completed_at_override: null | string;
-  milestone_id: null | string;
+  completed_at: string | null;
+  completed_at_override: string | null;
+  milestone_id: string | null;
   follower_ids: Array<ID>;
   owner_ids: Array<ID>;
   project_ids: Array<ID>;

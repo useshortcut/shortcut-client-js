@@ -39,8 +39,12 @@ fs.readFile(clientFile, 'utf8', (err, data) => {
           return block;
         }
         const nullableBlock = block.split('\n')
-          .map(line => line.replace('?: ', ': null | '))
-          .join('\n');
+          .map(line => {
+            return line.replace(
+              /^ {2}([a-zA-Z0-9_$]+)\?: ([a-zA-Z0-9_$<>]+)/,
+              '  $1: $2 | null',
+            );
+          }).join('\n');
         return nullableBlock;
       }).join('\n\n')
 
