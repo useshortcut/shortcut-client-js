@@ -245,8 +245,8 @@ export type TaskChange = {
 
 export type Identity = {
   entity_type: string;
-  name: string | null;
-  type: string | null;
+  name?: string;
+  type?: string;
 };
 
 /* PullRequest */
@@ -258,8 +258,8 @@ export type PullRequest = {
   entity_type: string;
   id: number;
   num_added: number;
-  num_commits: number;
-  num_modified: number;
+  num_commits?: number;
+  num_modified?: number;
   num_removed: number;
   number: number;
   target_branch_id: number;
@@ -271,49 +271,49 @@ export type PullRequest = {
 /* Branch */
 
 export type Branch = {
-  created_at: string | null;
+  created_at?: string;
   deleted: boolean;
   entity_type: string;
-  id: number | null;
+  id?: number;
   merged_branch_ids: Array<number>;
   name: string;
   persistent: boolean;
   pull_requests: Array<PullRequest>;
-  repository_id: number | null;
-  updated_at: string | null;
+  repository_id?: number;
+  updated_at?: string;
   url: string;
 };
 
 /* Comment */
 
 export type Comment = {
-  author_id: string | null;
+  author_id?: string;
   created_at: string;
   entity_type: string;
-  external_id: string | null;
+  external_id?: string;
   id: number;
   mention_ids: Array<string>;
   position: number;
   story_id: number;
   text: string;
-  updated_at: string | null;
+  updated_at?: string;
 };
 
 /* Commit */
 
 export type Commit = {
   author_email: string;
-  author_id: string | null;
+  author_id?: string;
   author_identity: Identity;
   created_at: string;
   entity_type: string;
   hash: string;
-  id: number | null;
+  id?: number;
   merged_branch_ids: Array<number>;
   message: string;
-  repository_id: number | null;
+  repository_id?: number;
   timestamp: string;
-  updated_at: string | null;
+  updated_at?: string;
   url: string;
 };
 
