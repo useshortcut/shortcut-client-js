@@ -33,12 +33,23 @@ fs.readFile(clientFile, 'utf8', (err, data) => {
         .replace(': ?', '?: ')
       ).join('\n');
 
+    const nullableTypes = types.split('\n\n')
+      .map(block => {
+        if (block.includes('Change = {')) {
+          return block;
+        }
+        const nullableBlock = block.split('\n')
+          .map(line => line.replace('?: ', ': null | '))
+          .join('\n');
+        return nullableBlock;
+      }).join('\n\n')
+
     const result = `export default class Client {
 ${clientMethods}
 }
 
 export function create(token: string, config?: any): Client
-${types}
+${nullableTypes}
 `;
     fs.writeFile(output, result, 'utf8', err => {
       if (err) {

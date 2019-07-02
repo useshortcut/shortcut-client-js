@@ -57,7 +57,7 @@ export interface Entity {
 export interface RequestFactory<T> {
   baseURL: string;
   version: string;
-  createRequest(uri: string, method?: string, body?: Object): T;
+  createRequest(uri: string, method: null | string, body?: Object): T;
   prefixURI(uri: string): string;
 }
 
@@ -90,9 +90,9 @@ export type Member = {
   disabled: boolean;
   profile: Profile;
   overrides: {
-    email_address?: string;
-    gravatar_hash?: string;
-    display_icon?: string;
+    email_address: null | string;
+    gravatar_hash: null | string;
+    display_icon: null | string;
   };
 };
 
@@ -102,7 +102,7 @@ export type Project = {
   id: ID;
   name: string;
   entity_type: string;
-  description?: string;
+  description: null | string;
   abbreviation: string;
   color: string;
   iteration_length: number;
@@ -140,8 +140,8 @@ export type Label = {
   created_at: string;
   updated_at: string;
   name: string;
-  color?: string;
-  external_id?: string;
+  color: null | string;
+  external_id: null | string;
   stats: any;
 };
 
@@ -225,8 +225,8 @@ export type Task = {
   completed: boolean;
   completed_at: string;
   description: string;
-  external_id?: string;
-  mention_ids?: Array<ID>;
+  external_id: null | string;
+  mention_ids: null | Array<ID>;
   story_id: ID;
   position: number;
 };
@@ -245,8 +245,8 @@ export type TaskChange = {
 
 export type Identity = {
   entity_type: string;
-  name?: string;
-  type?: string;
+  name: null | string;
+  type: null | string;
 };
 
 /* PullRequest */
@@ -258,8 +258,8 @@ export type PullRequest = {
   entity_type: string;
   id: number;
   num_added: number;
-  num_commits?: number;
-  num_modified?: number;
+  num_commits: null | number;
+  num_modified: null | number;
   num_removed: number;
   number: number;
   target_branch_id: number;
@@ -271,49 +271,49 @@ export type PullRequest = {
 /* Branch */
 
 export type Branch = {
-  created_at?: string;
+  created_at: null | string;
   deleted: boolean;
   entity_type: string;
-  id?: number;
+  id: null | number;
   merged_branch_ids: Array<number>;
   name: string;
   persistent: boolean;
   pull_requests: Array<PullRequest>;
-  repository_id?: number;
-  updated_at?: string;
+  repository_id: null | number;
+  updated_at: null | string;
   url: string;
 };
 
 /* Comment */
 
 export type Comment = {
-  author_id?: string;
+  author_id: null | string;
   created_at: string;
   entity_type: string;
-  external_id?: string;
+  external_id: null | string;
   id: number;
   mention_ids: Array<string>;
   position: number;
   story_id: number;
   text: string;
-  updated_at?: string;
+  updated_at: null | string;
 };
 
 /* Commit */
 
 export type Commit = {
   author_email: string;
-  author_id?: string;
+  author_id: null | string;
   author_identity: Identity;
   created_at: string;
   entity_type: string;
   hash: string;
-  id?: number;
+  id: null | number;
   merged_branch_ids: Array<number>;
   message: string;
-  repository_id?: number;
+  repository_id: null | number;
   timestamp: string;
-  updated_at?: string;
+  updated_at: null | string;
   url: string;
 };
 
@@ -408,7 +408,7 @@ export type StoryChange = {
 
 export type StorySearchResult = {
   data: Array<StorySearch>;
-  next?: string;
+  next: null | string;
   fetchNext: () => Promise<StorySearchResult>;
 };
 
@@ -419,7 +419,7 @@ export type EpicStates = 'to do' | 'in progress' | 'done';
 export type Epic = {
   entity_type: string;
   id: ID;
-  external_id?: string;
+  external_id: null | string;
   name: string;
   description: string;
   created_at: string;
@@ -427,14 +427,14 @@ export type Epic = {
   deadline: string;
   state: EpicStates;
   position: number;
-  archived?: string;
+  archived: null | string;
   started: boolean;
   started_at: string;
   started_at_override: string;
   completed: boolean;
-  completed_at?: string;
-  completed_at_override?: string;
-  milestone_id?: string;
+  completed_at: null | string;
+  completed_at_override: null | string;
+  milestone_id: null | string;
   follower_ids: Array<ID>;
   owner_ids: Array<ID>;
   project_ids: Array<ID>;
