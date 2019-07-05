@@ -29,7 +29,6 @@ import type {
   Team,
   Workflow,
   Iteration,
-  IterationStats,
   IterationChange,
 } from './types';
 
@@ -336,10 +335,10 @@ class Client<RequestType, ResponseType> {
 
   /** */
   updateIteration(
-      storyID: ID,
-      iterationID: ID,
-      params: IterationChange
-    ): Promise<Iteration> {
+    storyID: ID,
+    iterationID: ID,
+    params: IterationChange
+  ): Promise<Iteration> {
     return this.updateResource(`iterations/${iterationID}`, params);
   }
 
