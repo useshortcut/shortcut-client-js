@@ -337,7 +337,7 @@ class Client<RequestType, ResponseType> {
   updateIteration(
     storyID: ID,
     iterationID: ID,
-    params: IterationChange
+    params: IterationChange,
   ): Promise<Iteration> {
     return this.updateResource(`iterations/${iterationID}`, params);
   }
