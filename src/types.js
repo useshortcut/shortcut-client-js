@@ -384,6 +384,20 @@ export type Team = {
 };
 
 /* Iterations */
+
+export type IterationStats = {
+  average_cycle_time: number,
+  average_lead_time: number,
+  num_points: number,
+  num_points_done: number,
+  num_points_started: number,
+  num_points_unstarted: number,
+  num_stories_done: number,
+  num_stories_started: number,
+  num_stories_unestimated: number,
+  num_stories_unstarted: number,
+};
+
 export type Iteration = {
   created_at: string,
   updated_at: string,
@@ -397,19 +411,6 @@ export type Iteration = {
   follower_ids: Array<ID>,
   mention_ids: Array<ID>,
   stats: IterationStats,
-};
-
-export type IterationStats = {
-  average_cycle_time: number,
-  average_lead_time: number,
-  num_points: number,
-  num_points_done: number,
-  num_points_started: number,
-  num_points_unstarted: number,
-  num_stories_done: number,
-  num_stories_started: number,
-  num_stories_unestimated: number,
-  num_stories_unstarted: number
 };
 
 export type IterationChange = {
