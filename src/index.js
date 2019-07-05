@@ -28,6 +28,9 @@ import type {
   TaskChange,
   Team,
   Workflow,
+  Iteration,
+  IterationStats,
+  IterationChange,
 } from './types';
 
 const API_BASE_URL: string = 'https://api.clubhouse.io';
@@ -314,6 +317,31 @@ class Client<RequestType, ResponseType> {
   /** */
   getTeam(teamID: ID): Promise<Team> {
     return this.getResource(`teams/${teamID}`);
+  }
+
+  /** */
+  listIterations(): Promise<Array<Iteration>> {
+    return this.listResource(`iterations`);
+  }
+
+  /** */
+  createIteration(storyID: ID, params: IterationChange): Promise<Iteration> {
+    return this.createResource(`iterations`, params);
+  }
+
+  /** */
+  getIteration(storyID: ID, iterationID: ID): Promise<Iteration> {
+    return this.getResource(`iterations/${iterationID}`);
+  }
+
+  /** */
+  updateIteration(storyID: ID, iterationID: ID, params: IterationChange): Promise<Iteration> {
+    return this.updateResource(`iterations/${iterationID}`, params);
+  }
+
+  /** */
+  deleteIteration(storyID: ID, iterationID: ID): Promise<{}> {
+    return this.deleteResource(`iterations/${iterationID}`);
   }
 }
 
