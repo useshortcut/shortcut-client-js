@@ -41,6 +41,11 @@ export default class Client {
   deleteLinkedFile(linkedFileID: ID): Promise<{}>
   listTeams(): Promise<Array<Team>>
   getTeam(teamID: ID): Promise<Team>
+  listIterations(): Promise<Array<Iteration>>
+  createIteration(storyID: ID, params: IterationChange): Promise<Iteration>
+  getIteration(storyID: ID, iterationID: ID): Promise<Iteration>
+  updateIteration(storyID: ID, iterationID: ID, params: IterationChange): Promise<Iteration>
+  deleteIteration(storyID: ID, iterationID: ID): Promise<{}>
 }
 
 export function create(token: string, config?: any): Client
@@ -427,5 +432,42 @@ export type Team = {
   project_ids: Array<ID>;
   updated_at: string;
   workflow: Workflow;
+};
+
+/* Iterations */
+export type Iteration = {
+  created_at: string;
+  updated_at: string;
+  start_date: string;
+  end_date: string;
+  description: string;
+  id: ID;
+  name: string;
+  entity_type: string;
+  status: string;
+  follower_ids: Array<ID>;
+  mention_ids: Array<ID>;
+  stats: IterationStats;
+};
+
+export type IterationStats = {
+  average_cycle_time: number;
+  average_lead_time: number;
+  num_points: number;
+  num_points_done: number;
+  num_points_started: number;
+  num_points_unstarted: number;
+  num_stories_done: number;
+  num_stories_started: number;
+  num_stories_unestimated: number;
+  num_stories_unstarted: number
+};
+
+export type IterationChange = {
+  name?: string;
+  description?: string;
+  start_date?: string;
+  end_date?: string;
+  follower_ids?: Array<ID>;
 };
 
