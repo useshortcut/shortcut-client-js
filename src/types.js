@@ -398,6 +398,8 @@ export type IterationStats = {
   num_stories_unstarted: number,
 };
 
+export type IterationStatus = 'unstarted' | 'started' | 'done';
+
 export type Iteration = {
   created_at: string,
   updated_at: string,
@@ -407,7 +409,7 @@ export type Iteration = {
   id: ID,
   name: string,
   entity_type: string,
-  status: string,
+  status: IterationStatus,
   follower_ids: Array<ID>,
   mention_ids: Array<ID>,
   stats: IterationStats,
