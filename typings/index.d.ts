@@ -42,10 +42,10 @@ export default class Client {
   listTeams(): Promise<Array<Team>>
   getTeam(teamID: ID): Promise<Team>
   listIterations(): Promise<Array<Iteration>>
-  createIteration(storyID: ID, params: IterationChange): Promise<Iteration>
-  getIteration(storyID: ID, iterationID: ID): Promise<Iteration>
-  updateIteration(storyID: ID, iterationID: ID, params: IterationChange): Promise<Iteration>
-  deleteIteration(storyID: ID, iterationID: ID): Promise<{}>
+  createIteration(params: IterationChange): Promise<Iteration>
+  getIteration(iterationID: ID): Promise<Iteration>
+  updateIteration(iterationID: ID, params: IterationChange): Promise<Iteration>
+  deleteIteration(iterationID: ID): Promise<{}>
 }
 
 export function create(token: string, config?: any): Client
@@ -281,6 +281,7 @@ export type Story = {
   owner_ids: Array<ID>;
   follower_ids: Array<ID>;
   epic_id: ID;
+  iteration_id: ID;
   tasks_id: Array<ID>;
   app_url: string;
 };
@@ -300,6 +301,7 @@ export type StoryChange = {
   owner_ids?: Array<ID>;
   follower_ids?: Array<ID>;
   epic_id?: ID;
+  iteration_id?: ID;
   story_type: StoryType;
   estimate?: number;
   deadline?: string;
@@ -435,20 +437,6 @@ export type Team = {
 };
 
 /* Iterations */
-export type Iteration = {
-  created_at: string;
-  updated_at: string;
-  start_date: string;
-  end_date: string;
-  description: string;
-  id: ID;
-  name: string;
-  entity_type: string;
-  status: string;
-  follower_ids: Array<ID>;
-  mention_ids: Array<ID>;
-  stats: IterationStats;
-};
 
 export type IterationStats = {
   average_cycle_time: number;
@@ -460,7 +448,24 @@ export type IterationStats = {
   num_stories_done: number;
   num_stories_started: number;
   num_stories_unestimated: number;
-  num_stories_unstarted: number
+  num_stories_unstarted: number;
+};
+
+export type IterationStatus = 'unstarted' | 'started' | 'done';
+
+export type Iteration = {
+  created_at: string;
+  updated_at: string;
+  start_date: string;
+  end_date: string;
+  description: string;
+  id: ID;
+  name: string;
+  entity_type: string;
+  status: IterationStatus;
+  follower_ids: Array<ID>;
+  mention_ids: Array<ID>;
+  stats: IterationStats;
 };
 
 export type IterationChange = {
