@@ -324,18 +324,17 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
-  createIteration(storyID: ID, params: IterationChange): Promise<Iteration> {
+  createIteration(params: IterationChange): Promise<Iteration> {
     return this.createResource(`iterations`, params);
   }
 
   /** */
-  getIteration(storyID: ID, iterationID: ID): Promise<Iteration> {
+  getIteration(iterationID: ID): Promise<Iteration> {
     return this.getResource(`iterations/${iterationID}`);
   }
 
   /** */
   updateIteration(
-    storyID: ID,
     iterationID: ID,
     params: IterationChange,
   ): Promise<Iteration> {
@@ -343,7 +342,7 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
-  deleteIteration(storyID: ID, iterationID: ID): Promise<{}> {
+  deleteIteration(iterationID: ID): Promise<{}> {
     return this.deleteResource(`iterations/${iterationID}`);
   }
 }

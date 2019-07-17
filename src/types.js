@@ -230,6 +230,7 @@ export type Story = {
   owner_ids: Array<ID>,
   follower_ids: Array<ID>,
   epic_id: ID,
+  iteration_id: ID,
   tasks_id: Array<ID>,
   app_url: string,
 };
@@ -249,6 +250,7 @@ export type StoryChange = {
   owner_ids?: Array<ID>,
   follower_ids?: Array<ID>,
   epic_id?: ID,
+  iteration_id?: ID,
   story_type: StoryType,
   estimate?: number,
   deadline?: string,
