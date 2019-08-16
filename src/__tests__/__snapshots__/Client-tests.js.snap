@@ -12,6 +12,16 @@ Array [
 ]
 `;
 
+exports[`#Client .deleteComment deletes a existing comment 1`] = `
+Array [
+  Object {
+    "body": undefined,
+    "method": "DELETE",
+    "uri": "http://localhost:4001/api/beta/stories/5/comments/3",
+  },
+]
+`;
+
 exports[`#Client .deleteProject deletes a existing project 1`] = `
 Array [
   Object {
