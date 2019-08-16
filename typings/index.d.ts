@@ -24,6 +24,7 @@ export default class Client {
   updateStory(storyID: ID, params: StoryChange): Promise<Story>
   deleteStory(storyID: ID): Promise<{}>
   createStoryComment(storyID: ID, text: string): Promise<StoryComment>
+  deleteStoryComment(storyID: ID, commentID: ID): Promise<{}>
   listTasks(storyID: ID): Promise<Array<Task>>
   createTask(storyID: ID, params: TaskChange): Promise<Task>
   getTask(storyID: ID, taskID: ID): Promise<Task>

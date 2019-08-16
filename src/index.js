@@ -226,6 +226,11 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
+  deleteStoryComment(storyID: ID, commentID: ID): Promise<{}> {
+    return this.deleteResource(`stories/${storyID}/comments/${commentID}`);
+  }
+
+  /** */
   listTasks(storyID: ID): Promise<Array<Task>> {
     return this.listResource(`stories/${storyID}/tasks`);
   }
