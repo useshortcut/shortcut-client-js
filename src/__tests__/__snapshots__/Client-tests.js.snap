@@ -52,7 +52,7 @@ Array [
 ]
 `;
 
-exports[`#Client .updateComment updatee a existing comment 1`] = `
+exports[`#Client .updateComment update a existing comment 1`] = `
 Array [
   Object {
     "body": Object {
