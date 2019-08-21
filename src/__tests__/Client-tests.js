@@ -92,4 +92,21 @@ describe('#Client', () => {
       expect(requests).toMatchSnapshot();
     });
   });
+
+  describe('.updateComment', () => {
+    it('update a existing comment', async () => {
+      const requests = [];
+      const client = createTestClient(request => {
+        requests.push(request);
+        return Promise.resolve({
+          status: 200,
+          body: { text: 'this is a test comment' },
+        });
+      });
+
+      await client.updateStoryComment(12, 5, 'this is a test comment');
+
+      expect(requests).toMatchSnapshot();
+    });
+  });
 });

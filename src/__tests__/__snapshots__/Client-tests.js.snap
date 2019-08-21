@@ -52,6 +52,18 @@ Array [
 ]
 `;
 
+exports[`#Client .updateComment updatee a existing comment 1`] = `
+Array [
+  Object {
+    "body": Object {
+      "text": "this is a test comment",
+    },
+    "method": "PUT",
+    "uri": "http://localhost:4001/api/beta/stories/12/comments/5",
+  },
+]
+`;
+
 exports[`#Client .updateProject updates a existing project 1`] = `
 Array [
   Object {
