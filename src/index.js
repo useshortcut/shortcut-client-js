@@ -236,7 +236,9 @@ class Client<RequestType, ResponseType> {
     commentID: ID,
     text: string,
   ): Promise<StoryComment> {
-    return this.updateResource(`stories/${storyID}/comments/${commentID}`, { text });
+    return this.updateResource(`stories/${storyID}/comments/${commentID}`, {
+      text,
+    });
   }
 
   /** */
