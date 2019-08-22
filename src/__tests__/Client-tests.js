@@ -78,4 +78,18 @@ describe('#Client', () => {
       expect(requests).toMatchSnapshot();
     });
   });
+
+  describe('.deleteComment', () => {
+    it('deletes a existing comment', async () => {
+      const requests = [];
+      const client = createTestClient(request => {
+        requests.push(request);
+        return Promise.resolve({ status: 200, body: {} });
+      });
+
+      await client.deleteStoryComment(5, 3);
+
+      expect(requests).toMatchSnapshot();
+    });
+  });
 });
