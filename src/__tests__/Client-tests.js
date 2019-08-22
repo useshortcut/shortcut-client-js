@@ -109,4 +109,60 @@ describe('#Client', () => {
       expect(requests).toMatchSnapshot();
     });
   });
+
+  describe('.addReaction', () => {
+    it('add a reaction to story', async () => {
+      const requests = [];
+      const client = createTestClient(request => {
+        requests.push(request);
+        return Promise.resolve({ status: 200, body: {} });
+      });
+
+      await client.addReaction(1, 5, ':happy');
+
+      expect(requests).toMatchSnapshot();
+    });
+  });
+
+  describe('.deleteReaction', () => {
+    it('deletes a reaction in story', async () => {
+      const requests = [];
+      const client = createTestClient(request => {
+        requests.push(request);
+        return Promise.resolve({ status: 200, body: {} });
+      });
+
+      await client.deleteReaction(1, 5, ':happy');
+
+      expect(requests).toMatchSnapshot();
+    });
+  });
+
+  describe('.createLabel', () => {
+    it('create a label', async () => {
+      const requests = [];
+      const client = createTestClient(request => {
+        requests.push(request);
+        return Promise.resolve({ status: 200, body: {} });
+      });
+
+      await client.createLabel('sup', 'fff');
+
+      expect(requests).toMatchSnapshot();
+    });
+  });
+
+  describe('.listLabels', () => {
+    it('list all labels', async () => {
+      const requests = [];
+      const client = createTestClient(request => {
+        requests.push(request);
+        return Promise.resolve({ status: 200, body: {} });
+      });
+
+      await client.listLabels();
+
+      expect(requests).toMatchSnapshot();
+    });
+  });
 });

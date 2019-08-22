@@ -17,6 +17,8 @@ export default class Client {
   createEpic(params: EpicChange): Promise<Epic>
   updateEpic(epicID: ID, params: EpicChange): Promise<Epic>
   deleteEpic(epicID: ID): Promise<{}>
+  addReaction(storyId: UUID, commentId: UUID, emoji: string): Promise<void>
+  deleteReaction(storyId: UUID, commentId: UUID, emoji: string): Promise<void>
   listStories(projectID: ID): Promise<Array<Story>>
   searchStories(query: String, pageSize?: number): Promise<StorySearchResult>
   createStory(params: StoryChange): Promise<Story>
@@ -39,6 +41,8 @@ export default class Client {
   updateFile(fileID: ID, params: FileChange): Promise<File>
   deleteFile(fileID: ID): Promise<{}>
   listLinkedFiles(): Promise<Array<LinkedFile>>
+  createLabel(name: string, color: string): Promise<any>
+  listLabels(): Promise<Array<Label>>
   createLinkedFile(params: LinkedFileChange): Promise<LinkedFile>
   deleteLinkedFile(linkedFileID: ID): Promise<{}>
   listTeams(): Promise<Array<Team>>

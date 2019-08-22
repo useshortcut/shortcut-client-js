@@ -30,6 +30,7 @@ import type {
   Workflow,
   Iteration,
   IterationChange,
+  Label,
 } from './types';
 
 const API_BASE_URL: string = 'https://api.clubhouse.io';
@@ -179,6 +180,26 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
+  addReaction(storyId: ID, commentId: ID, emoji: string): Promise<void> {
+    return this.createResource(
+      `stories/${storyId}/comments/${commentId}/reactions`,
+      {
+        emoji,
+      },
+    );
+  }
+
+  /** */
+  deleteReaction(storyId: ID, commentId: ID, emoji: string): Promise<void> {
+    return this.deleteResource(
+      `stories/${storyId}/comments/${commentId}/reactions`,
+      {
+        emoji,
+      },
+    );
+  }
+
+  /** */
   listStories(projectID: ID): Promise<Array<Story>> {
     return this.listResource(`projects/${projectID}/stories`);
   }
@@ -322,6 +343,16 @@ class Client<RequestType, ResponseType> {
   /** */
   deleteLinkedFile(linkedFileID: ID): Promise<{}> {
     return this.deleteResource(`linked-files/${linkedFileID}`);
+  }
+
+  /** */
+  createLabel(name: string, color: string): Promise<any> {
+    return this.createResource(`labels`, { name, color });
+  }
+
+  /** */
+  listLabels(): Promise<Array<Label>> {
+    return this.listResource('labels');
   }
 
   /** */
