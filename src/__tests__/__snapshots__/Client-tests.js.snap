@@ -1,5 +1,30 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`#Client .addReaction add a reaction to story 1`] = `
+Array [
+  Object {
+    "body": Object {
+      "emoji": ":happy",
+    },
+    "method": "POST",
+    "uri": "http://localhost:4001/api/beta/stories/1/comments/5/reactions",
+  },
+]
+`;
+
+exports[`#Client .createLabel create a label 1`] = `
+Array [
+  Object {
+    "body": Object {
+      "color": "fff",
+      "name": "sup",
+    },
+    "method": "POST",
+    "uri": "http://localhost:4001/api/beta/labels",
+  },
+]
+`;
+
 exports[`#Client .createProject creates a new project 1`] = `
 Array [
   Object {
@@ -32,12 +57,34 @@ Array [
 ]
 `;
 
+exports[`#Client .deleteReaction deletes a reaction in story 1`] = `
+Array [
+  Object {
+    "body": Object {
+      "emoji": ":happy",
+    },
+    "method": "DELETE",
+    "uri": "http://localhost:4001/api/beta/stories/1/comments/5/reactions",
+  },
+]
+`;
+
 exports[`#Client .getProject requests a single project 1`] = `
 Array [
   Object {
     "body": undefined,
     "method": undefined,
     "uri": "http://localhost:4001/api/beta/projects/1234",
+  },
+]
+`;
+
+exports[`#Client .listLabels list all labels 1`] = `
+Array [
+  Object {
+    "body": undefined,
+    "method": undefined,
+    "uri": "http://localhost:4001/api/beta/labels",
   },
 ]
 `;
