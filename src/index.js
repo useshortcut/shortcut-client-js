@@ -231,6 +231,17 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
+  updateStoryComment(
+    storyID: ID,
+    commentID: ID,
+    text: string,
+  ): Promise<StoryComment> {
+    return this.updateResource(`stories/${storyID}/comments/${commentID}`, {
+      text,
+    });
+  }
+
+  /** */
   listTasks(storyID: ID): Promise<Array<Task>> {
     return this.listResource(`stories/${storyID}/tasks`);
   }
