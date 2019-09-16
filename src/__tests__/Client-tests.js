@@ -164,6 +164,19 @@ describe('#Client', () => {
     });
   });
 
+  describe('.deleteStoryLink', () => {
+    it('delete a story link', async () => {
+      const requests = [];
+      const storyLinkId = 1234;
+      const client = createTestClient(request => {
+        requests.push(request);
+        return Promise.resolve({ status: 200, body: {} });
+      });
+      await client.deleteStoryLink(storyLinkId);
+      expect(requests).toMatchSnapshot();
+    });
+  });
+
   describe('.createLabel', () => {
     it('create a label', async () => {
       const requests = [];
