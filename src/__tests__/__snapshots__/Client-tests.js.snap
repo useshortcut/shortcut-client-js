@@ -37,6 +37,20 @@ Array [
 ]
 `;
 
+exports[`#Client .createStoryLink create a story link 1`] = `
+Array [
+  Object {
+    "body": Object {
+      "object_id": 1234,
+      "verb": "blocks",
+      "verb_id": 1,
+    },
+    "method": "POST",
+    "uri": "http://localhost:4001/api/beta/story-links",
+  },
+]
+`;
+
 exports[`#Client .deleteComment deletes a existing comment 1`] = `
 Array [
   Object {
@@ -69,12 +83,32 @@ Array [
 ]
 `;
 
+exports[`#Client .deleteStoryLink delete a story link 1`] = `
+Array [
+  Object {
+    "body": undefined,
+    "method": "DELETE",
+    "uri": "http://localhost:4001/api/beta/story-links/1234",
+  },
+]
+`;
+
 exports[`#Client .getProject requests a single project 1`] = `
 Array [
   Object {
     "body": undefined,
     "method": undefined,
     "uri": "http://localhost:4001/api/beta/projects/1234",
+  },
+]
+`;
+
+exports[`#Client .getStoryLink get a story link 1`] = `
+Array [
+  Object {
+    "body": undefined,
+    "method": undefined,
+    "uri": "http://localhost:4001/api/beta/story-links/1234",
   },
 ]
 `;

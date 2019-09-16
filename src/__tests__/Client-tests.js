@@ -138,6 +138,45 @@ describe('#Client', () => {
     });
   });
 
+  describe('.createStoryLink', () => {
+    it('create a story link', async () => {
+      const requests = [];
+      const storyLink = { object_id: 1234, verb_id: 1, verb: 'blocks' };
+      const client = createTestClient(request => {
+        requests.push(request);
+        return Promise.resolve({ status: 200, body: {} });
+      });
+      await client.createStoryLink(storyLink);
+      expect(requests).toMatchSnapshot();
+    });
+  });
+
+  describe('.getStoryLink', () => {
+    it('get a story link', async () => {
+      const requests = [];
+      const storyLinkId = 1234;
+      const client = createTestClient(request => {
+        requests.push(request);
+        return Promise.resolve({ status: 200, body: {} });
+      });
+      await client.getStoryLink(storyLinkId);
+      expect(requests).toMatchSnapshot();
+    });
+  });
+
+  describe('.deleteStoryLink', () => {
+    it('delete a story link', async () => {
+      const requests = [];
+      const storyLinkId = 1234;
+      const client = createTestClient(request => {
+        requests.push(request);
+        return Promise.resolve({ status: 200, body: {} });
+      });
+      await client.deleteStoryLink(storyLinkId);
+      expect(requests).toMatchSnapshot();
+    });
+  });
+
   describe('.createLabel', () => {
     it('create a label', async () => {
       const requests = [];
