@@ -93,6 +93,16 @@ Array [
 ]
 `;
 
+exports[`#Client .getStoryLink get a story link 1`] = `
+Array [
+  Object {
+    "body": undefined,
+    "method": undefined,
+    "uri": "http://localhost:4001/api/beta/story-links/1234",
+  },
+]
+`;
+
 exports[`#Client .listLabels list all labels 1`] = `
 Array [
   Object {

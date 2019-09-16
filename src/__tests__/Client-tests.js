@@ -151,6 +151,19 @@ describe('#Client', () => {
     });
   });
 
+  describe('.getStoryLink', () => {
+    it('get a story link', async () => {
+      const requests = [];
+      const storyLinkId = 1234;
+      const client = createTestClient(request => {
+        requests.push(request);
+        return Promise.resolve({ status: 200, body: {} });
+      });
+      await client.getStoryLink(storyLinkId);
+      expect(requests).toMatchSnapshot();
+    });
+  });
+
   describe('.createLabel', () => {
     it('create a label', async () => {
       const requests = [];
