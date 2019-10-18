@@ -34,7 +34,7 @@ import type {
 } from './types';
 
 const API_BASE_URL: string = 'https://api.clubhouse.io';
-const API_VERSION: string = 'beta';
+const API_VERSION: string = 'v3';
 
 /** */
 type ClientConfig = {

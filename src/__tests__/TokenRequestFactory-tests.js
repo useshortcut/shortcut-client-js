@@ -10,14 +10,14 @@ describe('TokenRequestFactory', () => {
       const factory = new TokenRequestFactory(
         'abc-123',
         'https://api.clubhouse.io',
-        'beta',
+        'v3',
       );
       const request = factory.createRequest('search/stories', 'GET', {
         query: 'project:mobile',
       });
 
       expect(request.url).toEqual(
-        'https://api.clubhouse.io/api/beta/search/stories?token=abc-123&query=project%3Amobile',
+        'https://api.clubhouse.io/api/v3/search/stories?token=abc-123&query=project%3Amobile',
       );
       // $FlowFixMe
       expect(request.body).toBeUndefined();
@@ -29,13 +29,13 @@ describe('TokenRequestFactory', () => {
       const factory = new TokenRequestFactory(
         'abc-123',
         'https://api.clubhouse.io',
-        'beta',
+        'v3',
       );
       const request = factory.createRequest('search/stories', 'POST', {
         query: 'project:mobile',
       });
       expect(request.url).toEqual(
-        'https://api.clubhouse.io/api/beta/search/stories?token=abc-123',
+        'https://api.clubhouse.io/api/v3/search/stories?token=abc-123',
       );
       // $FlowFixMe
       expect(JSON.parse(request.body)).toEqual({

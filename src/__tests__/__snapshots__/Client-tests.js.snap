@@ -7,7 +7,7 @@ Array [
       "emoji": ":happy",
     },
     "method": "POST",
-    "uri": "http://localhost:4001/api/beta/stories/1/comments/5/reactions",
+    "uri": "http://localhost:4001/api/v3/stories/1/comments/5/reactions",
   },
 ]
 `;
@@ -20,7 +20,7 @@ Array [
       "name": "sup",
     },
     "method": "POST",
-    "uri": "http://localhost:4001/api/beta/labels",
+    "uri": "http://localhost:4001/api/v3/labels",
   },
 ]
 `;
@@ -32,7 +32,7 @@ Array [
       "name": "test",
     },
     "method": "POST",
-    "uri": "http://localhost:4001/api/beta/projects",
+    "uri": "http://localhost:4001/api/v3/projects",
   },
 ]
 `;
@@ -46,7 +46,7 @@ Array [
       "verb_id": 1,
     },
     "method": "POST",
-    "uri": "http://localhost:4001/api/beta/story-links",
+    "uri": "http://localhost:4001/api/v3/story-links",
   },
 ]
 `;
@@ -56,7 +56,7 @@ Array [
   Object {
     "body": undefined,
     "method": "DELETE",
-    "uri": "http://localhost:4001/api/beta/stories/5/comments/3",
+    "uri": "http://localhost:4001/api/v3/stories/5/comments/3",
   },
 ]
 `;
@@ -66,7 +66,7 @@ Array [
   Object {
     "body": undefined,
     "method": "DELETE",
-    "uri": "http://localhost:4001/api/beta/projects/1",
+    "uri": "http://localhost:4001/api/v3/projects/1",
   },
 ]
 `;
@@ -78,7 +78,7 @@ Array [
       "emoji": ":happy",
     },
     "method": "DELETE",
-    "uri": "http://localhost:4001/api/beta/stories/1/comments/5/reactions",
+    "uri": "http://localhost:4001/api/v3/stories/1/comments/5/reactions",
   },
 ]
 `;
@@ -88,7 +88,7 @@ Array [
   Object {
     "body": undefined,
     "method": "DELETE",
-    "uri": "http://localhost:4001/api/beta/story-links/1234",
+    "uri": "http://localhost:4001/api/v3/story-links/1234",
   },
 ]
 `;
@@ -98,7 +98,7 @@ Array [
   Object {
     "body": undefined,
     "method": undefined,
-    "uri": "http://localhost:4001/api/beta/projects/1234",
+    "uri": "http://localhost:4001/api/v3/projects/1234",
   },
 ]
 `;
@@ -108,7 +108,7 @@ Array [
   Object {
     "body": undefined,
     "method": undefined,
-    "uri": "http://localhost:4001/api/beta/story-links/1234",
+    "uri": "http://localhost:4001/api/v3/story-links/1234",
   },
 ]
 `;
@@ -118,7 +118,7 @@ Array [
   Object {
     "body": undefined,
     "method": undefined,
-    "uri": "http://localhost:4001/api/beta/labels",
+    "uri": "http://localhost:4001/api/v3/labels",
   },
 ]
 `;
@@ -128,7 +128,7 @@ Array [
   Object {
     "body": undefined,
     "method": undefined,
-    "uri": "http://localhost:4001/api/beta/projects",
+    "uri": "http://localhost:4001/api/v3/projects",
   },
 ]
 `;
@@ -140,7 +140,7 @@ Array [
       "text": "this is a test comment",
     },
     "method": "PUT",
-    "uri": "http://localhost:4001/api/beta/stories/12/comments/5",
+    "uri": "http://localhost:4001/api/v3/stories/12/comments/5",
   },
 ]
 `;
@@ -152,7 +152,7 @@ Array [
       "name": "test",
     },
     "method": "PUT",
-    "uri": "http://localhost:4001/api/beta/projects/12",
+    "uri": "http://localhost:4001/api/v3/projects/12",
   },
 ]
 `;
