@@ -6,7 +6,7 @@ import { createTestClient } from './utils';
 describe('#Client', () => {
   it('return a new instance with the correct defaults', () => {
     const client = Client.create('token value');
-    expect(client.requestFactory.version).toBe('beta');
+    expect(client.requestFactory.version).toBe('v3');
   });
 
   describe('.listProjects', () => {

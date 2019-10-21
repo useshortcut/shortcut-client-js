@@ -31,7 +31,7 @@ type TestResponse = {
 
 export class TestRequestFactory implements RequestFactory<TestRequest> {
   baseURL: string = 'http://localhost:4001';
-  version: string = 'beta';
+  version: string = 'v3';
 
   prefixURI(uri: string) {
     return `${this.baseURL}/api/${this.version}/${uri}`;
