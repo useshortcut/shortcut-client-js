@@ -43,7 +43,7 @@ Array [
     "body": Object {
       "object_id": 1234,
       "verb": "blocks",
-      "verb_id": 1,
+      "subject_id": 1,
     },
     "method": "POST",
     "uri": "http://localhost:4001/api/v3/story-links",
