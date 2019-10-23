@@ -2,38 +2,28 @@
   "name": "clubhouse-lib",
   "version": "0.8.0",
   "description": "A Promise based library to the Clubhouse REST API",
-  "files": [
-    "build",
-    "typings"
-  ],
-  "main": "build/index.js",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "repository": "",
   "license": "MIT",
   "scripts": {
-    "build": "babel src --out-dir build --ignore '**/__tests__/**' && npm run build:flow && npm run build:typescript",
-    "build:flow": "flow-copy-source -v -i '**/__tests__/**' src build",
-    "build:typescript": "scripts/ts-generate-definition.js && tsc",
+    "build": "yarn build:typescript",
+    "build:typescript": "tsc",
     "lint": "eslint src",
-    "prepublish": "npm run build",
     "test": "jest",
-    "test:format": "prettier --list-different --write src/**/*.js",
+    "test:format": "prettier --list-different --write src/**/*.js src/**/*.ts",
     "test:typescript": "scripts/ts-check.sh",
-    "flow": "flow",
-    "format": "prettier --write src/**/*.js",
+    "format": "prettier --write src/**/*.js src/**/*.ts",
     "ci": "npm run lint && npm run flow && npm test && npm run test:format && npm run test:typescript && npm run build"
   },
+  "dependencies": {
+    "fetch-everywhere": "^1.0.5",
+    "query-string": "^6.2.0",
+    "universal-url": "^2.0.0"
+  },
   "devDependencies": {
-    "@babel/core": "^7.6.4",
+    "@types/jest": "^24.0.19",
     "@types/node": "^10.11.3",
-    "babel-cli": "^6.26.0",
-    "babel-eslint": "^8.0.1",
-    "babel-plugin-transform-flow-strip-types": "^6.22.0",
-    "babel-preset-env": "^1.6.0",
-    "babel-preset-es2015": "^6.24.1",
-    "babel-preset-es2017": "^6.24.1",
-    "babel-preset-stage-0": "^6.24.1",
-    "babel-preset-stage-2": "^6.24.1",
-    "babel-preset-stage-3": "^6.24.1",
     "benchmark": "^2.1.4",
     "bluebird": "^3.5.0",
     "eslint": "^4.7.2",
@@ -45,26 +35,19 @@
     "eslint-plugin-jsx-a11y": "^5.1.1",
     "eslint-plugin-prettier": "^2.3.1",
     "eslint-plugin-react": "^7.4.0",
-    "flow-bin": "^0.55.0",
-    "flow-copy-source": "^1.2.1",
-    "jest": "^21.2.0",
+    "jest": "^24.9.0",
     "prettier": "^1.18.2",
     "save": "^2.3.1",
-    "ts-migration": "quizlet/ts-migration.git",
-    "typescript": "^3.4.0"
+    "ts-jest": "^24.1.0",
+    "typescript": "^3.6.4"
   },
   "jest": {
+    "preset": "ts-jest",
     "testEnvironment": "node",
     "testPathIgnorePatterns": [
-      "<rootDir>/build/",
+      "<rootDir>/lib/",
       "<rootDir>/node_modules/",
-      "(<rootDir>/__tests__/.*|(\\.|/)utils)\\.jsx?$"
+      "(<rootDir>/__tests__/.*|(\\.|/)utils)\\.tsx?$"
     ]
-  },
-  "dependencies": {
-    "fetch-everywhere": "^1.0.5",
-    "query-string": "^6.2.0",
-    "universal-url": "^2.0.0"
-  },
-  "typings": "typings/index.d.ts"
+  }
 }

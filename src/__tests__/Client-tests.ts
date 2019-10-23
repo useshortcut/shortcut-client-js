@@ -1,7 +1,6 @@
-/* @flow */
-
 import Client from '../index';
 import { createTestClient } from './utils';
+import { StoryLinkVerb } from '../types';
 
 describe('#Client', () => {
   it('return a new instance with the correct defaults', () => {
@@ -11,10 +10,12 @@ describe('#Client', () => {
 
   describe('.listProjects', () => {
     it('returns a list of projects with a clubhouse account', async () => {
-      const requests = [];
+      const requests:
+        | any[]
+        | { uri: string; method?: string; body?: Object }[] = [];
       const client = createTestClient(request => {
         requests.push(request);
-        return Promise.resolve({ status: 200, body: [] });
+        return Promise.resolve({ status: 200, body: {} });
       });
 
       await client.listProjects();
@@ -25,7 +26,9 @@ describe('#Client', () => {
 
   describe('.getProject', () => {
     it('requests a single project', async () => {
-      const requests = [];
+      const requests:
+        | any[]
+        | { uri: string; method?: string; body?: Object }[] = [];
       const client = createTestClient(request => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: { id: 1234 } });
@@ -39,7 +42,9 @@ describe('#Client', () => {
 
   describe('.createProject', () => {
     it('creates a new project', async () => {
-      const requests = [];
+      const requests:
+        | any[]
+        | { uri: string; method?: string; body?: Object }[] = [];
       const client = createTestClient(request => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: { name: 'test' } });
@@ -53,7 +58,9 @@ describe('#Client', () => {
 
   describe('.updateProject', () => {
     it('updates a existing project', async () => {
-      const requests = [];
+      const requests:
+        | any[]
+        | { uri: string; method?: string; body?: Object }[] = [];
       const client = createTestClient(request => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: { name: 'test' } });
@@ -67,7 +74,9 @@ describe('#Client', () => {
 
   describe('.deleteProject', () => {
     it('deletes a existing project', async () => {
-      const requests = [];
+      const requests:
+        | any[]
+        | { uri: string; method?: string; body?: Object }[] = [];
       const client = createTestClient(request => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: {} });
@@ -81,7 +90,9 @@ describe('#Client', () => {
 
   describe('.deleteComment', () => {
     it('deletes a existing comment', async () => {
-      const requests = [];
+      const requests:
+        | any[]
+        | { uri: string; method?: string; body?: Object }[] = [];
       const client = createTestClient(request => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: {} });
@@ -95,7 +106,9 @@ describe('#Client', () => {
 
   describe('.updateComment', () => {
     it('update a existing comment', async () => {
-      const requests = [];
+      const requests:
+        | any[]
+        | { uri: string; method?: string; body?: Object }[] = [];
       const client = createTestClient(request => {
         requests.push(request);
         return Promise.resolve({
@@ -112,7 +125,9 @@ describe('#Client', () => {
 
   describe('.addReaction', () => {
     it('add a reaction to story', async () => {
-      const requests = [];
+      const requests:
+        | any[]
+        | { uri: string; method?: string; body?: Object }[] = [];
       const client = createTestClient(request => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: {} });
@@ -126,7 +141,9 @@ describe('#Client', () => {
 
   describe('.deleteReaction', () => {
     it('deletes a reaction in story', async () => {
-      const requests = [];
+      const requests:
+        | any[]
+        | { uri: string; method?: string; body?: Object }[] = [];
       const client = createTestClient(request => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: {} });
@@ -140,8 +157,14 @@ describe('#Client', () => {
 
   describe('.createStoryLink', () => {
     it('create a story link', async () => {
-      const requests = [];
-      const storyLink = { object_id: 1234, subject_id: 1, verb: 'blocks' };
+      const requests:
+        | any[]
+        | { uri: string; method?: string; body?: Object }[] = [];
+      const storyLink = {
+        object_id: 1234,
+        subject_id: 1,
+        verb: 'blocks' as StoryLinkVerb,
+      };
       const client = createTestClient(request => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: {} });
@@ -153,7 +176,9 @@ describe('#Client', () => {
 
   describe('.getStoryLink', () => {
     it('get a story link', async () => {
-      const requests = [];
+      const requests:
+        | any[]
+        | { uri: string; method?: string; body?: Object }[] = [];
       const storyLinkId = 1234;
       const client = createTestClient(request => {
         requests.push(request);
@@ -166,7 +191,9 @@ describe('#Client', () => {
 
   describe('.deleteStoryLink', () => {
     it('delete a story link', async () => {
-      const requests = [];
+      const requests:
+        | any[]
+        | { uri: string; method?: string; body?: Object }[] = [];
       const storyLinkId = 1234;
       const client = createTestClient(request => {
         requests.push(request);
@@ -179,7 +206,9 @@ describe('#Client', () => {
 
   describe('.createLabel', () => {
     it('create a label', async () => {
-      const requests = [];
+      const requests:
+        | any[]
+        | { uri: string; method?: string; body?: Object }[] = [];
       const client = createTestClient(request => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: {} });
@@ -193,7 +222,9 @@ describe('#Client', () => {
 
   describe('.listLabels', () => {
     it('list all labels', async () => {
-      const requests = [];
+      const requests:
+        | any[]
+        | { uri: string; method?: string; body?: Object }[] = [];
       const client = createTestClient(request => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: {} });

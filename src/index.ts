@@ -4,7 +4,7 @@ import TokenRequestFactory from './TokenRequestFactory';
 import FetchRequestPerformer from './FetchRequestPerformer';
 import FetchRequestParser from './FetchRequestParser';
 
-import type {
+import {
   Epic,
   EpicChange,
   File,
@@ -65,7 +65,10 @@ class Client<RequestType, ResponseType> {
     this.responseParser = responseParser;
   }
   /** */
-  static create(token: string, config?: ClientConfig = defaultConfig): Client<Request, Response> {
+  static create(
+    token: string,
+    config: ClientConfig = defaultConfig,
+  ): Client<any, any> {
     const { baseURL, version } = config;
     return new Client(
       new TokenRequestFactory(token, baseURL, version),
@@ -76,29 +79,39 @@ class Client<RequestType, ResponseType> {
 
   listResource<T>(uri: string): Promise<Array<T>> {
     const request = this.requestFactory.createRequest(uri);
-    return this.requestPerformer.performRequest(request).then(this.responseParser.parseResponse);
+    return this.requestPerformer
+      .performRequest(request)
+      .then(this.responseParser.parseResponse);
   }
 
-  getResource<T>(uri: string, params: ?Object): Promise<T> {
+  getResource<T>(uri: string, params?: Object | null | undefined): Promise<T> {
     const request = params
       ? this.requestFactory.createRequest(uri, 'GET', params)
       : this.requestFactory.createRequest(uri);
-    return this.requestPerformer.performRequest(request).then(this.responseParser.parseResponse);
+    return this.requestPerformer
+      .performRequest(request)
+      .then(this.responseParser.parseResponse);
   }
 
   createResource<T>(uri: string, params: Object): Promise<T> {
     const request = this.requestFactory.createRequest(uri, 'POST', params);
-    return this.requestPerformer.performRequest(request).then(this.responseParser.parseResponse);
+    return this.requestPerformer
+      .performRequest(request)
+      .then(this.responseParser.parseResponse);
   }
 
   updateResource<T>(uri: string, params: Object): Promise<T> {
     const request = this.requestFactory.createRequest(uri, 'PUT', params);
-    return this.requestPerformer.performRequest(request).then(this.responseParser.parseResponse);
+    return this.requestPerformer
+      .performRequest(request)
+      .then(this.responseParser.parseResponse);
   }
 
   deleteResource<T>(uri: string, params?: Object): Promise<T> {
     const request = this.requestFactory.createRequest(uri, 'DELETE', params);
-    return this.requestPerformer.performRequest(request).then(this.responseParser.parseResponse);
+    return this.requestPerformer
+      .performRequest(request)
+      .then(this.responseParser.parseResponse);
   }
 
   /** */
@@ -168,16 +181,22 @@ class Client<RequestType, ResponseType> {
 
   /** */
   addReaction(storyId: ID, commentId: ID, emoji: string): Promise<void> {
-    return this.createResource(`stories/${storyId}/comments/${commentId}/reactions`, {
-      emoji,
-    });
+    return this.createResource(
+      `stories/${storyId}/comments/${commentId}/reactions`,
+      {
+        emoji,
+      },
+    );
   }
 
   /** */
   deleteReaction(storyId: ID, commentId: ID, emoji: string): Promise<void> {
-    return this.deleteResource(`stories/${storyId}/comments/${commentId}/reactions`, {
-      emoji,
-    });
+    return this.deleteResource(
+      `stories/${storyId}/comments/${commentId}/reactions`,
+      {
+        emoji,
+      },
+    );
   }
 
   /** */
@@ -187,7 +206,7 @@ class Client<RequestType, ResponseType> {
 
   /** */
   searchStories(query: String, pageSize?: number): Promise<StorySearchResult> {
-    const processResult = result => {
+    const processResult = (result: StorySearchResult): StorySearchResult => {
       if (result.next) {
         return {
           ...result,
@@ -196,7 +215,8 @@ class Client<RequestType, ResponseType> {
       }
       return result;
     };
-    return this.getResource(`search/stories`, {
+
+    return this.getResource<StorySearchResult>(`search/stories`, {
       query,
       page_size: pageSize || 25,
     }).then(processResult);
@@ -233,7 +253,11 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
-  updateStoryComment(storyID: ID, commentID: ID, text: string): Promise<StoryComment> {
+  updateStoryComment(
+    storyID: ID,
+    commentID: ID,
+    text: string,
+  ): Promise<StoryComment> {
     return this.updateResource(`stories/${storyID}/comments/${commentID}`, {
       text,
     });
@@ -310,7 +334,10 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
-  updateLinkedFile(linkedFileID: ID, params: LinkedFileChange): Promise<LinkedFile> {
+  updateLinkedFile(
+    linkedFileID: ID,
+    params: LinkedFileChange,
+  ): Promise<LinkedFile> {
     return this.updateResource(`linked-files/${linkedFileID}`, params);
   }
 
@@ -355,7 +382,10 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
-  updateIteration(iterationID: ID, params: IterationChange): Promise<Iteration> {
+  updateIteration(
+    iterationID: ID,
+    params: IterationChange,
+  ): Promise<Iteration> {
     return this.updateResource(`iterations/${iterationID}`, params);
   }
 
@@ -365,4 +395,4 @@ class Client<RequestType, ResponseType> {
   }
 }
 
-module.exports = Client;
+export default Client;

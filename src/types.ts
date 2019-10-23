@@ -1,5 +1,3 @@
-/* @flow */
-
 export type ID = string | number;
 
 export interface Entity {
@@ -20,7 +18,7 @@ export interface RequestPerformer<T, U> {
 }
 
 export interface ResponseParser<U> {
-  parseResponse(response: U): Promise<*>;
+  parseResponse(response: U): Promise<any>;
 }
 
 /* Users */
@@ -56,7 +54,7 @@ export type Project = {
   id: ID,
   name: string,
   entity_type: string,
-  description: ?string,
+  description: string | null | undefined,
   abbreviation: string,
   color: string,
   iteration_length: number,

@@ -1,6 +1,5 @@
 {
-  "parser": "flow",
+  "parser": "typescript",
   "trailingComma": "all",
-  "singleQuote": true,
-  "printWidth": 100
+  "singleQuote": true
 }

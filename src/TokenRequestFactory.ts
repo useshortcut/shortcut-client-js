@@ -1,14 +1,12 @@
-/* @flow */
-
 import { URL } from 'universal-url';
-import type { RequestFactory } from './types';
+import { RequestFactory } from './types';
 
 require('fetch-everywhere');
 
 class TokenRequestFactory implements RequestFactory<Request> {
-  token: string;
-  baseURL: string;
-  version: string;
+  public readonly token: string;
+  public readonly baseURL: string;
+  public readonly version: string;
 
   constructor(token: string, baseURL: string, version: string) {
     this.token = token;
@@ -16,7 +14,7 @@ class TokenRequestFactory implements RequestFactory<Request> {
     this.version = version;
   }
 
-  prefixURI(uri: string): string {
+  public prefixURI(uri: string): string {
     const prefix = `/api/${this.version}/`;
     if (uri.startsWith(prefix)) {
       return uri;
@@ -24,7 +22,7 @@ class TokenRequestFactory implements RequestFactory<Request> {
     return `${prefix}${uri}`;
   }
 
-  createRequest(uri: string, method?: string = 'GET', body?: Object): Request {
+  public createRequest(uri: string, method: string = 'GET', body?: any): Request {
     const url = new URL(this.prefixURI(uri), this.baseURL);
     const headers = {
       Accept: 'application/json',
@@ -35,7 +33,7 @@ class TokenRequestFactory implements RequestFactory<Request> {
 
     if (method === 'GET') {
       if (body) {
-        Object.entries(body).forEach(entry => url.searchParams.append(entry[0], String(entry[1])));
+        Object.entries(body).forEach((entry) => url.searchParams.append(entry[0], String(entry[1])));
       }
       return new Request(url.toString(), {
         headers,
