@@ -27,6 +27,7 @@ export default class Client {
   deleteStory(storyID: ID): Promise<{}>
   createStoryComment(storyID: ID, text: string): Promise<StoryComment>
   deleteStoryComment(storyID: ID, commentID: ID): Promise<{}>
+  updateStoryComment(storyID: ID, commentID: ID, text: string): Promise<StoryComment>
   listTasks(storyID: ID): Promise<Array<Task>>
   createTask(storyID: ID, params: TaskChange): Promise<Task>
   getTask(storyID: ID, taskID: ID): Promise<Task>
@@ -41,6 +42,7 @@ export default class Client {
   deleteFile(fileID: ID): Promise<{}>
   listLinkedFiles(): Promise<Array<LinkedFile>>
   createLinkedFile(params: LinkedFileChange): Promise<LinkedFile>
+  updateLinkedFile(linkedFileID: ID, params: LinkedFileChange): Promise<LinkedFile>
   deleteLinkedFile(linkedFileID: ID): Promise<{}>
   createLabel(name: string, color: string): Promise<any>
   listLabels(): Promise<Array<Label>>
@@ -49,6 +51,7 @@ export default class Client {
   listIterations(): Promise<Array<Iteration>>
   createIteration(params: IterationChange): Promise<Iteration>
   getIteration(iterationID: ID): Promise<Iteration>
+  updateIteration(iterationID: ID, params: IterationChange): Promise<Iteration>
   deleteIteration(iterationID: ID): Promise<{}>
 }
 

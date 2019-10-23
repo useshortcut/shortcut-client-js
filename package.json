@@ -16,10 +16,10 @@
     "lint": "eslint src",
     "prepublish": "npm run build",
     "test": "jest",
-    "test:format": "prettier --list-different --single-quote --trailing-comma all --write src/**/*.js",
+    "test:format": "prettier --list-different --write src/**/*.js",
     "test:typescript": "scripts/ts-check.sh",
     "flow": "flow",
-    "format": "prettier --single-quote --trailing-comma all --write src/**/*.js",
+    "format": "prettier --write src/**/*.js",
     "ci": "npm run lint && npm run flow && npm test && npm run test:format && npm run test:typescript && npm run build"
   },
   "devDependencies": {
@@ -47,7 +47,7 @@
     "flow-bin": "^0.55.0",
     "flow-copy-source": "^1.2.1",
     "jest": "^21.2.0",
-    "prettier": "^1.16.4",
+    "prettier": "^1.18.2",
     "save": "^2.3.1",
     "typescript": "^3.4.0"
   },
