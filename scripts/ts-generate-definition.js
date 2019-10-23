@@ -12,12 +12,11 @@ fs.readFile(clientFile, 'utf8', (err, data) => {
     process.exit(2);
   }
 
-  let clientMethods = data.split('\n')
-    .filter(line => line.match(/^  \w.*(.*): .*{$/))
-    .map(line => line
-      .replace(/ {$/, '')
-      .replace(': ?', '?: ')
-    ).join('\n');
+  const clientMethods = data
+    .split('\n')
+    .filter(line => line.match(/^ {2}(?!static create)\w.*(.*): .*{$/))
+    .map(line => line.replace(/ {$/, '').replace(': ?', '?: '))
+    .join('\n');
 
   fs.readFile(typesFile, 'utf8', (err, data) => {
     if (err) {
@@ -25,13 +24,16 @@ fs.readFile(clientFile, 'utf8', (err, data) => {
       process.exit(2);
     }
 
-    const types = data.split('\n')
-      .map(line => line
-        .replace('/\* @flow \*/', '')
-        .replace(/,$/, ';')
-        .replace(/<\*>/g, '<any>')
-        .replace(': ?', '?: ')
-      ).join('\n');
+    const types = data
+      .split('\n')
+      .map(line =>
+        line
+          .replace('/* @flow */', '')
+          .replace(/,$/, ';')
+          .replace(/<\*>/g, '<any>')
+          .replace(': ?', '?: '),
+      )
+      .join('\n');
 
     const result = `export default class Client {
 ${clientMethods}

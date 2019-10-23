@@ -2,11 +2,7 @@
 
 import Client from '../index';
 
-import type {
-  RequestFactory,
-  RequestPerformer,
-  ResponseParser,
-} from '../types';
+import type { RequestFactory, RequestPerformer, ResponseParser } from '../types';
 
 type TestRequest = {
   uri: string,
@@ -16,13 +12,7 @@ type TestRequest = {
 
 // As per ECMA-404 spec: http://www.json.org/
 // and RFC-7159 spec: https://tools.ietf.org/html/rfc7159
-type JSON =
-  | { [keys: string]: JSON }
-  | Array<JSON>
-  | string
-  | number
-  | boolean
-  | null;
+type JSON = { [keys: string]: JSON } | Array<JSON> | string | number | boolean | null;
 
 type TestResponse = {
   status: number,
@@ -46,8 +36,7 @@ export class TestRequestFactory implements RequestFactory<TestRequest> {
 
 type PromiseResolver<Input, Output> = Input => Promise<Output>;
 
-export class TestRequestPerformer
-  implements RequestPerformer<TestRequest, TestResponse> {
+export class TestRequestPerformer implements RequestPerformer<TestRequest, TestResponse> {
   static resolve = (request: TestRequest, response: TestResponse) =>
     new TestRequestPerformer(() => Promise.resolve(response));
 
@@ -60,8 +49,7 @@ export class TestRequestPerformer
 
   resolver: PromiseResolver<TestRequest, TestResponse>;
 
-  performRequest = (request: TestRequest): Promise<TestResponse> =>
-    this.resolver(request);
+  performRequest = (request: TestRequest): Promise<TestResponse> => this.resolver(request);
 }
 
 export class TestResponseParser implements ResponseParser<TestResponse> {
@@ -77,14 +65,12 @@ export class TestResponseParser implements ResponseParser<TestResponse> {
 
   resolver: PromiseResolver<TestResponse, *>;
 
-  parseResponse = (response: TestResponse): Promise<*> =>
-    this.resolver(response);
+  parseResponse = (response: TestResponse): Promise<*> => this.resolver(response);
 }
 
 export const createTestClient = (
   requestPerformer: (request: TestRequest) => Promise<TestResponse>,
-  responseParser: (response: TestResponse) => Promise<*> = response =>
-    Promise.resolve(response),
+  responseParser: (response: TestResponse) => Promise<*> = response => Promise.resolve(response),
 ) =>
   new Client(
     new TestRequestFactory(),

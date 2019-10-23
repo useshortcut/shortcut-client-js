@@ -3,7 +3,7 @@
     "airbnb",
     "plugin:flowtype/recommended",
     "prettier",
-    "prettier/flowtype",
+    "prettier/flowtype"
   ],
   "parser": "babel-eslint",
   "plugins": [
@@ -17,11 +17,6 @@
     "es6": true
   },
    "rules": {
-      "no-undef": 0,
-      "prettier/prettier": [2, {
-        "trailingComma": "all",
-        "singleQuote": true,
-        "parser": "flow",
-      }]
+      "no-undef": 0
    }
 }
