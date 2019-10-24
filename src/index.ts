@@ -1,5 +1,3 @@
-/* @flow */
-
 import TokenRequestFactory from './TokenRequestFactory';
 import FetchRequestPerformer from './FetchRequestPerformer';
 import FetchRequestParser from './FetchRequestParser';
