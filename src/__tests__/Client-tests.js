@@ -141,7 +141,7 @@ describe('#Client', () => {
   describe('.createStoryLink', () => {
     it('create a story link', async () => {
       const requests = [];
-      const storyLink = { object_id: 1234, verb_id: 1, verb: 'blocks' };
+      const storyLink = { object_id: 1234, subject_id: 1, verb: 'blocks' };
       const client = createTestClient(request => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: {} });

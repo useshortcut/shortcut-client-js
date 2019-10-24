@@ -406,7 +406,7 @@ export type StoryLink = {
 
 export type StoryLinkChange = {
   object_id: ID;
-  verb_id: ID;
+  subject_id: ID;
   verb: StoryLinkVerb;
 };
 
