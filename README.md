@@ -10,8 +10,6 @@
   A library for interacting with the Clubhouse REST API
 </p>
 
-<br>
-
 <p align="center">
   <a href="https://www.npmjs.org/package/clubhouse-lib">
     <img src="https://badge.fury.io/js/clubhouse-lib.svg" alt="Current npm package version." />
@@ -26,6 +24,8 @@
     <img src="https://img.shields.io/twitter/follow/clubhouse.svg?label=Follow%20@clubhouse" alt="Follow @clubhouse" />
   </a>
 </p>
+
+<hr/>
 
 ## Getting Started
 
