@@ -48,6 +48,13 @@ jobs:
       - run:
           name: Prettier
           command: yarn test:format
+  test:
+    <<: *defaults
+    steps:
+      - *attach_workspace
+      - run:
+          name: Run Jest
+          command: yarn test
   build:
     <<: *defaults
     steps:
@@ -65,6 +72,9 @@ workflows:
           requires:
             - checkout
       - prettier:
+          requires:
+            - checkout
+      - test:
           requires:
             - checkout
       - build:
