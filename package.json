@@ -12,9 +12,8 @@
     "lint": "eslint src",
     "test": "jest",
     "test:format": "prettier --list-different --write src/**/*.js src/**/*.ts",
-    "test:typescript": "scripts/ts-check.sh",
     "format": "prettier --write src/**/*.js src/**/*.ts",
-    "ci": "npm run lint && npm run flow && npm test && npm run test:format && npm run test:typescript && npm run build"
+    "ci": "yarn lint && && yarn test && yarn test:format && yarn build"
   },
   "dependencies": {
     "fetch-everywhere": "^1.0.5",
