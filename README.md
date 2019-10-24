@@ -29,10 +29,6 @@
 
 ## Getting Started
 
-### How To Get an API Token
-
-TODO
-
 ### Installation
 
 You can install clubhouse-lib with [NPM](https://www.npmjs.com/) or [Yarn](https://yarnpkg.com).
@@ -46,6 +42,20 @@ or
 ```shell
 yarn add clubhouse-lib
 ```
+
+### How To Get an API Token
+
+The Clubhouse API uses token-based authentication, you will need one to use this library.
+
+To generate an API token, go to https://app.clubhouse.io/settings/account/api-tokens. To make it easier to explore our API, we recommend saving this token as an environment variable in your local dev environment:
+
+```bash
+export CLUBHOUSE_API_TOKEN="YOUR API TOKEN HERE"
+```
+
+This will allow you to copy and paste many examples in the documentation to try them out.
+
+Requests made with a missing or invalid token will get a `401 Unauthorized` response. All requests must be made over HTTPS. Tokens provide complete access to your Clubhouse account, **so keep them secure**. Don’t paste them into your source code, use an environment variable instead. For security reasons, we will immediately invalidate any tokens we find have been made public.
 
 ## Usage
 
@@ -69,4 +79,4 @@ You can play with it in your web browser with this live playground: TODO
 
 ## Documentation
 
-TODO
+[Documentation for the REST API](https://clubhouse.io/api/rest).
