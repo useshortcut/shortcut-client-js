@@ -25,7 +25,7 @@
   </a>
 </p>
 
-<hr/>
+<br>
 
 ## Getting Started
 
@@ -35,7 +35,7 @@ TODO
 
 ### Installation
 
-You can install clubhouse-lib with [NPM]() or [Yarn]().
+You can install clubhouse-lib with [NPM](https://www.npmjs.com/) or [Yarn](https://yarnpkg.com).
 
 ```shell
 npm install --save clubhouse-lib
