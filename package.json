@@ -12,7 +12,7 @@
   "scripts": {
     "build": "rimraf ./lib && yarn build:typescript && yarn build:flow",
     "build:typescript": "tsc",
-    "build:flow": "for file in $(find ./lib -name *.d.ts -type f); do flowgen --add-flow-header ${file} -o ${file/.d.ts/.js.flow}; done; node scripts/convert-import-from-types",
+    "build:flow": "bash scripts/generate-flow-types.sh && node scripts/convert-import-from-types",
     "lint": "eslint src",
     "test": "jest",
     "test:format": "prettier --list-different --write src/**/*.js src/**/*.ts",
