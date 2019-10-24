@@ -75,7 +75,9 @@ client.listProjects().then(console.log);
 
 ## Play with It
 
-You can play with it in your web browser with this live playground: TODO
+You can play with it in your web browser with this live playground: 
+
+- [CodeSandbox](https://codesandbox.io/s/clubhouse-lib-playground-r447i)
 
 ## Documentation
 
