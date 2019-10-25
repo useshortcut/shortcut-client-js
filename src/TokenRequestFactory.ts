@@ -22,7 +22,7 @@ class TokenRequestFactory implements RequestFactory<Request> {
     return `${prefix}${uri}`;
   }
 
-  public createRequest(uri: string, method: string = 'GET', body?: any): Request {
+  public createRequest(uri: string, method: string = 'GET', body?: Object): Request {
     const url = new URL(this.prefixURI(uri), this.baseURL);
     const headers = {
       Accept: 'application/json',

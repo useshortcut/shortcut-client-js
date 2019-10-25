@@ -66,7 +66,7 @@ class Client<RequestType, ResponseType> {
   static create(
     token: string,
     config: ClientConfig = defaultConfig,
-  ): Client<any, any> {
+  ): Client<RequestInfo, Response> {
     const { baseURL, version } = config;
     return new Client(
       new TokenRequestFactory(token, baseURL, version),

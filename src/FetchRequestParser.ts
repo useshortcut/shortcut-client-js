@@ -2,10 +2,10 @@ import { ClientError } from './client_error';
 import { ResponseParser } from './types';
 
 class FetchRequestParser implements ResponseParser<Response> {
-  public readonly parseResponse = (response: Response): Promise<any> =>
+  public readonly parseResponse = (response: Response): Promise<Object> =>
     response
       .json()
-      .then((json: any) => {
+      .then((json: Object) => {
         if (response.ok) {
           return json;
         }

@@ -51,7 +51,7 @@ export class TestRequestPerformer
 }
 
 export class TestResponseParser implements ResponseParser<TestResponse> {
-  static resolve = (_response: TestResponse, result: any) =>
+  static resolve = (_response: TestResponse, result: TestResponse) =>
     new TestRequestPerformer(() => Promise.resolve(result));
 
   static reject = (_response: TestResponse, result: unknown) =>
