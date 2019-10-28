@@ -22,7 +22,11 @@ class TokenRequestFactory implements RequestFactory<Request> {
     return `${prefix}${uri}`;
   }
 
-  public createRequest(uri: string, method: string = 'GET', body?: Object): Request {
+  public createRequest(
+    uri: string,
+    method: string = 'GET',
+    body?: Object,
+  ): Request {
     const url = new URL(this.prefixURI(uri), this.baseURL);
     const headers = {
       Accept: 'application/json',
@@ -33,7 +37,9 @@ class TokenRequestFactory implements RequestFactory<Request> {
 
     if (method === 'GET') {
       if (body) {
-        Object.entries(body).forEach((entry) => url.searchParams.append(entry[0], String(entry[1])));
+        Object.entries(body).forEach(entry =>
+          url.searchParams.append(entry[0], String(entry[1])),
+        );
       }
       return new Request(url.toString(), {
         headers,

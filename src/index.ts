@@ -36,8 +36,8 @@ const API_VERSION: string = 'v3';
 
 /** */
 type ClientConfig = {
-  baseURL: string,
-  version: string,
+  baseURL: string;
+  version: string;
 };
 
 const defaultConfig = {
