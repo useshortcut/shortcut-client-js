@@ -231,7 +231,7 @@ export type Task = {
   id: ID;
   created_at: string;
   updated_at: string;
-  completed: boolean;
+  complete: boolean;
   completed_at: string;
   description: string;
   external_id?: string;
