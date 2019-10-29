@@ -7,7 +7,15 @@
   "files": [
     "lib"
   ],
-  "repository": "",
+  "bugs": {
+    "url": "https://github.com/clubhouse/clubhouse-lib/issues"
+  },
+  "homepage": "https://github.com/clubhouse/clubhouse-lib",
+  "readme": "https://github.com/clubhouse/clubhouse-lib#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/clubhouse/clubhouse-lib.git"
+  },
   "license": "MIT",
   "scripts": {
     "build": "rimraf ./lib && yarn build:typescript && yarn build:flow",
