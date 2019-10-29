@@ -1,14 +1,27 @@
 {
   "extends": [
     "airbnb",
-    "plugin:flowtype/recommended",
     "prettier",
-    "prettier/flowtype"
+    "prettier/@typescript-eslint",
+    "plugin:@typescript-eslint/recommended"
   ],
-  "parser": "babel-eslint",
+  "parser":  "@typescript-eslint/parser",
+  "parserOptions": {
+    "sourceType": "module"
+  },
+  "settings": {
+    "import/extensions": [".js", ".ts"],
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts"]
+    },
+    "import/resolver": {
+      "node": {
+        "extensions": [".js", ".ts"]
+      }
+    }
+  },
   "plugins": [
     "import",
-    "flowtype",
     "jest",
     "prettier"
   ],
