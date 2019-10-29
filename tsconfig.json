@@ -1,17 +1,31 @@
 {
   "compilerOptions": {
+    "target": "es5",
     "module": "commonjs",
+    "moduleResolution": "node",
     "lib": [
-      "es6"
+      "es6",
+      "dom"
     ],
+    "pretty": true,
+    "declaration": true,
+    "outDir": "lib",
+
     "noImplicitAny": true,
     "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "strictNullChecks": false,
+
     "types": [
-      "node"
+      "node",
+      "jest"
     ],
-    "noEmit": true,
+
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["./typings/"]
+  "include": ["src"],
+  "exclude":[
+    "**/__tests__/**"
+  ]
 }

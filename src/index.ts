@@ -1,10 +1,8 @@
-/* @flow */
-
 import TokenRequestFactory from './TokenRequestFactory';
 import FetchRequestPerformer from './FetchRequestPerformer';
 import FetchRequestParser from './FetchRequestParser';
 
-import type {
+import {
   Epic,
   EpicChange,
   File,
@@ -38,8 +36,8 @@ const API_VERSION: string = 'v3';
 
 /** */
 type ClientConfig = {
-  baseURL: string,
-  version: string,
+  baseURL: string;
+  version: string;
 };
 
 const defaultConfig = {
@@ -67,8 +65,8 @@ class Client<RequestType, ResponseType> {
   /** */
   static create(
     token: string,
-    config?: ClientConfig = defaultConfig,
-  ): Client<Request, Response> {
+    config: ClientConfig = defaultConfig,
+  ): Client<RequestInfo, Response> {
     const { baseURL, version } = config;
     return new Client(
       new TokenRequestFactory(token, baseURL, version),
@@ -84,7 +82,7 @@ class Client<RequestType, ResponseType> {
       .then(this.responseParser.parseResponse);
   }
 
-  getResource<T>(uri: string, params: ?Object): Promise<T> {
+  getResource<T>(uri: string, params?: Object | null | undefined): Promise<T> {
     const request = params
       ? this.requestFactory.createRequest(uri, 'GET', params)
       : this.requestFactory.createRequest(uri);
@@ -206,7 +204,7 @@ class Client<RequestType, ResponseType> {
 
   /** */
   searchStories(query: String, pageSize?: number): Promise<StorySearchResult> {
-    const processResult = result => {
+    const processResult = (result: StorySearchResult): StorySearchResult => {
       if (result.next) {
         return {
           ...result,
@@ -215,7 +213,8 @@ class Client<RequestType, ResponseType> {
       }
       return result;
     };
-    return this.getResource(`search/stories`, {
+
+    return this.getResource<StorySearchResult>(`search/stories`, {
       query,
       page_size: pageSize || 25,
     }).then(processResult);
@@ -394,4 +393,4 @@ class Client<RequestType, ResponseType> {
   }
 }
 
-module.exports = Client;
+export default Client;

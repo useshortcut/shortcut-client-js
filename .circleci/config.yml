@@ -1,33 +1,82 @@
+aliases:
+  - &save-cache-yarn
+    key: yarn-packages-{{ checksum "yarn.lock" }}
+    paths:
+      - ~/.cache/yarn
+  - &restore-cache-yarn
+    name: Restore Yarn Package Cache
+    keys:
+      - yarn-packages-{{ checksum "yarn.lock" }}
+  - &attach_workspace
+    attach_workspace:
+      at: ~/clubhouse-lib
+
+defaults: &defaults
+  working_directory: ~/clubhouse-lib
+  docker:
+    - image: circleci/node:12
+
 version: 2
 jobs:
-  build:
-    working_directory: /clubhouse-lib
-    docker:
-      - image: clubhouseio/clubhouse-node-flow-primary:0.0.1
-        environment:
-          ENV: CI
-          TERM: dumb # See: https://github.com/facebook/flow/pull/3305
-          JEST_JUNIT_OUTPUT: ./artifacts/junit.xml
+  checkout:
+    <<: *defaults
     steps:
       - checkout
+      - restore_cache: *restore-cache-yarn
       - run:
-          name: Pre-Dependencies
-          command: mkdir -p /clubhouse-lib/artifacts
-      - restore_cache:
-          keys:
-            - v1-dependency-cache-{{ .Branch }}-{{ checksum "yarn.lock" }}
-            - v1-dependency-cache-{{ .Branch }}
-            - v1-dependency-cache-master-{{ checksum "yarn.lock" }}
-            - v1-dependency-cache-master
+          name: Yarn version
+          command: yarn -v
       - run:
-          name: Install Node Modules
-          command: yarn install
-      - save_cache:
-          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "yarn.lock" }}
-          paths:
-            - /clubhouse-lib/node_modules
+          name: Yarn Install
+          command: |
+            yarn install --frozen-lockfile --no-progress --non-interactive --cache-folder ~/.cache/yarn
+      - save_cache: *save-cache-yarn
+      - persist_to_workspace:
+          root: .
+          paths: .
+  lint:
+    <<: *defaults
+    steps:
+      - *attach_workspace
       - run:
-          name: Run unit tests
-          command: yarn run ci
-      - store_test_results:
-          path: /clubhouse-lib/artifacts
+          name: Lint
+          command: yarn lint
+  prettier:
+    <<: *defaults
+    steps:
+      - *attach_workspace
+      - run:
+          name: Prettier
+          command: yarn test:format
+  test:
+    <<: *defaults
+    steps:
+      - *attach_workspace
+      - run:
+          name: Run Jest
+          command: yarn test
+  build:
+    <<: *defaults
+    steps:
+      - *attach_workspace
+      - run:
+          name: Build
+          command: yarn build
+
+workflows:
+  version: 2
+  tests:
+    jobs:
+      - checkout
+      - lint:
+          requires:
+            - checkout
+      - prettier:
+          requires:
+            - checkout
+      - test:
+          requires:
+            - checkout
+      - build:
+          requires:
+            - checkout

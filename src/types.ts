@@ -1,63 +1,3 @@
-export default class Client {
-  listResource<T>(uri: string): Promise<Array<T>>
-  getResource<T>(uri: string, params?: Object): Promise<T>
-  createResource<T>(uri: string, params: Object): Promise<T>
-  updateResource<T>(uri: string, params: Object): Promise<T>
-  deleteResource<T>(uri: string, params?: Object): Promise<T>
-  listMembers(): Promise<Array<Member>>
-  getMember(userID: ID): Promise<Member>
-  getCurrentUser(): Promise<Member>
-  listProjects(): Promise<Array<Project>>
-  getProject(id: ID): Promise<Project>
-  createProject(params: ProjectChange): Promise<Project>
-  updateProject(id: ID, params: ProjectChange): Promise<Project>
-  deleteProject(id: ID): Promise<{}>
-  listEpics(): Promise<Array<Epic>>
-  getEpic(epicID: ID): Promise<Epic>
-  createEpic(params: EpicChange): Promise<Epic>
-  updateEpic(epicID: ID, params: EpicChange): Promise<Epic>
-  deleteEpic(epicID: ID): Promise<{}>
-  addReaction(storyId: ID, commentId: ID, emoji: string): Promise<void>
-  deleteReaction(storyId: ID, commentId: ID, emoji: string): Promise<void>
-  listStories(projectID: ID): Promise<Array<Story>>
-  searchStories(query: String, pageSize?: number): Promise<StorySearchResult>
-  createStory(params: StoryChange): Promise<Story>
-  getStory(storyID: ID): Promise<Story>
-  updateStory(storyID: ID, params: StoryChange): Promise<Story>
-  deleteStory(storyID: ID): Promise<{}>
-  createStoryComment(storyID: ID, text: string): Promise<StoryComment>
-  deleteStoryComment(storyID: ID, commentID: ID): Promise<{}>
-  updateStoryComment(storyID: ID, commentID: ID, text: string): Promise<StoryComment>
-  listTasks(storyID: ID): Promise<Array<Task>>
-  createTask(storyID: ID, params: TaskChange): Promise<Task>
-  getTask(storyID: ID, taskID: ID): Promise<Task>
-  updateTask(storyID: ID, taskID: ID, params: TaskChange): Promise<Task>
-  deleteTask(storyID: ID, taskID: ID): Promise<{}>
-  listWorkflows(): Promise<Array<Workflow>>
-  createStoryLink(params: StoryLinkChange): Promise<StoryLink>
-  getStoryLink(storyLinkID: ID): Promise<StoryLink>
-  deleteStoryLink(storyLinkID: ID): Promise<{}>
-  listFiles(): Promise<Array<File>>
-  updateFile(fileID: ID, params: FileChange): Promise<File>
-  deleteFile(fileID: ID): Promise<{}>
-  listLinkedFiles(): Promise<Array<LinkedFile>>
-  createLinkedFile(params: LinkedFileChange): Promise<LinkedFile>
-  updateLinkedFile(linkedFileID: ID, params: LinkedFileChange): Promise<LinkedFile>
-  deleteLinkedFile(linkedFileID: ID): Promise<{}>
-  createLabel(name: string, color: string): Promise<any>
-  listLabels(): Promise<Array<Label>>
-  listTeams(): Promise<Array<Team>>
-  getTeam(teamID: ID): Promise<Team>
-  listIterations(): Promise<Array<Iteration>>
-  createIteration(params: IterationChange): Promise<Iteration>
-  getIteration(iterationID: ID): Promise<Iteration>
-  updateIteration(iterationID: ID, params: IterationChange): Promise<Iteration>
-  deleteIteration(iterationID: ID): Promise<{}>
-}
-
-export function create(token: string, config?: any): Client
-
-
 export type ID = string | number;
 
 export interface Entity {
@@ -114,7 +54,7 @@ export type Project = {
   id: ID;
   name: string;
   entity_type: string;
-  description?: string;
+  description: string | null | undefined;
   abbreviation: string;
   color: string;
   iteration_length: number;
@@ -482,4 +422,3 @@ export type IterationChange = {
   end_date?: string;
   follower_ids?: Array<ID>;
 };
-

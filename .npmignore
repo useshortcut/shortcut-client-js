@@ -1,7 +1,4 @@
 *~
 .DS_Store
 /src
-/flow-typed
-/docs
-/examples
 **/__tests__/**

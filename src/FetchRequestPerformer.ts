@@ -1,11 +1,9 @@
-/* @flow */
-
-import type { RequestPerformer } from './types';
+import { RequestPerformer } from './types';
 
 require('fetch-everywhere');
 
 class FetchRequestPerformer implements RequestPerformer<Request, Response> {
-  performRequest = fetch;
+  public readonly performRequest = fetch;
 }
 
 export default FetchRequestPerformer;
