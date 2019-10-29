@@ -30,6 +30,7 @@
     "es6": true
   },
    "rules": {
-      "no-undef": 0
+      "no-undef": 0,
+      "@typescript-eslint/camelcase": 0
    }
 }
