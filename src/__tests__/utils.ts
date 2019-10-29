@@ -1,4 +1,4 @@
-/* @flow */
+/* eslint-disable max-classes-per-file */
 
 import Client from '../index';
 
@@ -7,23 +7,28 @@ import { RequestFactory, RequestPerformer, ResponseParser } from '../types';
 type TestRequest = {
   uri: string;
   method?: string;
-  body?: Object;
+  body?: Record<string, any>;
 };
 
 type TestResponse = {
   status: number;
-  body?: Object;
+  body?: Record<string, any>;
 };
 
 export class TestRequestFactory implements RequestFactory<TestRequest> {
-  baseURL: string = 'http://localhost:4001';
-  version: string = 'v3';
+  baseURL = 'http://localhost:4001';
+
+  version = 'v3';
 
   prefixURI(uri: string) {
     return `${this.baseURL}/api/${this.version}/${uri}`;
   }
 
-  createRequest = (uri: string, method?: string, body?: Object) => ({
+  createRequest = (
+    uri: string,
+    method?: string,
+    body?: Record<string, any>,
+  ) => ({
     uri: this.prefixURI(uri),
     method,
     body,

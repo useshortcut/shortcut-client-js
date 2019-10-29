@@ -9,7 +9,7 @@ export interface Entity {
 export interface RequestFactory<T> {
   baseURL: string;
   version: string;
-  createRequest(uri: string, method?: string, body?: Object): T;
+  createRequest(uri: string, method?: string, body?: Record<string, any>): T;
   prefixURI(uri: string): string;
 }
 

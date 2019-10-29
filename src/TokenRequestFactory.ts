@@ -5,7 +5,9 @@ require('fetch-everywhere');
 
 class TokenRequestFactory implements RequestFactory<Request> {
   public readonly token: string;
+
   public readonly baseURL: string;
+
   public readonly version: string;
 
   constructor(token: string, baseURL: string, version: string) {
@@ -24,8 +26,8 @@ class TokenRequestFactory implements RequestFactory<Request> {
 
   public createRequest(
     uri: string,
-    method: string = 'GET',
-    body?: Object,
+    method = 'GET',
+    body?: Record<string, any>,
   ): Request {
     const url = new URL(this.prefixURI(uri), this.baseURL);
     const headers = {
