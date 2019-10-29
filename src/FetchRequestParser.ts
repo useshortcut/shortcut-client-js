@@ -1,11 +1,13 @@
-import { ClientError } from './client_error';
+import ClientError from './client_error';
 import { ResponseParser } from './types';
 
 class FetchRequestParser implements ResponseParser<Response> {
-  public readonly parseResponse = (response: Response): Promise<Object> =>
+  public readonly parseResponse = (
+    response: Response,
+  ): Promise<Record<string, any>> =>
     response
       .json()
-      .then((json: Object) => {
+      .then((json: Record<string, any>) => {
         if (response.ok) {
           return json;
         }

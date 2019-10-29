@@ -31,8 +31,8 @@ import {
   Label,
 } from './types';
 
-const API_BASE_URL: string = 'https://api.clubhouse.io';
-const API_VERSION: string = 'v3';
+const API_BASE_URL = 'https://api.clubhouse.io';
+const API_VERSION = 'v3';
 
 /** */
 type ClientConfig = {
@@ -50,7 +50,9 @@ const defaultConfig = {
  */
 class Client<RequestType, ResponseType> {
   requestFactory: RequestFactory<RequestType>;
+
   requestPerformer: RequestPerformer<RequestType, ResponseType>;
+
   responseParser: ResponseParser<ResponseType>;
 
   constructor(
@@ -82,7 +84,10 @@ class Client<RequestType, ResponseType> {
       .then(this.responseParser.parseResponse);
   }
 
-  getResource<T>(uri: string, params?: Object | null | undefined): Promise<T> {
+  getResource<T>(
+    uri: string,
+    params?: Record<string, any> | null | undefined,
+  ): Promise<T> {
     const request = params
       ? this.requestFactory.createRequest(uri, 'GET', params)
       : this.requestFactory.createRequest(uri);
@@ -91,21 +96,21 @@ class Client<RequestType, ResponseType> {
       .then(this.responseParser.parseResponse);
   }
 
-  createResource<T>(uri: string, params: Object): Promise<T> {
+  createResource<T>(uri: string, params: Record<string, any>): Promise<T> {
     const request = this.requestFactory.createRequest(uri, 'POST', params);
     return this.requestPerformer
       .performRequest(request)
       .then(this.responseParser.parseResponse);
   }
 
-  updateResource<T>(uri: string, params: Object): Promise<T> {
+  updateResource<T>(uri: string, params: Record<string, any>): Promise<T> {
     const request = this.requestFactory.createRequest(uri, 'PUT', params);
     return this.requestPerformer
       .performRequest(request)
       .then(this.responseParser.parseResponse);
   }
 
-  deleteResource<T>(uri: string, params?: Object): Promise<T> {
+  deleteResource<T>(uri: string, params?: Record<string, any>): Promise<T> {
     const request = this.requestFactory.createRequest(uri, 'DELETE', params);
     return this.requestPerformer
       .performRequest(request)
@@ -203,7 +208,7 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
-  searchStories(query: String, pageSize?: number): Promise<StorySearchResult> {
+  searchStories(query: string, pageSize?: number): Promise<StorySearchResult> {
     const processResult = (result: StorySearchResult): StorySearchResult => {
       if (result.next) {
         return {

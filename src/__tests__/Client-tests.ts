@@ -12,7 +12,7 @@ describe('#Client', () => {
     it('returns a list of projects with a clubhouse account', async () => {
       const requests:
         | any[]
-        | { uri: string; method?: string; body?: Object }[] = [];
+        | { uri: string; method?: string; body?: Record<string, any> }[] = [];
       const client = createTestClient(request => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: {} });
@@ -28,7 +28,7 @@ describe('#Client', () => {
     it('requests a single project', async () => {
       const requests:
         | any[]
-        | { uri: string; method?: string; body?: Object }[] = [];
+        | { uri: string; method?: string; body?: Record<string, any> }[] = [];
       const client = createTestClient(request => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: { id: 1234 } });
@@ -44,7 +44,7 @@ describe('#Client', () => {
     it('creates a new project', async () => {
       const requests:
         | any[]
-        | { uri: string; method?: string; body?: Object }[] = [];
+        | { uri: string; method?: string; body?: Record<string, any> }[] = [];
       const client = createTestClient(request => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: { name: 'test' } });
@@ -60,7 +60,7 @@ describe('#Client', () => {
     it('updates a existing project', async () => {
       const requests:
         | any[]
-        | { uri: string; method?: string; body?: Object }[] = [];
+        | { uri: string; method?: string; body?: Record<string, any> }[] = [];
       const client = createTestClient(request => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: { name: 'test' } });
@@ -76,7 +76,7 @@ describe('#Client', () => {
     it('deletes a existing project', async () => {
       const requests:
         | any[]
-        | { uri: string; method?: string; body?: Object }[] = [];
+        | { uri: string; method?: string; body?: Record<string, any> }[] = [];
       const client = createTestClient(request => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: {} });
@@ -92,7 +92,7 @@ describe('#Client', () => {
     it('deletes a existing comment', async () => {
       const requests:
         | any[]
-        | { uri: string; method?: string; body?: Object }[] = [];
+        | { uri: string; method?: string; body?: Record<string, any> }[] = [];
       const client = createTestClient(request => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: {} });
@@ -108,7 +108,7 @@ describe('#Client', () => {
     it('update a existing comment', async () => {
       const requests:
         | any[]
-        | { uri: string; method?: string; body?: Object }[] = [];
+        | { uri: string; method?: string; body?: Record<string, any> }[] = [];
       const client = createTestClient(request => {
         requests.push(request);
         return Promise.resolve({
@@ -127,7 +127,7 @@ describe('#Client', () => {
     it('add a reaction to story', async () => {
       const requests:
         | any[]
-        | { uri: string; method?: string; body?: Object }[] = [];
+        | { uri: string; method?: string; body?: Record<string, any> }[] = [];
       const client = createTestClient(request => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: {} });
@@ -143,7 +143,7 @@ describe('#Client', () => {
     it('deletes a reaction in story', async () => {
       const requests:
         | any[]
-        | { uri: string; method?: string; body?: Object }[] = [];
+        | { uri: string; method?: string; body?: Record<string, any> }[] = [];
       const client = createTestClient(request => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: {} });
@@ -159,7 +159,7 @@ describe('#Client', () => {
     it('create a story link', async () => {
       const requests:
         | any[]
-        | { uri: string; method?: string; body?: Object }[] = [];
+        | { uri: string; method?: string; body?: Record<string, any> }[] = [];
       const storyLink = {
         object_id: 1234,
         subject_id: 1,
@@ -178,7 +178,7 @@ describe('#Client', () => {
     it('get a story link', async () => {
       const requests:
         | any[]
-        | { uri: string; method?: string; body?: Object }[] = [];
+        | { uri: string; method?: string; body?: Record<string, any> }[] = [];
       const storyLinkId = 1234;
       const client = createTestClient(request => {
         requests.push(request);
@@ -193,7 +193,7 @@ describe('#Client', () => {
     it('delete a story link', async () => {
       const requests:
         | any[]
-        | { uri: string; method?: string; body?: Object }[] = [];
+        | { uri: string; method?: string; body?: Record<string, any> }[] = [];
       const storyLinkId = 1234;
       const client = createTestClient(request => {
         requests.push(request);
@@ -208,7 +208,7 @@ describe('#Client', () => {
     it('create a label', async () => {
       const requests:
         | any[]
-        | { uri: string; method?: string; body?: Object }[] = [];
+        | { uri: string; method?: string; body?: Record<string, any> }[] = [];
       const client = createTestClient(request => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: {} });
@@ -224,7 +224,7 @@ describe('#Client', () => {
     it('list all labels', async () => {
       const requests:
         | any[]
-        | { uri: string; method?: string; body?: Object }[] = [];
+        | { uri: string; method?: string; body?: Record<string, any> }[] = [];
       const client = createTestClient(request => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: {} });
