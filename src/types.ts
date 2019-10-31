@@ -97,6 +97,13 @@ export type ProjectChange = {
 
 /* Labels */
 
+export type CreateLabelParams = {
+  color?: string;
+  description?: string;
+  external_id?: string;
+  name: string;
+};
+
 export type Label = {
   archived: boolean;
   color: string | null;
@@ -184,24 +191,16 @@ export type LinkedFileChange = {
   url: string;
 };
 
-/* StoryComment */
-
-export type StoryComment = {
-  author_id: ID | null;
-  created_at: string;
-  entity_type: string;
-  external_id: string | null;
-  group_mention_ids: Array<ID>;
-  id: number;
-  member_mention_ids: Array<ID>;
-  mention_ids: Array<ID>;
-  position: number;
-  story_id: ID;
-  text: string;
-  updated_at: string | null;
-};
-
 /* Task */
+
+export type CreateTaskParams = {
+  complete?: boolean;
+  created_at?: string;
+  description: string;
+  external_id?: string;
+  owner_ids?: Array<ID>;
+  updated_at?: string;
+};
 
 export type Task = {
   complete: boolean;
@@ -218,16 +217,6 @@ export type Task = {
   position: number;
   story_id: number;
   updated_at: string | null;
-};
-
-export type TaskChange = {
-  complete?: boolean;
-  create_at?: string;
-  description?: string;
-  external_id?: string | null;
-  owner_ids?: Array<ID>;
-  text?: string;
-  update_at?: string;
 };
 
 /* Stories */
@@ -262,12 +251,59 @@ export type Commit = {
   url: string;
 };
 
+export type PullRequest = {
+  branch_id: number;
+  branch_name: string;
+  closed: boolean;
+  created_at: string;
+  entity_type: string;
+  id: number;
+  num_added: number;
+  num_commits: number;
+  num_modified: number | null;
+  num_removed: number;
+  number: number;
+  target_branch_id: number;
+  target_branch_name: string;
+  title: string;
+  updated_at: string;
+  url: string;
+};
+
+export type CreateExternalTicketParams = {
+  external_id: string;
+  external_url: string;
+};
+
 export type ExternalTicket = {
   epic_ids: Array<number>;
   external_id: string;
   external_url: string;
   id: ID;
   story_ids: Array<number>;
+};
+
+export type CreateStoryCommentParams = {
+  author_id?: ID;
+  created_at?: string;
+  external_id?: string;
+  text: string;
+  updated_at?: string;
+};
+
+export type Comment = {
+  author_id: ID | null;
+  created_at: string;
+  entity_type: string;
+  external_id: string | null;
+  group_mention_ids: Array<ID>;
+  id: number;
+  member_mention_ids: Array<ID>;
+  mention_ids: Array<ID>;
+  position: number;
+  story_id: number;
+  text: string;
+  updated_at: string | null;
 };
 
 export type StoryType = 'bug' | 'chore' | 'feature';
@@ -278,7 +314,7 @@ export type Story = {
   blocked: boolean;
   blocker: boolean;
   branches: Array<Branch>;
-  comments: Array<StoryComment>;
+  comments: Array<Comment>;
   commits: Array<Commit>;
   completed: boolean;
   completed_at: string | null;
@@ -418,27 +454,32 @@ export type EpicChange = {
 export type WorkflowStateTypes = 'unstarted' | 'started' | 'done';
 
 export type WorkflowState = {
-  type: WorkflowStateTypes;
-  name: string;
-  id: ID;
   color: string;
   created_at: string;
   description: string;
   entity_type: string;
+  id: number;
+  name: string;
   num_stories: number;
+  num_story_templates: number;
   position: number;
+  type: WorkflowStateTypes;
   updated_at: string;
-  verb: string;
+  verb: string | null;
 };
 
 export type Workflow = {
-  id: ID;
+  auto_assign_owner: boolean;
   created_at: string;
-  updated_at: string;
   default_state_id: number;
   description: string;
+  entity_type: string;
+  id: number;
   name: string;
+  project_ids: Array<number>;
   states: Array<WorkflowState>;
+  team_id: number;
+  updated_at: string;
 };
 
 /* StoryLink */
