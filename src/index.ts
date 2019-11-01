@@ -3,11 +3,16 @@ import FetchRequestPerformer from './FetchRequestPerformer';
 import FetchRequestParser from './FetchRequestParser';
 
 import {
+  Comment,
+  CreateTaskParams,
   Epic,
   EpicChange,
   File,
   FileChange,
   ID,
+  Iteration,
+  IterationChange,
+  Label,
   LinkedFile,
   LinkedFileChange,
   Member,
@@ -18,17 +23,12 @@ import {
   ResponseParser,
   Story,
   StoryChange,
-  StoryComment,
   StoryLink,
   StoryLinkChange,
   StorySearchResult,
   Task,
-  TaskChange,
   Team,
   Workflow,
-  Iteration,
-  IterationChange,
-  Label,
 } from './types';
 
 const API_BASE_URL = 'https://api.clubhouse.io';
@@ -246,7 +246,7 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
-  createStoryComment(storyID: ID, text: string): Promise<StoryComment> {
+  createStoryComment(storyID: ID, text: string): Promise<Comment> {
     return this.createResource(`stories/${storyID}/comments`, { text });
   }
 
@@ -260,7 +260,7 @@ class Client<RequestType, ResponseType> {
     storyID: ID,
     commentID: ID,
     text: string,
-  ): Promise<StoryComment> {
+  ): Promise<Comment> {
     return this.updateResource(`stories/${storyID}/comments/${commentID}`, {
       text,
     });
@@ -272,7 +272,7 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
-  createTask(storyID: ID, params: TaskChange): Promise<Task> {
+  createTask(storyID: ID, params: CreateTaskParams): Promise<Task> {
     return this.createResource(`stories/${storyID}/tasks`, params);
   }
 
@@ -282,7 +282,7 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
-  updateTask(storyID: ID, taskID: ID, params: TaskChange): Promise<Task> {
+  updateTask(storyID: ID, taskID: ID, params: CreateTaskParams): Promise<Task> {
     return this.updateResource(`stories/${storyID}/tasks/${taskID}`, params);
   }
 
