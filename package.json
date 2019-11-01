@@ -25,7 +25,7 @@
     "test": "jest",
     "test:format": "prettier --list-different --write src/**/*.js src/**/*.ts",
     "format": "prettier --write src/**/*.js src/**/*.ts",
-    "prepublish": "yarn build"
+    "prepublishOnly": "yarn build"
   },
   "dependencies": {
     "fetch-everywhere": "^1.0.5",
