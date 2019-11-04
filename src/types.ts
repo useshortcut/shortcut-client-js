@@ -104,6 +104,8 @@ export type CreateLabelParams = {
   name: string;
 };
 
+export type UpdateLabelParams = Partial<CreateLabelParams>;
+
 export type Label = {
   archived: boolean;
   color: string | null;
@@ -201,6 +203,8 @@ export type CreateTaskParams = {
   owner_ids?: Array<ID>;
   updated_at?: string;
 };
+
+export type UpdateTaskParams = Partial<CreateTaskParams>;
 
 export type Task = {
   complete: boolean;
