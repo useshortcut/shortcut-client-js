@@ -104,7 +104,7 @@ export type CreateLabelParams = {
   name: string;
 };
 
-export type UpdateLabelParams = Partial<CreateTaskParams>;
+export type UpdateLabelParams = Partial<CreateLabelParams>;
 
 export type Label = {
   archived: boolean;
