@@ -32,6 +32,8 @@ import {
   Workflow,
 } from './types';
 
+export * from './types';
+
 const API_BASE_URL = 'https://api.clubhouse.io';
 const API_VERSION = 'v3';
 
