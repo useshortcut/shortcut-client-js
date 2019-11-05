@@ -400,3 +400,7 @@ class Client<RequestType, ResponseType> {
 }
 
 export default Client;
+
+// For CommonJS default export support
+module.exports = Client;
+module.exports.default = Client;
