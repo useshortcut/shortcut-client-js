@@ -28,6 +28,7 @@ import {
   StorySearchResult,
   Task,
   Team,
+  UpdateTaskParams,
   Workflow,
 } from './types';
 
@@ -282,7 +283,7 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
-  updateTask(storyID: ID, taskID: ID, params: CreateTaskParams): Promise<Task> {
+  updateTask(storyID: ID, taskID: ID, params: UpdateTaskParams): Promise<Task> {
     return this.updateResource(`stories/${storyID}/tasks/${taskID}`, params);
   }
 
