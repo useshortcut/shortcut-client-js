@@ -30,6 +30,7 @@ import {
   Team,
   UpdateTaskParams,
   Workflow,
+  CurrentMember,
 } from './types';
 
 export * from './types';
@@ -131,6 +132,11 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
+  getCurrentMember(): Promise<CurrentMember> {
+    return this.getResource('member');
+  }
+
+  /** Not Available through the API */
   getCurrentUser(): Promise<Member> {
     return this.getResource('user');
   }

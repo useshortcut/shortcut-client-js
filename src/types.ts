@@ -49,6 +49,18 @@ export type Member = {
   };
 };
 
+export interface CurrentMember {
+  id: string;
+  mention_name: string;
+  name: string;
+  workspace2: Workspace2;
+}
+
+export interface Workspace2 {
+  estimate_scale: number[];
+  url_slug: string;
+}
+
 /* Projects */
 
 export type Project = {
