@@ -131,8 +131,8 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
-  getCurrentUser(): Promise<Member> {
-    return this.getResource('user');
+  getCurrentMember(): Promise<CurrentMember> {
+    return this.getResource('member');
   }
 
   /** */
