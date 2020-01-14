@@ -49,6 +49,18 @@ export type Member = {
   };
 };
 
+export type CurrentMember = {
+  id: ID;
+  mention_name: string;
+  name: string | null;
+  workspace2: MemberWorkspace;
+};
+
+export type MemberWorkspace = {
+  url_slug: string,
+  estimate_scale: Array<number>
+};
+
 /* Projects */
 
 export type Project = {
