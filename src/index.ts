@@ -5,6 +5,7 @@ import FetchRequestParser from './FetchRequestParser';
 import {
   Comment,
   CreateTaskParams,
+  CurrentMember,
   Epic,
   EpicChange,
   File,
