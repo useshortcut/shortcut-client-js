@@ -5,6 +5,7 @@ import FetchRequestParser from './FetchRequestParser';
 import {
   Comment,
   CreateTaskParams,
+  CurrentMember,
   Epic,
   EpicChange,
   File,
@@ -131,6 +132,11 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
+  getCurrentMember(): Promise<CurrentMember> {
+    return this.getResource('member');
+  }
+
+  /** Not Available through the API */
   getCurrentUser(): Promise<Member> {
     return this.getResource('user');
   }
