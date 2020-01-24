@@ -18,10 +18,8 @@ class TokenRequestFactory implements RequestFactory<Request> {
 
   public prefixURI(uri: string): string {
     const prefix = `/api/${this.version}/`;
-    if (uri.startsWith(prefix)) {
-      return uri;
-    }
-    return `${prefix}${uri}`;
+    const sanitizedURI = uri.replace(/^\/api\/beta\/|^\/api\/v\d+\//, '')
+    return `${prefix}${sanitizedURI}`;
   }
 
   public createRequest(
