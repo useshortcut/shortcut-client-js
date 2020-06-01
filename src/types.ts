@@ -364,6 +364,7 @@ export type Story = {
   started_at: string | null;
   started_at_override: string | null;
   story_type: StoryType;
+  story_links: StoryLink[];
   tasks: Array<Task>;
   tasks_id: Array<ID>;
   updated_at: string | null;
