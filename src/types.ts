@@ -389,7 +389,7 @@ export type StoryChange = {
   owner_ids?: Array<ID>;
   project_id?: number;
   requested_by_id?: ID;
-  story_type: StoryType;
+  story_type?: StoryType;
   updated_at?: string | null;
   workflow_state_id?: number;
 };
