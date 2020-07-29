@@ -380,6 +380,7 @@ export type StoryChange = {
   description?: string;
   epic_id?: number | null;
   estimate?: number | null;
+  external_id?: string;
   file_ids?: Array<ID>;
   follower_ids?: Array<ID>;
   iteration_id?: number;
