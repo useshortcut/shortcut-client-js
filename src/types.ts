@@ -384,7 +384,7 @@ export type StoryChange = {
   file_ids?: Array<ID>;
   follower_ids?: Array<ID>;
   iteration_id?: number;
-  labels?: Array<Label>;
+  labels?: Array<CreateLabelParams>;
   linked_file_ids?: Array<ID>;
   name?: string;
   owner_ids?: Array<ID>;
