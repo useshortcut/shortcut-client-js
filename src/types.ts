@@ -420,6 +420,7 @@ export type EpicStats = {
 };
 
 export type Epic = {
+  app_url: string;
   archived: string;
   comments: Array<Record<string, any>>;
   completed: boolean;
@@ -433,6 +434,7 @@ export type Epic = {
   external_id: string | null;
   external_tickets: Array<Record<string, any>>;
   follower_ids: Array<ID>;
+  group_id: string | null;
   group_mention_ids: Array<ID>;
   id: number;
   labels: Array<Label>;
@@ -441,6 +443,7 @@ export type Epic = {
   milestone_id: number | null;
   name: string;
   owner_ids: Array<ID>;
+  planned_start_date: string | null;
   position: number;
   project_ids: Array<number>;
   requested_by_id: ID;
