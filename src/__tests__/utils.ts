@@ -20,7 +20,7 @@ export class TestRequestFactory implements RequestFactory<TestRequest> {
 
   version = 'v3';
 
-  prefixURI(uri: string) {
+  prefixURI(uri: string): string {
     return `${this.baseURL}/api/${this.version}/${uri}`;
   }
 
@@ -28,7 +28,7 @@ export class TestRequestFactory implements RequestFactory<TestRequest> {
     uri: string,
     method?: string,
     body?: Record<string, any>,
-  ) => ({
+  ): { uri: string; method?: string; body?: Record<string, any> } => ({
     uri: this.prefixURI(uri),
     method,
     body,
@@ -39,10 +39,16 @@ type PromiseResolver<Input, Output> = (input: Input) => Promise<Output>;
 
 export class TestRequestPerformer
   implements RequestPerformer<TestRequest, TestResponse> {
-  static resolve = (_request: TestRequest, response: TestResponse) =>
+  static resolve = (
+    _request: TestRequest,
+    response: TestResponse,
+  ): TestRequestPerformer =>
     new TestRequestPerformer(() => Promise.resolve(response));
 
-  static reject = (_request: TestRequest, response: TestResponse) =>
+  static reject = (
+    _request: TestRequest,
+    response: TestResponse,
+  ): TestRequestPerformer =>
     new TestRequestPerformer(() => Promise.reject(response));
 
   constructor(resolver: PromiseResolver<TestRequest, TestResponse>) {
@@ -56,10 +62,16 @@ export class TestRequestPerformer
 }
 
 export class TestResponseParser implements ResponseParser<TestResponse> {
-  static resolve = (_response: TestResponse, result: TestResponse) =>
+  static resolve = (
+    _response: TestResponse,
+    result: TestResponse,
+  ): TestRequestPerformer =>
     new TestRequestPerformer(() => Promise.resolve(result));
 
-  static reject = (_response: TestResponse, result: unknown) =>
+  static reject = (
+    _response: TestResponse,
+    result: unknown,
+  ): TestRequestPerformer =>
     new TestRequestPerformer(() => Promise.reject(result));
 
   constructor(resolver: PromiseResolver<TestResponse, unknown>) {
@@ -74,9 +86,9 @@ export class TestResponseParser implements ResponseParser<TestResponse> {
 
 export const createTestClient = (
   requestPerformer: (request: TestRequest) => Promise<TestResponse>,
-  responseParser: (response: TestResponse) => Promise<unknown> = response =>
+  responseParser: (response: TestResponse) => Promise<unknown> = (response) =>
     Promise.resolve(response),
-) =>
+): Client<TestRequest, TestResponse> =>
   new Client(
     new TestRequestFactory(),
     new TestRequestPerformer(requestPerformer),

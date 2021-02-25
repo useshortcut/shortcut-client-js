@@ -68,6 +68,7 @@ class Client<RequestType, ResponseType> {
     this.requestPerformer = requestPerformer;
     this.responseParser = responseParser;
   }
+
   /** */
   static create(
     token: string,
@@ -162,7 +163,7 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
-  deleteProject(id: ID): Promise<{}> {
+  deleteProject(id: ID): Promise<Record<string, unknown>> {
     return this.deleteResource(`projects/${id}`);
   }
 
@@ -187,7 +188,7 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
-  deleteEpic(epicID: ID): Promise<{}> {
+  deleteEpic(epicID: ID): Promise<Record<string, unknown>> {
     return this.deleteResource(`epics/${epicID}`);
   }
 
@@ -250,7 +251,7 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
-  deleteStory(storyID: ID): Promise<{}> {
+  deleteStory(storyID: ID): Promise<Record<string, unknown>> {
     return this.deleteResource(`stories/${storyID}`);
   }
 
@@ -260,7 +261,10 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
-  deleteStoryComment(storyID: ID, commentID: ID): Promise<{}> {
+  deleteStoryComment(
+    storyID: ID,
+    commentID: ID,
+  ): Promise<Record<string, unknown>> {
     return this.deleteResource(`stories/${storyID}/comments/${commentID}`);
   }
 
@@ -296,7 +300,7 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
-  deleteTask(storyID: ID, taskID: ID): Promise<{}> {
+  deleteTask(storyID: ID, taskID: ID): Promise<Record<string, unknown>> {
     return this.deleteResource(`stories/${storyID}/tasks/${taskID}`);
   }
 
@@ -316,7 +320,7 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
-  deleteStoryLink(storyLinkID: ID): Promise<{}> {
+  deleteStoryLink(storyLinkID: ID): Promise<Record<string, unknown>> {
     return this.deleteResource(`story-links/${storyLinkID}`);
   }
 
@@ -331,7 +335,7 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
-  deleteFile(fileID: ID): Promise<{}> {
+  deleteFile(fileID: ID): Promise<Record<string, unknown>> {
     return this.deleteResource(`files/${fileID}`);
   }
 
@@ -354,7 +358,7 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
-  deleteLinkedFile(linkedFileID: ID): Promise<{}> {
+  deleteLinkedFile(linkedFileID: ID): Promise<Record<string, unknown>> {
     return this.deleteResource(`linked-files/${linkedFileID}`);
   }
 
@@ -402,7 +406,7 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
-  deleteIteration(iterationID: ID): Promise<{}> {
+  deleteIteration(iterationID: ID): Promise<Record<string, unknown>> {
     return this.deleteResource(`iterations/${iterationID}`);
   }
 }

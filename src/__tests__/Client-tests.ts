@@ -13,7 +13,7 @@ describe('#Client', () => {
       const requests:
         | any[]
         | { uri: string; method?: string; body?: Record<string, any> }[] = [];
-      const client = createTestClient(request => {
+      const client = createTestClient((request) => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: {} });
       });
@@ -29,7 +29,7 @@ describe('#Client', () => {
       const requests:
         | any[]
         | { uri: string; method?: string; body?: Record<string, any> }[] = [];
-      const client = createTestClient(request => {
+      const client = createTestClient((request) => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: { id: 1234 } });
       });
@@ -45,7 +45,7 @@ describe('#Client', () => {
       const requests:
         | any[]
         | { uri: string; method?: string; body?: Record<string, any> }[] = [];
-      const client = createTestClient(request => {
+      const client = createTestClient((request) => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: { name: 'test' } });
       });
@@ -61,7 +61,7 @@ describe('#Client', () => {
       const requests:
         | any[]
         | { uri: string; method?: string; body?: Record<string, any> }[] = [];
-      const client = createTestClient(request => {
+      const client = createTestClient((request) => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: { name: 'test' } });
       });
@@ -77,7 +77,7 @@ describe('#Client', () => {
       const requests:
         | any[]
         | { uri: string; method?: string; body?: Record<string, any> }[] = [];
-      const client = createTestClient(request => {
+      const client = createTestClient((request) => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: {} });
       });
@@ -93,7 +93,7 @@ describe('#Client', () => {
       const requests:
         | any[]
         | { uri: string; method?: string; body?: Record<string, any> }[] = [];
-      const client = createTestClient(request => {
+      const client = createTestClient((request) => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: {} });
       });
@@ -109,7 +109,7 @@ describe('#Client', () => {
       const requests:
         | any[]
         | { uri: string; method?: string; body?: Record<string, any> }[] = [];
-      const client = createTestClient(request => {
+      const client = createTestClient((request) => {
         requests.push(request);
         return Promise.resolve({
           status: 200,
@@ -128,7 +128,7 @@ describe('#Client', () => {
       const requests:
         | any[]
         | { uri: string; method?: string; body?: Record<string, any> }[] = [];
-      const client = createTestClient(request => {
+      const client = createTestClient((request) => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: {} });
       });
@@ -144,7 +144,7 @@ describe('#Client', () => {
       const requests:
         | any[]
         | { uri: string; method?: string; body?: Record<string, any> }[] = [];
-      const client = createTestClient(request => {
+      const client = createTestClient((request) => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: {} });
       });
@@ -165,7 +165,7 @@ describe('#Client', () => {
         subject_id: 1,
         verb: 'blocks' as StoryLinkVerb,
       };
-      const client = createTestClient(request => {
+      const client = createTestClient((request) => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: {} });
       });
@@ -180,7 +180,7 @@ describe('#Client', () => {
         | any[]
         | { uri: string; method?: string; body?: Record<string, any> }[] = [];
       const storyLinkId = 1234;
-      const client = createTestClient(request => {
+      const client = createTestClient((request) => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: {} });
       });
@@ -195,7 +195,7 @@ describe('#Client', () => {
         | any[]
         | { uri: string; method?: string; body?: Record<string, any> }[] = [];
       const storyLinkId = 1234;
-      const client = createTestClient(request => {
+      const client = createTestClient((request) => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: {} });
       });
@@ -209,7 +209,7 @@ describe('#Client', () => {
       const requests:
         | any[]
         | { uri: string; method?: string; body?: Record<string, any> }[] = [];
-      const client = createTestClient(request => {
+      const client = createTestClient((request) => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: {} });
       });
@@ -225,7 +225,7 @@ describe('#Client', () => {
       const requests:
         | any[]
         | { uri: string; method?: string; body?: Record<string, any> }[] = [];
-      const client = createTestClient(request => {
+      const client = createTestClient((request) => {
         requests.push(request);
         return Promise.resolve({ status: 200, body: {} });
       });

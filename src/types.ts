@@ -1,3 +1,5 @@
+/* eslint-disable camelcase */
+
 export type ID = string | number;
 
 export interface Entity {
@@ -49,6 +51,11 @@ export type Member = {
   };
 };
 
+export interface Workspace2 {
+  estimate_scale: number[];
+  url_slug: string;
+}
+
 export interface CurrentMember {
   id: string;
   mention_name: string;
@@ -56,12 +63,12 @@ export interface CurrentMember {
   workspace2: Workspace2;
 }
 
-export interface Workspace2 {
-  estimate_scale: number[];
-  url_slug: string;
-}
-
 /* Projects */
+
+export type ProjectStats = {
+  num_points: number;
+  num_stories: number;
+};
 
 export type Project = {
   abbreviation: string | null;
@@ -81,11 +88,6 @@ export type Project = {
   stats: ProjectStats;
   team_id: number;
   updated_at: string | null;
-};
-
-export type ProjectStats = {
-  num_points: number;
-  num_stories: number;
 };
 
 /*
@@ -118,6 +120,17 @@ export type CreateLabelParams = {
 
 export type UpdateLabelParams = Partial<CreateLabelParams>;
 
+export type LabelStats = {
+  num_epics: number;
+  num_points_completed: number;
+  num_points_in_progress: number;
+  num_points_total: number;
+  num_stories_completed: number;
+  num_stories_in_progress: number;
+  num_stories_total: number;
+  num_stories_unestimated: number;
+};
+
 export type Label = {
   archived: boolean;
   color: string | null;
@@ -129,17 +142,6 @@ export type Label = {
   name: string;
   stats: LabelStats;
   updated_at: string | null;
-};
-
-export type LabelStats = {
-  num_epics: number;
-  num_points_completed: number;
-  num_points_in_progress: number;
-  num_points_total: number;
-  num_stories_completed: number;
-  num_stories_in_progress: number;
-  num_stories_total: number;
-  num_stories_unestimated: number;
 };
 
 /* File */
