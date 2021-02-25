@@ -1,11 +1,11 @@
 {
+  "parser": "@typescript-eslint/parser",
   "extends": [
     "airbnb",
+    "plugin:@typescript-eslint/recommended",
     "prettier",
-    "prettier/@typescript-eslint",
-    "plugin:@typescript-eslint/recommended"
+    "plugin:prettier/recommended"
   ],
-  "parser":  "@typescript-eslint/parser",
   "parserOptions": {
     "sourceType": "module"
   },
@@ -31,6 +31,7 @@
   },
    "rules": {
       "no-undef": 0,
-      "@typescript-eslint/camelcase": 0
+      "@typescript-eslint/camelcase": 0,
+      "import/extensions": 0
    }
 }
