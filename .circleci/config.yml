@@ -14,7 +14,7 @@ aliases:
 defaults: &defaults
   working_directory: ~/clubhouse-lib
   docker:
-    - image: circleci/node:12
+    - image: circleci/node:14
 
 version: 2
 jobs:
