@@ -82,11 +82,11 @@ class Client<RequestType, ResponseType> {
     );
   }
 
-  listResource<T>(uri: string): Promise<Array<T>> {
-    const request = this.requestFactory.createRequest(uri);
-    return this.requestPerformer
-      .performRequest(request)
-      .then(this.responseParser.parseResponse);
+  listResource<T>(
+    uri: string,
+    params?: Record<string, any> | null | undefined,
+  ): Promise<Array<T>> {
+    return this.getResource(uri, params);
   }
 
   getResource<T>(
@@ -213,8 +213,13 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
-  listStories(projectID: ID): Promise<Array<Story>> {
-    return this.listResource(`projects/${projectID}/stories`);
+  listStories(
+    projectID: ID,
+    includesDescription?: boolean,
+  ): Promise<Array<Story>> {
+    return this.listResource(`projects/${projectID}/stories`, {
+      includes_description: Boolean(includesDescription),
+    });
   }
 
   /** */
