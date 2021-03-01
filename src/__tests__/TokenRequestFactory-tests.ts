@@ -1,7 +1,5 @@
 import TokenRequestFactory from '../TokenRequestFactory';
 
-require('fetch-everywhere');
-
 describe('TokenRequestFactory', () => {
   describe('GET Requests', () => {
     it('correctly combines query parameters', () => {
@@ -20,7 +18,7 @@ describe('TokenRequestFactory', () => {
       );
 
       // $FlowFixMe
-      expect(request.body).toBeUndefined();
+      expect(request.body).toBeNull();
     });
   });
 
