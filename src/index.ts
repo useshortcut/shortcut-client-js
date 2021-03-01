@@ -215,7 +215,7 @@ class Client<RequestType, ResponseType> {
   /** */
   listStories(
     projectID: ID,
-    includesDescription: boolean,
+    includesDescription?: boolean,
   ): Promise<Array<Story>> {
     return this.listResource(`projects/${projectID}/stories`, {
       includes_description: Boolean(includesDescription),
