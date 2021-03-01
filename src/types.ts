@@ -345,6 +345,7 @@ export type Story = {
   epic_id: number | null;
   estimate: number | null;
   external_id: string | null;
+  external_links: Array<string>;
   external_tickets: Array<ExternalTicket>;
   files: Array<File>;
   follower_ids: Array<ID>;
