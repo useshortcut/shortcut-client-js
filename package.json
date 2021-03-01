@@ -26,7 +26,7 @@
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
-    "fetch-everywhere": "^1.0.5",
+    "cross-fetch": "^3.0.6",
     "query-string": "^6.14.0",
     "universal-url": "^2.0.0"
   },

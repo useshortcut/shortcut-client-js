@@ -1,6 +1,6 @@
-import { RequestPerformer } from './types';
+import fetch from 'cross-fetch';
 
-require('fetch-everywhere');
+import { RequestPerformer } from './types';
 
 class FetchRequestPerformer implements RequestPerformer<Request, Response> {
   public readonly performRequest = fetch;

@@ -1,7 +1,7 @@
+import { Request } from 'cross-fetch';
 import { URL } from 'universal-url';
-import { RequestFactory } from './types';
 
-require('fetch-everywhere');
+import { RequestFactory } from './types';
 
 class TokenRequestFactory implements RequestFactory<Request> {
   public readonly token: string;
