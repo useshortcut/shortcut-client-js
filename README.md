@@ -43,7 +43,7 @@ or
 yarn add clubhouse-lib
 ```
 
-### How To Get an API Token
+### How to Get an API Token
 
 The Clubhouse API uses token-based authentication, you will need one to use this library.
 
