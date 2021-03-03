@@ -280,7 +280,7 @@ export type PullRequestLabel = {
 export type PullRequest = {
   branch_id: number;
   branch_name: string;
-  branch_status: string;
+  build_status: string;
   closed: boolean;
   created_at: string;
   draft: boolean;
