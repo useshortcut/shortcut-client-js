@@ -387,6 +387,44 @@ export type Story = {
   workflow_state_id: number;
 };
 
+export type IterationStatus = 'unstarted' | 'started' | 'done';
+
+export type StoryHistoryAction = {
+  id: ID;
+  entity_type: string;
+  action: string;
+  app_url: string;
+  description: string;
+  story_type: StoryType;
+  name: string;
+  epic_id: ID;
+  requested_by_id: ID;
+  workflow_state_id: ID;
+  follower_ids: [ID];
+  project_id: ID;
+};
+
+export type StoryHistoryReference = {
+  id: ID;
+  entity_type: string;
+  name: string;
+  type: IterationStatus;
+};
+
+export type StoryHistory = {
+  actions: Array<StoryHistoryAction>;
+  changed_at: string;
+  external_id: string;
+  id: ID;
+  member_id: ID;
+  primary_id: number;
+  webhook_id: string;
+  version: string;
+  references: Array<StoryHistoryReference>;
+};
+
+export type StoryHistories = Array<StoryHistory>;
+
 export type StoryChange = {
   after_id?: ID;
   archived?: boolean;
@@ -582,8 +620,6 @@ export type IterationStats = {
   num_stories_unestimated: number;
   num_stories_unstarted: number;
 };
-
-export type IterationStatus = 'unstarted' | 'started' | 'done';
 
 export type Iteration = {
   created_at: string;

@@ -24,6 +24,7 @@ import {
   ResponseParser,
   Story,
   StoryChange,
+  StoryHistories,
   StoryLink,
   StoryLinkChange,
   StorySearchResult,
@@ -248,6 +249,11 @@ class Client<RequestType, ResponseType> {
   /** */
   getStory(storyID: ID): Promise<Story> {
     return this.getResource(`stories/${storyID}`);
+  }
+
+  /** */
+  getStoryHistory(storyID: ID): Promise<StoryHistories> {
+    return this.getResource(`stories/${storyID}/history`);
   }
 
   /** */
