@@ -12,6 +12,18 @@ Array [
 ]
 `;
 
+exports[`#Client .createEpic creates a new epic 1`] = `
+Array [
+  Object {
+    "body": Object {
+      "name": "test",
+    },
+    "method": "POST",
+    "uri": "http://localhost:4001/api/v3/epics",
+  },
+]
+`;
+
 exports[`#Client .createLabel create a label 1`] = `
 Array [
   Object {
@@ -61,6 +73,16 @@ Array [
 ]
 `;
 
+exports[`#Client .deleteEpic deletes an existing epic 1`] = `
+Array [
+  Object {
+    "body": undefined,
+    "method": "DELETE",
+    "uri": "http://localhost:4001/api/v3/epics/1234",
+  },
+]
+`;
+
 exports[`#Client .deleteProject deletes a existing project 1`] = `
 Array [
   Object {
@@ -93,6 +115,16 @@ Array [
 ]
 `;
 
+exports[`#Client .getEpic requests a single epic 1`] = `
+Array [
+  Object {
+    "body": undefined,
+    "method": undefined,
+    "uri": "http://localhost:4001/api/v3/epics/1234",
+  },
+]
+`;
+
 exports[`#Client .getProject requests a single project 1`] = `
 Array [
   Object {
@@ -109,6 +141,54 @@ Array [
     "body": undefined,
     "method": undefined,
     "uri": "http://localhost:4001/api/v3/story-links/1234",
+  },
+]
+`;
+
+exports[`#Client .listEpicStories list all stories in an epic with description 1`] = `
+Array [
+  Object {
+    "body": Object {
+      "includes_description": true,
+    },
+    "method": "GET",
+    "uri": "http://localhost:4001/api/v3/epics/1234/stories",
+  },
+]
+`;
+
+exports[`#Client .listEpicStories list all stories in an epic without description 1`] = `
+Array [
+  Object {
+    "body": Object {
+      "includes_description": false,
+    },
+    "method": "GET",
+    "uri": "http://localhost:4001/api/v3/epics/1234/stories",
+  },
+]
+`;
+
+exports[`#Client .listEpics list all epics with description 1`] = `
+Array [
+  Object {
+    "body": Object {
+      "includes_description": true,
+    },
+    "method": "GET",
+    "uri": "http://localhost:4001/api/v3/epics",
+  },
+]
+`;
+
+exports[`#Client .listEpics list all epics without description 1`] = `
+Array [
+  Object {
+    "body": Object {
+      "includes_description": false,
+    },
+    "method": "GET",
+    "uri": "http://localhost:4001/api/v3/epics",
   },
 ]
 `;
@@ -141,6 +221,18 @@ Array [
     },
     "method": "PUT",
     "uri": "http://localhost:4001/api/v3/stories/12/comments/5",
+  },
+]
+`;
+
+exports[`#Client .updateEpic updates an existing epic 1`] = `
+Array [
+  Object {
+    "body": Object {
+      "name": "test",
+    },
+    "method": "PUT",
+    "uri": "http://localhost:4001/api/v3/epics/1234",
   },
 ]
 `;

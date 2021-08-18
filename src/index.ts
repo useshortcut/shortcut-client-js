@@ -168,8 +168,10 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
-  listEpics(): Promise<Array<Epic>> {
-    return this.listResource('epics');
+  listEpics(includesDescription?: boolean): Promise<Array<Epic>> {
+    return this.listResource('epics', {
+      includes_description: Boolean(includesDescription),
+    });
   }
 
   /** */
@@ -190,6 +192,15 @@ class Client<RequestType, ResponseType> {
   /** */
   deleteEpic(epicID: ID): Promise<Record<string, unknown>> {
     return this.deleteResource(`epics/${epicID}`);
+  }
+
+  listEpicStories(
+    epicID: ID,
+    includesDescription?: boolean,
+  ): Promise<Array<Story>> {
+    return this.listResource(`epics/${epicID}/stories`, {
+      includes_description: Boolean(includesDescription),
+    });
   }
 
   /** */
