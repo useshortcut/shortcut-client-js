@@ -261,6 +261,11 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
+  getStoryComment(storyID: ID, commentID: ID): Promise<Comment> {
+    return this.getResource(`stories/${storyID}/comments/${commentID}`);
+  }
+
+  /** */
   createStoryComment(storyID: ID, text: string): Promise<Comment> {
     return this.createResource(`stories/${storyID}/comments`, { text });
   }
@@ -312,6 +317,11 @@ class Client<RequestType, ResponseType> {
   /** */
   listWorkflows(): Promise<Array<Workflow>> {
     return this.listResource('workflows');
+  }
+
+  /** */
+  getWorkflow(workflowID: ID): Promise<Workflow> {
+    return this.getResource(`workflows/${workflowID}`);
   }
 
   /** */

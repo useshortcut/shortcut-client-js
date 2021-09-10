@@ -235,4 +235,36 @@ describe('#Client', () => {
       expect(requests).toMatchSnapshot();
     });
   });
+
+  describe('.getStoryComment', () => {
+    it('requests a single story comment', async () => {
+      const requests:
+        | any[]
+        | { uri: string; method?: string; body?: Record<string, any> }[] = [];
+      const client = createTestClient((request) => {
+        requests.push(request);
+        return Promise.resolve({ status: 200, body: { id: 2 } });
+      });
+
+      await client.getStoryComment(1, 2);
+
+      expect(requests).toMatchSnapshot();
+    });
+  });
+
+  describe('.getWorkflow', () => {
+    it('requests a single workflow', async () => {
+      const requests:
+        | any[]
+        | { uri: string; method?: string; body?: Record<string, any> }[] = [];
+      const client = createTestClient((request) => {
+        requests.push(request);
+        return Promise.resolve({ status: 200, body: { id: 1 } });
+      });
+
+      await client.getWorkflow(1);
+
+      expect(requests).toMatchSnapshot();
+    });
+  });
 });

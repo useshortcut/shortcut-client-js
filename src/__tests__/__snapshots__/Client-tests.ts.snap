@@ -103,12 +103,32 @@ Array [
 ]
 `;
 
+exports[`#Client .getStoryComment requests a single story comment 1`] = `
+Array [
+  Object {
+    "body": undefined,
+    "method": undefined,
+    "uri": "http://localhost:4001/api/v3/stories/1/comments/2",
+  },
+]
+`;
+
 exports[`#Client .getStoryLink get a story link 1`] = `
 Array [
   Object {
     "body": undefined,
     "method": undefined,
     "uri": "http://localhost:4001/api/v3/story-links/1234",
+  },
+]
+`;
+
+exports[`#Client .getWorkflow requests a single workflow 1`] = `
+Array [
+  Object {
+    "body": undefined,
+    "method": undefined,
+    "uri": "http://localhost:4001/api/v3/workflows/1",
   },
 ]
 `;
