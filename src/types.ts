@@ -132,6 +132,7 @@ export type LabelStats = {
 };
 
 export type Label = {
+  app_url: string;
   archived: boolean;
   color: string | null;
   created_at: string | null;
