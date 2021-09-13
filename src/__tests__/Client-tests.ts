@@ -235,4 +235,128 @@ describe('#Client', () => {
       expect(requests).toMatchSnapshot();
     });
   });
+
+  describe('.listEpics', () => {
+    it('list all epics without description', async () => {
+      const requests:
+        | any[]
+        | { uri: string; method?: string; body?: Record<string, any> }[] = [];
+      const client = createTestClient((request) => {
+        requests.push(request);
+        return Promise.resolve({ status: 200, body: {} });
+      });
+
+      await client.listEpics();
+
+      expect(requests).toMatchSnapshot();
+    });
+
+    it('list all epics with description', async () => {
+      const requests:
+        | any[]
+        | { uri: string; method?: string; body?: Record<string, any> }[] = [];
+      const client = createTestClient((request) => {
+        requests.push(request);
+        return Promise.resolve({ status: 200, body: {} });
+      });
+
+      await client.listEpics(true);
+
+      expect(requests).toMatchSnapshot();
+    });
+  });
+
+  describe('.getEpic', () => {
+    it('requests a single epic', async () => {
+      const requests:
+        | any[]
+        | { uri: string; method?: string; body?: Record<string, any> }[] = [];
+      const client = createTestClient((request) => {
+        requests.push(request);
+        return Promise.resolve({ status: 200, body: { id: 1234 } });
+      });
+
+      await client.getEpic(1234);
+
+      expect(requests).toMatchSnapshot();
+    });
+  });
+
+  describe('.createEpic', () => {
+    it('creates a new epic', async () => {
+      const requests:
+        | any[]
+        | { uri: string; method?: string; body?: Record<string, any> }[] = [];
+      const client = createTestClient((request) => {
+        requests.push(request);
+        return Promise.resolve({ status: 200, body: { name: 'test' } });
+      });
+
+      await client.createEpic({ name: 'test' });
+
+      expect(requests).toMatchSnapshot();
+    });
+  });
+
+  describe('.updateEpic', () => {
+    it('updates an existing epic', async () => {
+      const requests:
+        | any[]
+        | { uri: string; method?: string; body?: Record<string, any> }[] = [];
+      const client = createTestClient((request) => {
+        requests.push(request);
+        return Promise.resolve({ status: 200, body: { name: 'test' } });
+      });
+
+      await client.updateEpic(1234, { name: 'test' });
+
+      expect(requests).toMatchSnapshot();
+    });
+  });
+
+  describe('.deleteEpic', () => {
+    it('deletes an existing epic', async () => {
+      const requests:
+        | any[]
+        | { uri: string; method?: string; body?: Record<string, any> }[] = [];
+      const client = createTestClient((request) => {
+        requests.push(request);
+        return Promise.resolve({ status: 200, body: {} });
+      });
+
+      await client.deleteEpic(1234);
+
+      expect(requests).toMatchSnapshot();
+    });
+  });
+
+  describe('.listEpicStories', () => {
+    it('list all stories in an epic without description', async () => {
+      const requests:
+        | any[]
+        | { uri: string; method?: string; body?: Record<string, any> }[] = [];
+      const client = createTestClient((request) => {
+        requests.push(request);
+        return Promise.resolve({ status: 200, body: {} });
+      });
+
+      await client.listEpicStories(1234);
+
+      expect(requests).toMatchSnapshot();
+    });
+
+    it('list all stories in an epic with description', async () => {
+      const requests:
+        | any[]
+        | { uri: string; method?: string; body?: Record<string, any> }[] = [];
+      const client = createTestClient((request) => {
+        requests.push(request);
+        return Promise.resolve({ status: 200, body: {} });
+      });
+
+      await client.listEpicStories(1234, true);
+
+      expect(requests).toMatchSnapshot();
+    });
+  });
 });
