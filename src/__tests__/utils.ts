@@ -38,7 +38,8 @@ export class TestRequestFactory implements RequestFactory<TestRequest> {
 type PromiseResolver<Input, Output> = (input: Input) => Promise<Output>;
 
 export class TestRequestPerformer
-  implements RequestPerformer<TestRequest, TestResponse> {
+  implements RequestPerformer<TestRequest, TestResponse>
+{
   static resolve = (
     _request: TestRequest,
     response: TestResponse,
