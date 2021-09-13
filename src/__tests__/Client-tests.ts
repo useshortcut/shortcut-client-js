@@ -9,7 +9,7 @@ describe('#Client', () => {
   });
 
   describe('.listProjects', () => {
-    it('returns a list of projects with a clubhouse account', async () => {
+    it('returns a list of projects with a shortcut account', async () => {
       const requests:
         | any[]
         | { uri: string; method?: string; body?: Record<string, any> }[] = [];
