@@ -22,6 +22,7 @@ import {
   MilestoneUpdate,
   Project,
   ProjectChange,
+  Repository,
   RequestFactory,
   RequestPerformer,
   ResponseParser,
@@ -419,6 +420,15 @@ class Client<RequestType, ResponseType> {
   }
 
   /** */
+  listRepositories(): Promise<Array<Repository>> {
+    return this.listResource(`repositories`);
+  }
+
+  /** */
+  getRepository(repositoryID: ID): Promise<Repository> {
+    return this.getResource(`repositories/${repositoryID}`);
+  }
+
   listMilestones(): Promise<Array<Milestone>> {
     return this.listResource(`milestones`);
   }
