@@ -420,6 +420,20 @@ export type StorySearchResult = {
 
 /* Epic */
 
+export type EpicStats = {
+  average_cycle_time: number;
+  average_lead_time: number;
+  last_story_update: string | null;
+  num_points: number;
+  num_points_done: number;
+  num_points_started: number;
+  num_points_unstarted: number;
+  num_stories_done: number;
+  num_stories_started: number;
+  num_stories_unestimated: number;
+  num_stories_unstarted: number;
+};
+
 export type EpicSlim = {
   id: number;
   app_url: string;
@@ -453,20 +467,6 @@ export type EpicSlim = {
 };
 
 export type EpicStates = 'to do' | 'in progress' | 'done';
-
-export type EpicStats = {
-  average_cycle_time: number;
-  average_lead_time: number;
-  last_story_update: string | null;
-  num_points: number;
-  num_points_done: number;
-  num_points_started: number;
-  num_points_unstarted: number;
-  num_stories_done: number;
-  num_stories_started: number;
-  num_stories_unestimated: number;
-  num_stories_unstarted: number;
-};
 
 export type Epic = {
   app_url: string;
@@ -590,6 +590,11 @@ export type CreateCategoryParams = {
   name: string;
 };
 
+export type MilestoneStats = {
+  average_cycle_time: number;
+  average_lead_time: number;
+};
+
 export type Milestone = {
   id: ID;
   app_url: string;
@@ -611,11 +616,6 @@ export type Milestone = {
 };
 
 export type MilestoneStateTypes = 'done' | 'in progress' | 'to do';
-
-export type MilestoneStats = {
-  average_cycle_time: number;
-  average_lead_time: number;
-};
 
 export type MilestoneUpdate = {
   after_id: number;
