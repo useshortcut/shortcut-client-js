@@ -18,9 +18,8 @@
   },
   "license": "MIT",
   "scripts": {
-    "build": "rimraf ./lib && yarn build:typescript && yarn build:flow",
+    "build": "rimraf ./lib && yarn build:typescript",
     "build:typescript": "tsc",
-    "build:flow": "scripts/generate-flow-types.sh && node scripts/convert-import-from-types",
     "lint": "eslint 'src/**/*.{js,ts}'",
     "test": "jest",
     "prepublishOnly": "yarn build"
@@ -46,7 +45,6 @@
     "eslint-plugin-prettier": "^3.1.1",
     "eslint-plugin-react": "^7.16.0",
     "eslint-plugin-react-hooks": "^4.2.0",
-    "flowgen": "^1.10.0",
     "jest": "^26.6.3",
     "prettier": "2.2.1",
     "rimraf": "^3.0.0",
