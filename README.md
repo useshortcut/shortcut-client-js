@@ -7,7 +7,7 @@
 </h3>
 
 <p align="center">
-  A library for interacting with the Clubhouse REST API
+  A library for interacting with the Shortcut REST API
 </p>
 
 <p align="center">
@@ -45,24 +45,24 @@ yarn add clubhouse-lib
 
 ### How to Get an API Token
 
-The Clubhouse API uses token-based authentication, you will need one to use this library.
+The Shortcut API uses token-based authentication, you will need one to use this library.
 
-To generate an API token, go to https://app.clubhouse.io/settings/account/api-tokens. To make it easier to explore our API, we recommend saving this token as an environment variable in your local dev environment:
+To generate an API token, go to https://app.shortcut.com/settings/account/api-tokens. To make it easier to explore our API, we recommend saving this token as an environment variable in your local dev environment:
 
 ```bash
-export CLUBHOUSE_API_TOKEN="YOUR API TOKEN HERE"
+export SHORTCUT_API_TOKEN="YOUR API TOKEN HERE"
 ```
 
 This will allow you to copy and paste many examples in the documentation to try them out.
 
-Requests made with a missing or invalid token will get a `401 Unauthorized` response. All requests must be made over HTTPS. Tokens provide complete access to your Clubhouse account, **so keep them secure**. Don’t paste them into your source code, use an environment variable instead. For security reasons, we will immediately invalidate any tokens we find have been made public.
+Requests made with a missing or invalid token will get a `401 Unauthorized` response. All requests must be made over HTTPS. Tokens provide complete access to your Shortcut account, **so keep them secure**. Don’t paste them into your source code, use an environment variable instead. For security reasons, we will immediately invalidate any tokens we find have been made public.
 
 ## Usage
 
 ```javascript
-import Clubhouse from 'clubhouse-lib';
+import Shortcut from 'clubhouse-lib';
 
-const client = Clubhouse.create('your token value'); // See https://github.com/clubhouse/clubhouse-lib#how-to-get-an-api-token
+const client = Shortcut.create('your token value'); // See https://github.com/useshortcut/clubhouse-lib#how-to-get-an-api-token
 
 client.listMembers().then(console.log);
 
@@ -81,4 +81,4 @@ You can play with it in your web browser with this live playground:
 
 ## Documentation
 
-[Documentation for the REST API](https://clubhouse.io/api/rest).
+[Documentation for the REST API](https://shortcut.com/api/rest).

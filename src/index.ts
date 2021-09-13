@@ -8,6 +8,7 @@ import {
   CurrentMember,
   Epic,
   EpicChange,
+  EpicSlim,
   File,
   FileChange,
   ID,
@@ -17,6 +18,8 @@ import {
   LinkedFile,
   LinkedFileChange,
   Member,
+  Milestone,
+  MilestoneUpdate,
   Project,
   ProjectChange,
   Repository,
@@ -36,7 +39,7 @@ import {
 
 export * from './types';
 
-const API_BASE_URL = 'https://api.clubhouse.io';
+const API_BASE_URL = 'https://api.app.shortcut.com';
 const API_VERSION = 'v3';
 
 /** */
@@ -424,6 +427,32 @@ class Client<RequestType, ResponseType> {
   /** */
   getRepository(repositoryID: ID): Promise<Repository> {
     return this.getResource(`repositories/${repositoryID}`);
+  }
+
+  listMilestones(): Promise<Array<Milestone>> {
+    return this.listResource(`milestones`);
+  }
+
+  listMilestoneEpics(milestoneID: ID): Promise<Array<EpicSlim>> {
+    return this.listResource(`milestones/${milestoneID}/epics`);
+  }
+
+  /** */
+  createMilestone(params: MilestoneUpdate): Promise<Milestone> {
+    return this.createResource(`milestones`, params);
+  }
+
+  /** */
+  getMilestone(milestoneID: ID): Promise<Milestone> {
+    return this.getResource(`milestones/${milestoneID}`);
+  }
+
+  /** */
+  updateMilestone(
+    milestoneID: ID,
+    params: MilestoneUpdate,
+  ): Promise<Milestone> {
+    return this.updateResource(`milestones/${milestoneID}`, params);
   }
 }
 

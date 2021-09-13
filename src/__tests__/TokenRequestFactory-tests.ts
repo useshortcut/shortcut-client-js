@@ -5,7 +5,7 @@ describe('TokenRequestFactory', () => {
     it('correctly combines query parameters', () => {
       const factory = new TokenRequestFactory(
         'abc-123',
-        'https://api.clubhouse.io',
+        'https://api.app.shortcut.com',
         'v3',
       );
 
@@ -14,7 +14,7 @@ describe('TokenRequestFactory', () => {
       });
 
       expect(request.url).toEqual(
-        'https://api.clubhouse.io/api/v3/search/stories?token=abc-123&query=project%3Amobile',
+        'https://api.app.shortcut.com/api/v3/search/stories?token=abc-123&query=project%3Amobile',
       );
 
       // $FlowFixMe
@@ -26,7 +26,7 @@ describe('TokenRequestFactory', () => {
     it('correctly combines query parameters', async () => {
       const factory = new TokenRequestFactory(
         'abc-123',
-        'https://api.clubhouse.io',
+        'https://api.app.shortcut.com',
         'v3',
       );
 
@@ -35,7 +35,7 @@ describe('TokenRequestFactory', () => {
       });
 
       expect(request.url).toEqual(
-        'https://api.clubhouse.io/api/v3/search/stories?token=abc-123',
+        'https://api.app.shortcut.com/api/v3/search/stories?token=abc-123',
       );
 
       // $FlowFixMe
