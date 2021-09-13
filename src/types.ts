@@ -360,7 +360,6 @@ export type Story = {
   estimate: number | null;
   external_id: string | null;
   external_links: Array<string>;
-  external_tickets: Array<ExternalTicket>;
   files: Array<File>;
   follower_ids: Array<ID>;
   id: number;
@@ -483,7 +482,6 @@ export type Epic = {
   entity_type: string;
   epic_state_id: number;
   external_id: string | null;
-  external_tickets: Array<Record<string, any>>;
   follower_ids: Array<ID>;
   group_id: string | null;
   group_mention_ids: Array<ID>;
