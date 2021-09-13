@@ -1,20 +1,20 @@
 {
-  "name": "clubhouse-lib",
+  "name": "shortcut-lib",
   "version": "0.12.0",
-  "description": "A Promise based library to the Shortcut REST API",
+  "description": "A library for interacting with the Shortcut REST API",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
     "lib"
   ],
   "bugs": {
-    "url": "https://github.com/useshortcut/clubhouse-lib/issues"
+    "url": "https://github.com/useshortcut/shortcut-lib/issues"
   },
-  "homepage": "https://github.com/useshortcut/clubhouse-lib",
-  "readme": "https://github.com/useshortcut/clubhouse-lib#readme",
+  "homepage": "https://github.com/useshortcut/shortcut-lib",
+  "readme": "https://github.com/useshortcut/shortcut-lib#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/useshortcut/clubhouse-lib.git"
+    "url": "https://github.com/useshortcut/shortcut-lib.git"
   },
   "license": "MIT",
   "scripts": {

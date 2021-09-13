@@ -1,9 +1,9 @@
 <p align="center">
-  <img height="60" src="https://user-images.githubusercontent.com/7189823/67512945-deb55180-f667-11e9-823f-023d1629f868.png" alt="Clubhouse logo">
+  <img height="60" src="https://user-images.githubusercontent.com/7189823/130458484-44607d13-801b-43b4-b0d5-c48f492de61a.png" alt="Shortcut logo">
 </p>
 
 <h3 align="center">
-  Clubhouse-lib
+  shortcut-lib
 </h3>
 
 <p align="center">
@@ -11,17 +11,17 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.org/package/clubhouse-lib">
-    <img src="https://badge.fury.io/js/clubhouse-lib.svg" alt="Current npm package version." />
+  <a href="https://www.npmjs.org/package/shortcut-lib">
+    <img src="https://badge.fury.io/js/shortcut-lib.svg" alt="Current npm package version." />
   </a>
-  <a href="https://circleci.com/gh/clubhouse/clubhouse-lib">
-    <img src="https://circleci.com/gh/clubhouse/clubhouse-lib.svg?style=shield" alt="Current CircleCI build status." />
+  <a href="https://circleci.com/gh/useshortcut/shortcut-lib">
+    <img src="https://circleci.com/gh/useshortcut/shortcut-lib.svg?style=shield" alt="Current CircleCI build status." />
   </a>
-  <a href="https://circleci.com/gh/clubhouse/clubhouse-lib">
+  <a href="https://circleci.com/gh/useshortcut/shortcut-lib">
     <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome!" />
   </a>
-  <a href="https://twitter.com/intent/follow?screen_name=clubhouse">
-    <img src="https://img.shields.io/twitter/follow/clubhouse.svg?label=Follow%20@clubhouse" alt="Follow @clubhouse" />
+  <a href="https://twitter.com/intent/follow?screen_name=useshortcut">
+    <img src="https://img.shields.io/twitter/follow/useshortcut.svg?label=Follow%20@useshortcut" alt="Follow @useshortcut" />
   </a>
 </p>
 
@@ -31,16 +31,16 @@
 
 ### Installation
 
-You can install clubhouse-lib with [NPM](https://www.npmjs.com/) or [Yarn](https://yarnpkg.com).
+You can install `shortcut-lib` with [NPM](https://www.npmjs.com/) or [Yarn](https://yarnpkg.com).
 
 ```shell
-npm install --save clubhouse-lib
+npm install --save shortcut-lib
 ```
 
 or
 
 ```shell
-yarn add clubhouse-lib
+yarn add shortcut-lib
 ```
 
 ### How to Get an API Token
@@ -60,9 +60,9 @@ Requests made with a missing or invalid token will get a `401 Unauthorized` resp
 ## Usage
 
 ```javascript
-import Shortcut from 'clubhouse-lib';
+import Shortcut from 'shortcut-lib';
 
-const client = Shortcut.create('your token value'); // See https://github.com/useshortcut/clubhouse-lib#how-to-get-an-api-token
+const client = Shortcut.create('your token value'); // See https://github.com/useshortcut/shortcut-lib#how-to-get-an-api-token
 
 client.listMembers().then(console.log);
 

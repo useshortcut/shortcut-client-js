@@ -9,10 +9,10 @@ aliases:
       - yarn-packages-{{ checksum "yarn.lock" }}
   - &attach_workspace
     attach_workspace:
-      at: ~/clubhouse-lib
+      at: ~/shortcut-lib
 
 defaults: &defaults
-  working_directory: ~/clubhouse-lib
+  working_directory: ~/shortcut-lib
   docker:
     - image: circleci/node:14
 
