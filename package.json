@@ -18,8 +18,7 @@
   },
   "license": "MIT",
   "scripts": {
-    "build": "rimraf ./lib && yarn build:typescript",
-    "build:typescript": "tsc",
+    "build": "rimraf ./lib && tsc",
     "lint": "eslint 'src/**/*.{js,ts}'",
     "test": "jest",
     "prepublishOnly": "yarn build"
