@@ -33,9 +33,8 @@ class TokenRequestFactory implements RequestFactory<Request> {
     const headers = {
       Accept: 'application/json',
       'Content-Type': 'application/json; charset=utf-8',
+      'Shortcut-Token': this.token,
     };
-
-    url.searchParams.append('token', this.token);
 
     if (method === 'GET') {
       if (body) {
