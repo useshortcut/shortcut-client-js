@@ -64,13 +64,9 @@ import { ShortcutApi } from './';
 
 const shortcut = new ShortcutApi('YOUR_API_TOKEN'); // See https://github.com/useshortcut/clubhouse-lib#how-to-get-an-api-token
 
-shortcut.listMembers().then(console.log);
+shortcut.getCurrentMemberInfo().then((response) => console.log(response?.data));
 
-shortcut.getMember('')
-  .catch(x => console.error(x.body))
-  .then(console.log);
-
-shortcut.listProjects().then(console.log);
+shortcut.listProjects().then((response) => console.log(response?.data));
 ```
 
 ## Play with It
