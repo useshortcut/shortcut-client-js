@@ -3,7 +3,7 @@
 </p>
 
 <h3 align="center">
-  Clubhouse-lib
+  @useshortcut/client
 </h3>
 
 <p align="center">
@@ -31,16 +31,16 @@
 
 ### Installation
 
-You can install clubhouse-lib with [NPM](https://www.npmjs.com/) or [Yarn](https://yarnpkg.com).
+You can install `@useshortcut/client` with [NPM](https://www.npmjs.com/) or [Yarn](https://yarnpkg.com).
 
 ```shell
-npm install --save clubhouse-lib
+npm install --save @useshortcut/client
 ```
 
 or
 
 ```shell
-yarn add clubhouse-lib
+yarn add @useshortcut/client
 ```
 
 ### How to Get an API Token
@@ -60,17 +60,17 @@ Requests made with a missing or invalid token will get a `401 Unauthorized` resp
 ## Usage
 
 ```javascript
-import Shortcut from 'clubhouse-lib';
+import { ShortcutApi } from './';
 
-const client = Shortcut.create('your token value'); // See https://github.com/useshortcut/clubhouse-lib#how-to-get-an-api-token
+const shortcut = new ShortcutApi('YOUR_API_TOKEN'); // See https://github.com/useshortcut/clubhouse-lib#how-to-get-an-api-token
 
-client.listMembers().then(console.log);
+shortcut.listMembers().then(console.log);
 
-client.getMember('')
+shortcut.getMember('')
   .catch(x => console.error(x.body))
   .then(console.log);
 
-client.listProjects().then(console.log);
+shortcut.listProjects().then(console.log);
 ```
 
 ## Play with It
