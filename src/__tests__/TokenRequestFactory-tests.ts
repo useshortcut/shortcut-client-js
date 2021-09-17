@@ -14,7 +14,7 @@ describe('TokenRequestFactory', () => {
       });
 
       expect(request.url).toEqual(
-        'https://api.app.shortcut.com/api/v3/search/stories?token=abc-123&query=project%3Amobile',
+        'https://api.app.shortcut.com/api/v3/search/stories?query=project%3Amobile',
       );
 
       // $FlowFixMe
@@ -35,7 +35,7 @@ describe('TokenRequestFactory', () => {
       });
 
       expect(request.url).toEqual(
-        'https://api.app.shortcut.com/api/v3/search/stories?token=abc-123',
+        'https://api.app.shortcut.com/api/v3/search/stories',
       );
 
       // $FlowFixMe
