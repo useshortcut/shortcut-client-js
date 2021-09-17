@@ -1,5 +1,5 @@
 <p align="center">
-  <img height="60" src="https://user-images.githubusercontent.com/7189823/67512945-deb55180-f667-11e9-823f-023d1629f868.png" alt="Clubhouse logo">
+  <img height="60" src="https://user-images.githubusercontent.com/7189823/133838642-9a05e1ec-9a79-46ae-b22e-a8b931caf233.png" alt="Shortcut logo">
 </p>
 
 <h3 align="center">
