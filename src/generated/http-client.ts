@@ -10,6 +10,7 @@
  */
 
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, ResponseType } from "axios";
+import * as FormData from "form-data";
 
 export type QueryParamsType = Record<string | number, any>;
 
@@ -78,14 +79,7 @@ export class HttpClient<SecurityDataType = unknown> {
   private createFormData(input: Record<string, unknown>): FormData {
     return Object.keys(input || {}).reduce((formData, key) => {
       const property = input[key];
-      formData.append(
-        key,
-        property instanceof Blob
-          ? property
-          : typeof property === "object" && property !== null
-          ? JSON.stringify(property)
-          : `${property}`,
-      );
+      formData.append(key, property);
       return formData;
     }, new FormData());
   }
@@ -119,6 +113,7 @@ export class HttpClient<SecurityDataType = unknown> {
       ...requestParams,
       headers: {
         ...(type && type !== ContentType.FormData ? { "Content-Type": type } : {}),
+        ...(body instanceof FormData ? { "Content-Type": body.getHeaders()["content-type"] } : {}),
         ...(requestParams.headers || {}),
       },
       params: query,

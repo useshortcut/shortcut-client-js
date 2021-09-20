@@ -19,7 +19,7 @@
   "license": "MIT",
   "scripts": {
     "build": "yarn build:client && tsc",
-    "build:client": "swagger-typescript-api -p ./schema/shortcut.swagger.json -o ./src/generated --clean-output --axios --modular",
+    "build:client": "swagger-typescript-api -p ./schema/shortcut.swagger.json -o ./src/generated --clean-output --axios --modular --templates ./templates",
     "build:docs": "typedoc ./src",
     "sync:schema": "wget https://shortcut.com/api/rest/v3/shortcut.swagger.json --destination ./schema/shortcut.swagger.json",
     "lint": "eslint 'src/**/*.{js,ts}'",
@@ -27,7 +27,8 @@
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
-    "axios": "^0.21.4"
+    "axios": "^0.21.4",
+    "form-data": "^4.0.0"
   },
   "devDependencies": {
     "@types/jest": "^27.0.1",
