@@ -14,14 +14,14 @@
   <a href="https://www.npmjs.org/package/clubhouse-lib">
     <img src="https://badge.fury.io/js/clubhouse-lib.svg" alt="Current npm package version." />
   </a>
-  <a href="https://circleci.com/gh/clubhouse/clubhouse-lib">
-    <img src="https://circleci.com/gh/clubhouse/clubhouse-lib.svg?style=shield" alt="Current CircleCI build status." />
+  <a href="https://circleci.com/gh/useshortcut/clubhouse-lib">
+    <img src="https://circleci.com/gh/useshortcut/clubhouse-lib.svg?style=shield" alt="Current CircleCI build status." />
   </a>
-  <a href="https://circleci.com/gh/clubhouse/clubhouse-lib">
+  <a href="https://circleci.com/gh/useshortcut/clubhouse-lib">
     <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome!" />
   </a>
-  <a href="https://twitter.com/intent/follow?screen_name=clubhouse">
-    <img src="https://img.shields.io/twitter/follow/clubhouse.svg?label=Follow%20@clubhouse" alt="Follow @clubhouse" />
+  <a href="https://twitter.com/intent/follow?screen_name=useshortcut">
+    <img src="https://img.shields.io/twitter/follow/useshortcut.svg?label=Follow%20@useshortcut" alt="Follow @useshortcut" />
   </a>
 </p>
 
