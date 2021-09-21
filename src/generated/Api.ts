@@ -1710,22 +1710,6 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * No description
-   *
-   * @name StoryHistoryAfter
-   * @summary Story History After
-   * @request GET:/api/v3/stories/{story-public-id}/history/after/{after-key}
-   * @secure
-   */
-  storyHistoryAfter = (storyPublicId: number, afterKey: string, params: RequestParams = {}) =>
-    this.request<History[], void>({
-      path: `/api/v3/stories/${storyPublicId}/history/after/${afterKey}`,
-      method: "GET",
-      secure: true,
-      format: "json",
-      ...params,
-    });
-  /**
    * @description Create Task is used to create a new task in a Story.
    *
    * @name CreateTask

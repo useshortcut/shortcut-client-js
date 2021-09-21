@@ -710,15 +710,15 @@
           "enum": [
             "blue",
             "purple",
+            "midnight-blue",
             "orange",
-            "midnight_blue",
+            "yellow-green",
             "brass",
-            "yellow_green",
             "gray",
             "fuchsia",
             "yellow",
-            "sky_blue",
             "pink",
+            "sky-blue",
             "green",
             "red",
             "black",
@@ -2615,15 +2615,15 @@
           "enum": [
             "blue",
             "purple",
+            "midnight-blue",
             "orange",
-            "midnight_blue",
+            "yellow-green",
             "brass",
-            "yellow_green",
             "gray",
             "fuchsia",
             "yellow",
-            "sky_blue",
             "pink",
+            "sky-blue",
             "green",
             "red",
             "black",
@@ -2828,7 +2828,10 @@
         },
         "version": {
           "description": "The version of the change format.",
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "v1"
+          ]
         },
         "webhook_id": {
           "description": "The ID of the webhook that handled the change.",
@@ -2867,7 +2870,10 @@
         },
         "action": {
           "description": "The action of the entity referenced.",
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "create"
+          ]
         }
       },
       "additionalProperties": false,
@@ -2902,7 +2908,10 @@
         },
         "action": {
           "description": "The action of the entity referenced.",
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "merge"
+          ]
         }
       },
       "additionalProperties": false,
@@ -2937,7 +2946,10 @@
         },
         "action": {
           "description": "The action of the entity referenced.",
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "push"
+          ]
         }
       },
       "additionalProperties": false,
@@ -4999,7 +5011,10 @@
       "properties": {
         "error": {
           "description": "The name for this type of error, `maximum-results-exceeded`",
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "maximum-results-exceeded"
+          ]
         },
         "message": {
           "description": "An explanatory message: \"A maximum of 1000 search results are supported.\"",
@@ -5008,7 +5023,10 @@
         "maximum-results": {
           "description": "The maximum number of search results supported, `1000`",
           "type": "integer",
-          "format": "int64"
+          "format": "int64",
+          "enum": [
+            1000
+          ]
         }
       },
       "additionalProperties": false,
@@ -7536,15 +7554,15 @@
           "enum": [
             "blue",
             "purple",
+            "midnight-blue",
             "orange",
-            "midnight_blue",
+            "yellow-green",
             "brass",
-            "yellow_green",
             "gray",
             "fuchsia",
             "yellow",
-            "sky_blue",
             "pink",
+            "sky-blue",
             "green",
             "red",
             "black",
@@ -11730,50 +11748,6 @@
         },
         "operationId": "storyHistory",
         "summary": "Story History"
-      }
-    },
-    "/api/v3/stories/{story-public-id}/history/after/{after-key}": {
-      "get": {
-        "parameters": [
-          {
-            "in": "path",
-            "name": "story-public-id",
-            "description": "The ID of the Story.",
-            "required": true,
-            "type": "integer",
-            "format": "int64"
-          },
-          {
-            "in": "path",
-            "name": "after-key",
-            "description": "",
-            "required": true,
-            "type": "string",
-            "format": "uuid"
-          }
-        ],
-        "responses": {
-          "200": {
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/History"
-              }
-            },
-            "description": "Resource"
-          },
-          "400": {
-            "description": "Schema mismatch"
-          },
-          "404": {
-            "description": "Resource does not exist"
-          },
-          "422": {
-            "description": "Unprocessable"
-          }
-        },
-        "operationId": "storyHistoryAfter",
-        "summary": "Story History After"
       }
     },
     "/api/v3/stories/{story-public-id}/tasks": {

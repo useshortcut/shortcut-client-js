@@ -477,15 +477,15 @@ export interface CreateGroup {
   color_key?:
     | "blue"
     | "purple"
+    | "midnight-blue"
     | "orange"
-    | "midnight_blue"
+    | "yellow-green"
     | "brass"
-    | "yellow_green"
     | "gray"
     | "fuchsia"
     | "yellow"
-    | "sky_blue"
     | "pink"
+    | "sky-blue"
     | "green"
     | "red"
     | "black"
@@ -1742,15 +1742,15 @@ export interface Group {
   color_key?:
     | "blue"
     | "purple"
+    | "midnight-blue"
     | "orange"
-    | "midnight_blue"
+    | "yellow-green"
     | "brass"
-    | "yellow_green"
     | "gray"
     | "fuchsia"
     | "yellow"
-    | "sky_blue"
     | "pink"
+    | "sky-blue"
     | "green"
     | "red"
     | "black"
@@ -1855,7 +1855,7 @@ export interface History {
   id: string;
 
   /** The version of the change format. */
-  version: string;
+  version: "v1";
 
   /** The ID of the webhook that handled the change. */
   webhook_id?: string | null;
@@ -1881,7 +1881,7 @@ export interface HistoryActionBranchCreate {
   url: string;
 
   /** The action of the entity referenced. */
-  action: string;
+  action: "create";
 }
 
 /**
@@ -1904,7 +1904,7 @@ export interface HistoryActionBranchMerge {
   url: string;
 
   /** The action of the entity referenced. */
-  action: string;
+  action: "merge";
 }
 
 /**
@@ -1927,7 +1927,7 @@ export interface HistoryActionBranchPush {
   url: string;
 
   /** The action of the entity referenced. */
-  action: string;
+  action: "push";
 }
 
 /**
@@ -3326,7 +3326,7 @@ export interface ListMembers {
  */
 export interface MaxSearchResultsExceededError {
   /** The name for this type of error, `maximum-results-exceeded` */
-  error: string;
+  error: "maximum-results-exceeded";
 
   /** An explanatory message: "A maximum of 1000 search results are supported." */
   message: string;
@@ -3335,7 +3335,7 @@ export interface MaxSearchResultsExceededError {
    * The maximum number of search results supported, `1000`
    * @format int64
    */
-  "maximum-results": number;
+  "maximum-results": 1000;
 }
 
 /**
@@ -5039,15 +5039,15 @@ export interface UpdateGroup {
   color_key?:
     | "blue"
     | "purple"
+    | "midnight-blue"
     | "orange"
-    | "midnight_blue"
+    | "yellow-green"
     | "brass"
-    | "yellow_green"
     | "gray"
     | "fuchsia"
     | "yellow"
-    | "sky_blue"
     | "pink"
+    | "sky-blue"
     | "green"
     | "red"
     | "black"
