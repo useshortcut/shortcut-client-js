@@ -1,36 +1,24 @@
+version: 2.1
+
 aliases:
-  - &save-cache-yarn
-    key: yarn-packages-{{ checksum "yarn.lock" }}
-    paths:
-      - ~/.cache/yarn
-  - &restore-cache-yarn
-    name: Restore Yarn Package Cache
-    keys:
-      - yarn-packages-{{ checksum "yarn.lock" }}
+  - &defaults
+    working_directory: ~/shortcut-client-js
+    docker:
+      - image: cimg/node:lts
   - &attach_workspace
     attach_workspace:
       at: ~/shortcut-client-js
 
-defaults: &defaults
-  working_directory: ~/shortcut-client-js
-  docker:
-    - image: circleci/node:14
+orbs:
+  node: circleci/node@4.7.0
 
-version: 2.1
 jobs:
   checkout:
     <<: *defaults
     steps:
       - checkout
-      - restore_cache: *restore-cache-yarn
-      - run:
-          name: Yarn version
-          command: yarn -v
-      - run:
-          name: Yarn Install
-          command: |
-            yarn install --frozen-lockfile --no-progress --non-interactive --cache-folder ~/.cache/yarn
-      - save_cache: *save-cache-yarn
+      - node/install-packages:
+          pkg-manager: yarn
       - persist_to_workspace:
           root: .
           paths: .
@@ -41,6 +29,13 @@ jobs:
       - run:
           name: Lint
           command: yarn lint
+  validate-schema:
+    <<: *defaults
+    steps:
+      - *attach_workspace
+      - run:
+          name: Validate Schema
+          command: yarn validate:schema
   test:
     <<: *defaults
     steps:
@@ -57,11 +52,13 @@ jobs:
           command: yarn build
 
 workflows:
-  version: 2
   tests:
     jobs:
       - checkout
       - lint:
+          requires:
+            - checkout
+      - validate-schema:
           requires:
             - checkout
       - test:

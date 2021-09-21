@@ -21,7 +21,8 @@
     "build": "yarn build:client && tsc",
     "build:client": "swagger-typescript-api -p ./schema/shortcut.swagger.json -o ./src/generated --clean-output --axios --modular --templates ./templates",
     "build:docs": "typedoc ./src",
-    "sync:schema": "wget https://shortcut.com/api/rest/v3/shortcut.swagger.json --destination ./schema/shortcut.swagger.json",
+    "sync:schema": "wget https://shortcut.com/api/rest/v3/shortcut.swagger.json --destination ./schema/shortcut.swagger.json && yarn validate:schema",
+    "validate:schema": "swagger-cli validate ./schema/shortcut.swagger.json",
     "lint": "eslint 'src/**/*.{js,ts}'",
     "test": "jest",
     "prepublishOnly": "yarn build"
@@ -45,6 +46,7 @@
     "node-wget": "^0.4.3",
     "prettier": "2.4.1",
     "rimraf": "^3.0.2",
+    "swagger-cli": "^4.0.4",
     "swagger-typescript-api": "9.2.0",
     "ts-jest": "^27.0.5",
     "typedoc": "0.21.9",
