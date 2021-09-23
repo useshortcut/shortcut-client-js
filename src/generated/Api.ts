@@ -11,9 +11,7 @@
 
 import {
   Category,
-  Comment,
   CreateCategory,
-  CreateComment,
   CreateCommentComment,
   CreateEntityTemplate,
   CreateEpic,
@@ -23,9 +21,10 @@ import {
   CreateLabelParams,
   CreateLinkedFile,
   CreateMilestone,
-  CreateOrDeleteReaction,
+  CreateOrDeleteStoryReaction,
   CreateProject,
   CreateStories,
+  CreateStoryComment,
   CreateStoryLink,
   CreateStoryParams,
   CreateTask,
@@ -35,7 +34,6 @@ import {
   EpicSearchResults,
   EpicSlim,
   EpicWorkflow,
-  File,
   GetEpicStories,
   GetExternalLinkStoriesParams,
   GetIterationStories,
@@ -57,13 +55,14 @@ import {
   MemberInfo,
   Milestone,
   Project,
-  Reaction,
   Repository,
   Search,
   SearchResults,
   SearchStories,
   Story,
+  StoryComment,
   StoryLink,
+  StoryReaction,
   StorySearchResults,
   StorySlim,
   Task,
@@ -82,8 +81,10 @@ import {
   UpdateProject,
   UpdateStories,
   UpdateStory,
+  UpdateStoryComment,
   UpdateStoryLink,
   UpdateTask,
+  UploadedFile,
   Workflow,
 } from "./data-contracts";
 import { ContentType, HttpClient, RequestParams } from "./http-client";
@@ -498,6 +499,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       method: "PUT",
       body: UpdateComment,
       secure: true,
+      type: ContentType.Json,
       format: "json",
       ...params,
     });
@@ -568,7 +570,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description List Files returns a list of all Files and related attributes in your Shortcut.
+   * @description List Files returns a list of all UploadedFiles in the workspace.
    *
    * @name ListFiles
    * @summary List Files
@@ -576,7 +578,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @secure
    */
   listFiles = (params: RequestParams = {}) =>
-    this.request<File[], void>({
+    this.request<UploadedFile[], void>({
       path: `/api/v3/files`,
       method: "GET",
       secure: true,
@@ -584,18 +586,18 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * No description
+   * @description Upload Files uploads one or many files and optionally associates them with a story. Use the multipart/form-data content-type to upload. Each `file` key should contain a separate file. Each UploadedFile's name comes from the Content-Disposition header "filename" directive for that field.
    *
-   * @name CreateFiles
-   * @summary Create Files
+   * @name UploadFiles
+   * @summary Upload Files
    * @request POST:/api/v3/files
    * @secure
    */
-  createFiles = (
+  uploadFiles = (
     data: { story_id?: number; file0: File; file1?: File; file2?: File; file3?: File },
     params: RequestParams = {},
   ) =>
-    this.request<File[], void>({
+    this.request<UploadedFile[], void>({
       path: `/api/v3/files`,
       method: "POST",
       body: data,
@@ -605,7 +607,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description Get File returns information about the selected File.
+   * @description Get File returns information about the selected UploadedFile.
    *
    * @name GetFile
    * @summary Get File
@@ -613,7 +615,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @secure
    */
   getFile = (filePublicId: number, params: RequestParams = {}) =>
-    this.request<File, void>({
+    this.request<UploadedFile, void>({
       path: `/api/v3/files/${filePublicId}`,
       method: "GET",
       secure: true,
@@ -621,7 +623,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description Update File can used to update the properties of a file uploaded to Shortcut.
+   * @description Update File updates the properties of an UploadedFile (but not its content).
    *
    * @name UpdateFile
    * @summary Update File
@@ -629,7 +631,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @secure
    */
   updateFile = (filePublicId: number, UpdateFile: UpdateFile, params: RequestParams = {}) =>
-    this.request<File, void>({
+    this.request<UploadedFile, void>({
       path: `/api/v3/files/${filePublicId}`,
       method: "PUT",
       body: UpdateFile,
@@ -639,7 +641,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description Delete File can be used to delete any previously attached File.
+   * @description Delete File deletes a previously uploaded file.
    *
    * @name DeleteFile
    * @summary Delete File
@@ -1582,16 +1584,16 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   /**
    * @description Create Comment allows you to create a Comment on any Story.
    *
-   * @name CreateComment
-   * @summary Create Comment
+   * @name CreateStoryComment
+   * @summary Create Story Comment
    * @request POST:/api/v3/stories/{story-public-id}/comments
    * @secure
    */
-  createComment = (storyPublicId: number, CreateComment: CreateComment, params: RequestParams = {}) =>
-    this.request<Comment, void>({
+  createStoryComment = (storyPublicId: number, CreateStoryComment: CreateStoryComment, params: RequestParams = {}) =>
+    this.request<StoryComment, void>({
       path: `/api/v3/stories/${storyPublicId}/comments`,
       method: "POST",
-      body: CreateComment,
+      body: CreateStoryComment,
       secure: true,
       type: ContentType.Json,
       format: "json",
@@ -1600,13 +1602,13 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   /**
    * @description Get Comment is used to get Comment information.
    *
-   * @name GetComment
-   * @summary Get Comment
+   * @name GetStoryComment
+   * @summary Get Story Comment
    * @request GET:/api/v3/stories/{story-public-id}/comments/{comment-public-id}
    * @secure
    */
-  getComment = (storyPublicId: number, commentPublicId: number, params: RequestParams = {}) =>
-    this.request<Comment, void>({
+  getStoryComment = (storyPublicId: number, commentPublicId: number, params: RequestParams = {}) =>
+    this.request<StoryComment, void>({
       path: `/api/v3/stories/${storyPublicId}/comments/${commentPublicId}`,
       method: "GET",
       secure: true,
@@ -1616,34 +1618,35 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   /**
    * @description Update Comment replaces the text of the existing Comment.
    *
-   * @name UpdateComment
-   * @summary Update Comment
+   * @name UpdateStoryComment
+   * @summary Update Story Comment
    * @request PUT:/api/v3/stories/{story-public-id}/comments/{comment-public-id}
    * @secure
    */
-  updateComment = (
+  updateStoryComment = (
     storyPublicId: number,
     commentPublicId: number,
-    UpdateComment: UpdateComment,
+    UpdateStoryComment: UpdateStoryComment,
     params: RequestParams = {},
   ) =>
-    this.request<Comment, void>({
+    this.request<StoryComment, void>({
       path: `/api/v3/stories/${storyPublicId}/comments/${commentPublicId}`,
       method: "PUT",
-      body: UpdateComment,
+      body: UpdateStoryComment,
       secure: true,
+      type: ContentType.Json,
       format: "json",
       ...params,
     });
   /**
    * @description Delete a Comment from any story.
    *
-   * @name DeleteComment
-   * @summary Delete Comment
+   * @name DeleteStoryComment
+   * @summary Delete Story Comment
    * @request DELETE:/api/v3/stories/{story-public-id}/comments/{comment-public-id}
    * @secure
    */
-  deleteComment = (storyPublicId: number, commentPublicId: number, params: RequestParams = {}) =>
+  deleteStoryComment = (storyPublicId: number, commentPublicId: number, params: RequestParams = {}) =>
     this.request<void, void>({
       path: `/api/v3/stories/${storyPublicId}/comments/${commentPublicId}`,
       method: "DELETE",
@@ -1651,45 +1654,45 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description Create a reaction to a comment.
+   * @description Create a reaction to a story comment.
    *
-   * @name CreateReaction
-   * @summary Create Reaction
+   * @name CreateStoryReaction
+   * @summary Create Story Reaction
    * @request POST:/api/v3/stories/{story-public-id}/comments/{comment-public-id}/reactions
    * @secure
    */
-  createReaction = (
+  createStoryReaction = (
     storyPublicId: number,
     commentPublicId: number,
-    CreateOrDeleteReaction: CreateOrDeleteReaction,
+    CreateOrDeleteStoryReaction: CreateOrDeleteStoryReaction,
     params: RequestParams = {},
   ) =>
-    this.request<Reaction[], void>({
+    this.request<StoryReaction[], void>({
       path: `/api/v3/stories/${storyPublicId}/comments/${commentPublicId}/reactions`,
       method: "POST",
-      body: CreateOrDeleteReaction,
+      body: CreateOrDeleteStoryReaction,
       secure: true,
       format: "json",
       ...params,
     });
   /**
-   * @description Delete a Reaction from any comment.
+   * @description Delete a reaction from any story comment.
    *
-   * @name DeleteReaction
-   * @summary Delete Reaction
+   * @name DeleteStoryReaction
+   * @summary Delete Story Reaction
    * @request DELETE:/api/v3/stories/{story-public-id}/comments/{comment-public-id}/reactions
    * @secure
    */
-  deleteReaction = (
+  deleteStoryReaction = (
     storyPublicId: number,
     commentPublicId: number,
-    CreateOrDeleteReaction: CreateOrDeleteReaction,
+    CreateOrDeleteStoryReaction: CreateOrDeleteStoryReaction,
     params: RequestParams = {},
   ) =>
     this.request<void, void>({
       path: `/api/v3/stories/${storyPublicId}/comments/${commentPublicId}/reactions`,
       method: "DELETE",
-      body: CreateOrDeleteReaction,
+      body: CreateOrDeleteStoryReaction,
       secure: true,
       ...params,
     });

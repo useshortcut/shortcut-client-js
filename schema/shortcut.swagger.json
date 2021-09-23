@@ -171,110 +171,6 @@
         "created_at"
       ]
     },
-    "Comment": {
-      "description": "A Comment is any note added within the Comment field of a Story.",
-      "type": "object",
-      "properties": {
-        "app_url": {
-          "description": "The Shortcut application url for the Comment.",
-          "type": "string"
-        },
-        "entity_type": {
-          "description": "A string description of this resource.",
-          "type": "string"
-        },
-        "story_id": {
-          "description": "The ID of the Story on which the Comment appears.",
-          "type": "integer",
-          "format": "int64"
-        },
-        "mention_ids": {
-          "description": "Deprecated: use member_mention_ids.",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "author_id": {
-          "description": "The unique ID of the Member who is the Comment's author.",
-          "type": "string",
-          "format": "uuid",
-          "x-nullable": true
-        },
-        "member_mention_ids": {
-          "description": "The unique IDs of the Member who are mentioned in the Comment.",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "updated_at": {
-          "description": "The time/date when the Comment was updated.",
-          "type": "string",
-          "format": "date-time",
-          "x-nullable": true
-        },
-        "group_mention_ids": {
-          "description": "The unique IDs of the Group who are mentioned in the Comment.",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "external_id": {
-          "description": "This field can be set to another unique ID. In the case that the Comment has been imported from another tool, the ID in the other tool can be indicated here.",
-          "type": "string",
-          "x-nullable": true
-        },
-        "id": {
-          "description": "The unique ID of the Comment.",
-          "type": "integer",
-          "format": "int64"
-        },
-        "position": {
-          "description": "The Comments numerical position in the list from oldest to newest.",
-          "type": "integer",
-          "format": "int64"
-        },
-        "reactions": {
-          "description": "A set of Reactions to this Comment.",
-          "x-doc-skip": true,
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Reaction"
-          }
-        },
-        "created_at": {
-          "description": "The time/date when the Comment was created.",
-          "type": "string",
-          "format": "date-time"
-        },
-        "text": {
-          "description": "The text of the Comment.",
-          "type": "string"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "app_url",
-        "entity_type",
-        "story_id",
-        "mention_ids",
-        "author_id",
-        "member_mention_ids",
-        "updated_at",
-        "group_mention_ids",
-        "external_id",
-        "id",
-        "position",
-        "reactions",
-        "created_at",
-        "text"
-      ]
-    },
     "Commit": {
       "description": "Commit refers to a VCS commit and all associated details.",
       "type": "object",
@@ -422,40 +318,6 @@
       "additionalProperties": false,
       "required": [
         "name"
-      ]
-    },
-    "CreateComment": {
-      "x-doc-skip": true,
-      "type": "object",
-      "properties": {
-        "text": {
-          "maxLength": 100000,
-          "description": "The comment text.",
-          "type": "string"
-        },
-        "author_id": {
-          "description": "The Member ID of the Comment's author. Defaults to the user identified by the API token.",
-          "type": "string",
-          "format": "uuid"
-        },
-        "created_at": {
-          "description": "Defaults to the time/date the comment is created, but can be set to reflect another date.",
-          "type": "string",
-          "format": "date-time"
-        },
-        "updated_at": {
-          "description": "Defaults to the time/date the comment is last updated, but can be set to reflect another date.",
-          "type": "string",
-          "format": "date-time"
-        },
-        "external_id": {
-          "description": "This field can be set to another unique ID. In the case that the comment has been imported from another tool, the ID in the other tool can be indicated here.",
-          "type": "string"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "text"
       ]
     },
     "CreateCommentComment": {
@@ -934,7 +796,7 @@
         "name"
       ]
     },
-    "CreateOrDeleteReaction": {
+    "CreateOrDeleteStoryReaction": {
       "x-doc-skip": true,
       "type": "object",
       "properties": {
@@ -1033,6 +895,40 @@
       "additionalProperties": false,
       "required": [
         "stories"
+      ]
+    },
+    "CreateStoryComment": {
+      "x-doc-skip": true,
+      "type": "object",
+      "properties": {
+        "text": {
+          "maxLength": 100000,
+          "description": "The comment text.",
+          "type": "string"
+        },
+        "author_id": {
+          "description": "The Member ID of the Comment's author. Defaults to the user identified by the API token.",
+          "type": "string",
+          "format": "uuid"
+        },
+        "created_at": {
+          "description": "Defaults to the time/date the comment is created, but can be set to reflect another date.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "description": "Defaults to the time/date the comment is last updated, but can be set to reflect another date.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "external_id": {
+          "description": "This field can be set to another unique ID. In the case that the comment has been imported from another tool, the ID in the other tool can be indicated here.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "text"
       ]
     },
     "CreateStoryCommentParams": {
@@ -1183,7 +1079,7 @@
           "description": "An array of files attached to the story.",
           "type": "array",
           "items": {
-            "$ref": "#/definitions/File"
+            "$ref": "#/definitions/UploadedFile"
           }
         },
         "project_id": {
@@ -2374,126 +2270,6 @@
         "updated_at",
         "default_epic_state_id",
         "epic_states"
-      ]
-    },
-    "File": {
-      "description": "A File is any document uploaded to your Shortcut. Files attached from a third-party service can be accessed using the Linked Files endpoint.",
-      "type": "object",
-      "properties": {
-        "description": {
-          "description": "The description of the file.",
-          "type": "string",
-          "x-nullable": true
-        },
-        "entity_type": {
-          "description": "A string description of this resource.",
-          "type": "string"
-        },
-        "story_ids": {
-          "description": "The unique IDs of the Stories associated with this file.",
-          "type": "array",
-          "items": {
-            "type": "integer",
-            "format": "int64"
-          }
-        },
-        "mention_ids": {
-          "description": "Deprecated: use member_mention_ids.",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "member_mention_ids": {
-          "description": "The unique IDs of the Members who are mentioned in the file description.",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "name": {
-          "description": "The optional User-specified name of the file.",
-          "type": "string"
-        },
-        "thumbnail_url": {
-          "description": "The url where the thumbnail of the file can be found in Shortcut.",
-          "type": "string",
-          "x-nullable": true
-        },
-        "size": {
-          "description": "The size of the file.",
-          "type": "integer",
-          "format": "int64"
-        },
-        "uploader_id": {
-          "description": "The unique ID of the Member who uploaded the file.",
-          "type": "string",
-          "format": "uuid"
-        },
-        "content_type": {
-          "description": "Free form string corresponding to a text or image file.",
-          "type": "string"
-        },
-        "updated_at": {
-          "description": "The time/date that the file was updated.",
-          "type": "string",
-          "format": "date-time",
-          "x-nullable": true
-        },
-        "filename": {
-          "description": "The name assigned to the file in Shortcut upon upload.",
-          "type": "string"
-        },
-        "group_mention_ids": {
-          "description": "The unique IDs of the Groups who are mentioned in the file description.",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "external_id": {
-          "description": "This field can be set to another unique ID. In the case that the File has been imported from another tool, the ID in the other tool can be indicated here.",
-          "type": "string",
-          "x-nullable": true
-        },
-        "id": {
-          "description": "The unique ID for the file.",
-          "type": "integer",
-          "format": "int64"
-        },
-        "url": {
-          "description": "The URL for the file.",
-          "type": "string",
-          "x-nullable": true
-        },
-        "created_at": {
-          "description": "The time/date that the file was created.",
-          "type": "string",
-          "format": "date-time"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "description",
-        "entity_type",
-        "story_ids",
-        "mention_ids",
-        "member_mention_ids",
-        "name",
-        "thumbnail_url",
-        "size",
-        "uploader_id",
-        "content_type",
-        "updated_at",
-        "filename",
-        "group_mention_ids",
-        "external_id",
-        "id",
-        "url",
-        "created_at"
       ]
     },
     "GetEpicStories": {
@@ -5652,30 +5428,6 @@
         "name"
       ]
     },
-    "Reaction": {
-      "description": "Emoji reaction on a comment.",
-      "x-doc-skip": true,
-      "type": "object",
-      "properties": {
-        "emoji": {
-          "description": "Emoji text of the reaction.",
-          "type": "string"
-        },
-        "permission_ids": {
-          "description": "Permissions who have reacted with this.",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uuid"
-          }
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "emoji",
-        "permission_ids"
-      ]
-    },
     "Repository": {
       "description": "Repository refers to a VCS repository.",
       "type": "object",
@@ -6072,7 +5824,7 @@
           "description": "An array of comments attached to the story.",
           "type": "array",
           "items": {
-            "$ref": "#/definitions/Comment"
+            "$ref": "#/definitions/StoryComment"
           }
         },
         "blocker": {
@@ -6225,7 +5977,7 @@
           "description": "An array of files attached to the story.",
           "type": "array",
           "items": {
-            "$ref": "#/definitions/File"
+            "$ref": "#/definitions/UploadedFile"
           }
         },
         "position": {
@@ -6319,6 +6071,110 @@
         "stats",
         "created_at",
         "moved_at"
+      ]
+    },
+    "StoryComment": {
+      "description": "A Comment is any note added within the Comment field of a Story.",
+      "type": "object",
+      "properties": {
+        "app_url": {
+          "description": "The Shortcut application url for the Comment.",
+          "type": "string"
+        },
+        "entity_type": {
+          "description": "A string description of this resource.",
+          "type": "string"
+        },
+        "story_id": {
+          "description": "The ID of the Story on which the Comment appears.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "mention_ids": {
+          "description": "Deprecated: use member_mention_ids.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "author_id": {
+          "description": "The unique ID of the Member who is the Comment's author.",
+          "type": "string",
+          "format": "uuid",
+          "x-nullable": true
+        },
+        "member_mention_ids": {
+          "description": "The unique IDs of the Member who are mentioned in the Comment.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "updated_at": {
+          "description": "The time/date when the Comment was updated.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "group_mention_ids": {
+          "description": "The unique IDs of the Group who are mentioned in the Comment.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "external_id": {
+          "description": "This field can be set to another unique ID. In the case that the Comment has been imported from another tool, the ID in the other tool can be indicated here.",
+          "type": "string",
+          "x-nullable": true
+        },
+        "id": {
+          "description": "The unique ID of the Comment.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "position": {
+          "description": "The Comments numerical position in the list from oldest to newest.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "reactions": {
+          "description": "A set of Reactions to this Comment.",
+          "x-doc-skip": true,
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StoryReaction"
+          }
+        },
+        "created_at": {
+          "description": "The time/date when the Comment was created.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "text": {
+          "description": "The text of the Comment.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "app_url",
+        "entity_type",
+        "story_id",
+        "mention_ids",
+        "author_id",
+        "member_mention_ids",
+        "updated_at",
+        "group_mention_ids",
+        "external_id",
+        "id",
+        "position",
+        "reactions",
+        "created_at",
+        "text"
       ]
     },
     "StoryContents": {
@@ -6422,7 +6278,7 @@
           "description": "An array of files attached to the story.",
           "type": "array",
           "items": {
-            "$ref": "#/definitions/File"
+            "$ref": "#/definitions/UploadedFile"
           }
         },
         "project_id": {
@@ -6637,6 +6493,30 @@
         "object_id",
         "created_at",
         "updated_at"
+      ]
+    },
+    "StoryReaction": {
+      "description": "Emoji reaction on a comment.",
+      "x-doc-skip": true,
+      "type": "object",
+      "properties": {
+        "emoji": {
+          "description": "Emoji text of the reaction.",
+          "type": "string"
+        },
+        "permission_ids": {
+          "description": "Permissions who have reacted with this.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "emoji",
+        "permission_ids"
       ]
     },
     "StorySearchResults": {
@@ -7361,7 +7241,7 @@
           "type": "string"
         },
         "story_contents": {
-          "$ref": "#/definitions/CreateStoryContents"
+          "$ref": "#/definitions/UpdateStoryContents"
         }
       },
       "additionalProperties": false
@@ -8170,6 +8050,162 @@
       },
       "additionalProperties": false
     },
+    "UpdateStoryComment": {
+      "x-doc-skip": true,
+      "type": "object",
+      "properties": {
+        "text": {
+          "maxLength": 100000,
+          "description": "The updated comment text.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "text"
+      ]
+    },
+    "UpdateStoryContents": {
+      "description": "Updated attributes for the template to populate.",
+      "type": "object",
+      "properties": {
+        "description": {
+          "description": "The description of the story.",
+          "type": "string"
+        },
+        "entity_type": {
+          "description": "A string description of this resource.",
+          "type": "string"
+        },
+        "labels": {
+          "description": "An array of labels to be populated by the template.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CreateLabelParams"
+          }
+        },
+        "story_type": {
+          "description": "The type of story (feature, bug, chore).",
+          "type": "string"
+        },
+        "linked_files": {
+          "description": "An array of linked files attached to the story.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LinkedFile"
+          }
+        },
+        "file_ids": {
+          "description": "An array of the attached file IDs to be populated.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "uniqueItems": true
+        },
+        "name": {
+          "description": "The name of the story.",
+          "type": "string"
+        },
+        "epic_id": {
+          "description": "The ID of the epic the to be populated.",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
+        },
+        "external_links": {
+          "description": "An array of external links to be populated.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "iteration_id": {
+          "description": "The ID of the iteration the to be populated.",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
+        },
+        "tasks": {
+          "description": "An array of tasks to be populated by the template.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EntityTemplateTask"
+          }
+        },
+        "label_ids": {
+          "description": "An array of label ids attached to the story.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "group_id": {
+          "description": "The ID of the group to be populated.",
+          "type": "string",
+          "format": "uuid",
+          "x-nullable": true
+        },
+        "workflow_state_id": {
+          "description": "The ID of the workflow state the story is currently in.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "follower_ids": {
+          "description": "An array of UUIDs for any Members listed as Followers.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "owner_ids": {
+          "description": "An array of UUIDs of the owners of this story.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "estimate": {
+          "description": "The numeric point estimate to be populated.",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
+        },
+        "files": {
+          "description": "An array of files attached to the story.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UploadedFile"
+          }
+        },
+        "project_id": {
+          "description": "The ID of the project the story belongs to.",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
+        },
+        "linked_file_ids": {
+          "description": "An array of the linked file IDs to be populated.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "uniqueItems": true
+        },
+        "deadline": {
+          "description": "The due date of the story.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        }
+      },
+      "additionalProperties": false
+    },
     "UpdateStoryLink": {
       "x-doc-skip": true,
       "type": "object",
@@ -8228,6 +8264,126 @@
         }
       },
       "additionalProperties": false
+    },
+    "UploadedFile": {
+      "description": "An UploadedFile is any document uploaded to your Shortcut Workspace. Files attached from a third-party service are different: see the Linked Files endpoint.",
+      "type": "object",
+      "properties": {
+        "description": {
+          "description": "The description of the file.",
+          "type": "string",
+          "x-nullable": true
+        },
+        "entity_type": {
+          "description": "A string description of this resource.",
+          "type": "string"
+        },
+        "story_ids": {
+          "description": "The unique IDs of the Stories associated with this file.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "mention_ids": {
+          "description": "Deprecated: use member_mention_ids.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "member_mention_ids": {
+          "description": "The unique IDs of the Members who are mentioned in the file description.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "name": {
+          "description": "The optional User-specified name of the file.",
+          "type": "string"
+        },
+        "thumbnail_url": {
+          "description": "The url where the thumbnail of the file can be found in Shortcut.",
+          "type": "string",
+          "x-nullable": true
+        },
+        "size": {
+          "description": "The size of the file.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "uploader_id": {
+          "description": "The unique ID of the Member who uploaded the file.",
+          "type": "string",
+          "format": "uuid"
+        },
+        "content_type": {
+          "description": "Free form string corresponding to a text or image file.",
+          "type": "string"
+        },
+        "updated_at": {
+          "description": "The time/date that the file was updated.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "filename": {
+          "description": "The name assigned to the file in Shortcut upon upload.",
+          "type": "string"
+        },
+        "group_mention_ids": {
+          "description": "The unique IDs of the Groups who are mentioned in the file description.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "external_id": {
+          "description": "This field can be set to another unique ID. In the case that the File has been imported from another tool, the ID in the other tool can be indicated here.",
+          "type": "string",
+          "x-nullable": true
+        },
+        "id": {
+          "description": "The unique ID for the file.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "url": {
+          "description": "The URL for the file.",
+          "type": "string",
+          "x-nullable": true
+        },
+        "created_at": {
+          "description": "The time/date that the file was created.",
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "description",
+        "entity_type",
+        "story_ids",
+        "mention_ids",
+        "member_mention_ids",
+        "name",
+        "thumbnail_url",
+        "size",
+        "uploader_id",
+        "content_type",
+        "updated_at",
+        "filename",
+        "group_mention_ids",
+        "external_id",
+        "id",
+        "url",
+        "created_at"
+      ]
     },
     "Workflow": {
       "description": "Workflow is the array of defined Workflow States. Workflow can be queried using the API but must be updated in the Shortcut UI. ",
@@ -9375,7 +9531,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/File"
+                "$ref": "#/definitions/UploadedFile"
               }
             },
             "description": "Resource"
@@ -9391,7 +9547,7 @@
           }
         },
         "operationId": "listFiles",
-        "description": "List Files returns a list of all Files and related attributes in your Shortcut.",
+        "description": "List Files returns a list of all UploadedFiles in the workspace.",
         "summary": "List Files"
       },
       "post": {
@@ -9438,7 +9594,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/File"
+                "$ref": "#/definitions/UploadedFile"
               }
             },
             "description": "Resource"
@@ -9453,11 +9609,12 @@
             "description": "Unprocessable"
           }
         },
-        "operationId": "createFiles",
+        "operationId": "uploadFiles",
         "consumes": [
           "multipart/form-data"
         ],
-        "summary": "Create Files"
+        "description": "Upload Files uploads one or many files and optionally associates them with a story.\n   Use the multipart/form-data content-type to upload.\n   Each `file` key should contain a separate file.\n   Each UploadedFile's name comes from the Content-Disposition header \"filename\" directive for that field.",
+        "summary": "Upload Files"
       }
     },
     "/api/v3/files/{file-public-id}": {
@@ -9475,7 +9632,7 @@
         "responses": {
           "200": {
             "schema": {
-              "$ref": "#/definitions/File"
+              "$ref": "#/definitions/UploadedFile"
             },
             "description": "Resource"
           },
@@ -9490,7 +9647,7 @@
           }
         },
         "operationId": "getFile",
-        "description": "Get File returns information about the selected File.",
+        "description": "Get File returns information about the selected UploadedFile.",
         "summary": "Get File"
       },
       "put": {
@@ -9516,7 +9673,7 @@
         "responses": {
           "200": {
             "schema": {
-              "$ref": "#/definitions/File"
+              "$ref": "#/definitions/UploadedFile"
             },
             "description": "Resource"
           },
@@ -9531,7 +9688,7 @@
           }
         },
         "operationId": "updateFile",
-        "description": "Update File can used to update the properties of a file uploaded to Shortcut.",
+        "description": "Update File updates the properties of an UploadedFile (but not its content).",
         "summary": "Update File"
       },
       "delete": {
@@ -9560,7 +9717,7 @@
           }
         },
         "operationId": "deleteFile",
-        "description": "Delete File can be used to delete any previously attached File.",
+        "description": "Delete File deletes a previously uploaded file.",
         "summary": "Delete File"
       }
     },
@@ -9612,17 +9769,17 @@
           "400": {
             "description": "Schema mismatch"
           },
-          "404": {
-            "description": "Resource does not exist"
-          },
-          "422": {
-            "description": "Unprocessable"
-          },
           "403": {
             "description": "",
             "schema": {
               "$ref": "#/definitions/UnusableEntitlementError"
             }
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
           }
         },
         "operationId": "createGroup",
@@ -9733,17 +9890,17 @@
           "400": {
             "description": "Schema mismatch"
           },
-          "404": {
-            "description": "Resource does not exist"
-          },
-          "422": {
-            "description": "Unprocessable"
-          },
           "403": {
             "description": "",
             "schema": {
               "$ref": "#/definitions/UnusableEntitlementError"
             }
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
           }
         },
         "operationId": "updateGroup",
@@ -10618,17 +10775,17 @@
           "400": {
             "description": "Schema mismatch"
           },
-          "404": {
-            "description": "Resource does not exist"
-          },
-          "422": {
-            "description": "Unprocessable"
-          },
           "403": {
             "description": "",
             "schema": {
               "$ref": "#/definitions/UnusableEntitlementError"
             }
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
           }
         },
         "operationId": "createMilestone",
@@ -11456,18 +11613,18 @@
           },
           {
             "in": "body",
-            "name": "CreateComment",
+            "name": "CreateStoryComment",
             "description": "",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/CreateComment"
+              "$ref": "#/definitions/CreateStoryComment"
             }
           }
         ],
         "responses": {
           "201": {
             "schema": {
-              "$ref": "#/definitions/Comment"
+              "$ref": "#/definitions/StoryComment"
             },
             "description": "Resource"
           },
@@ -11481,9 +11638,9 @@
             "description": "Unprocessable"
           }
         },
-        "operationId": "createComment",
+        "operationId": "createStoryComment",
         "description": "Create Comment allows you to create a Comment on any Story.",
-        "summary": "Create Comment"
+        "summary": "Create Story Comment"
       }
     },
     "/api/v3/stories/{story-public-id}/comments/{comment-public-id}": {
@@ -11509,7 +11666,7 @@
         "responses": {
           "200": {
             "schema": {
-              "$ref": "#/definitions/Comment"
+              "$ref": "#/definitions/StoryComment"
             },
             "description": "Resource"
           },
@@ -11523,9 +11680,9 @@
             "description": "Unprocessable"
           }
         },
-        "operationId": "getComment",
+        "operationId": "getStoryComment",
         "description": "Get Comment is used to get Comment information.",
-        "summary": "Get Comment"
+        "summary": "Get Story Comment"
       },
       "put": {
         "parameters": [
@@ -11547,18 +11704,18 @@
           },
           {
             "in": "body",
-            "name": "UpdateComment",
+            "name": "UpdateStoryComment",
             "description": "",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/UpdateComment"
+              "$ref": "#/definitions/UpdateStoryComment"
             }
           }
         ],
         "responses": {
           "200": {
             "schema": {
-              "$ref": "#/definitions/Comment"
+              "$ref": "#/definitions/StoryComment"
             },
             "description": "Resource"
           },
@@ -11572,9 +11729,9 @@
             "description": "Unprocessable"
           }
         },
-        "operationId": "updateComment",
+        "operationId": "updateStoryComment",
         "description": "Update Comment replaces the text of the existing Comment.",
-        "summary": "Update Comment"
+        "summary": "Update Story Comment"
       },
       "delete": {
         "parameters": [
@@ -11609,9 +11766,9 @@
             "description": "Unprocessable"
           }
         },
-        "operationId": "deleteComment",
+        "operationId": "deleteStoryComment",
         "description": "Delete a Comment from any story.",
-        "summary": "Delete Comment"
+        "summary": "Delete Story Comment"
       }
     },
     "/api/v3/stories/{story-public-id}/comments/{comment-public-id}/reactions": {
@@ -11635,11 +11792,11 @@
           },
           {
             "in": "body",
-            "name": "CreateOrDeleteReaction",
+            "name": "CreateOrDeleteStoryReaction",
             "description": "",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/CreateOrDeleteReaction"
+              "$ref": "#/definitions/CreateOrDeleteStoryReaction"
             }
           }
         ],
@@ -11648,7 +11805,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/Reaction"
+                "$ref": "#/definitions/StoryReaction"
               }
             },
             "description": "Resource"
@@ -11663,9 +11820,9 @@
             "description": "Unprocessable"
           }
         },
-        "operationId": "createReaction",
-        "description": "Create a reaction to a comment.",
-        "summary": "Create Reaction"
+        "operationId": "createStoryReaction",
+        "description": "Create a reaction to a story comment.",
+        "summary": "Create Story Reaction"
       },
       "delete": {
         "parameters": [
@@ -11687,11 +11844,11 @@
           },
           {
             "in": "body",
-            "name": "CreateOrDeleteReaction",
+            "name": "CreateOrDeleteStoryReaction",
             "description": "",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/CreateOrDeleteReaction"
+              "$ref": "#/definitions/CreateOrDeleteStoryReaction"
             }
           }
         ],
@@ -11709,9 +11866,9 @@
             "description": "Unprocessable"
           }
         },
-        "operationId": "deleteReaction",
-        "description": "Delete a Reaction from any comment.",
-        "summary": "Delete Reaction"
+        "operationId": "deleteStoryReaction",
+        "description": "Delete a reaction from any story comment.",
+        "summary": "Delete Story Reaction"
       }
     },
     "/api/v3/stories/{story-public-id}/history": {

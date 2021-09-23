@@ -110,71 +110,6 @@ export interface Category {
 }
 
 /**
- * A Comment is any note added within the Comment field of a Story.
- */
-export interface Comment {
-  /** The Shortcut application url for the Comment. */
-  app_url: string;
-
-  /** A string description of this resource. */
-  entity_type: string;
-
-  /**
-   * The ID of the Story on which the Comment appears.
-   * @format int64
-   */
-  story_id: number;
-
-  /** Deprecated: use member_mention_ids. */
-  mention_ids: string[];
-
-  /**
-   * The unique ID of the Member who is the Comment's author.
-   * @format uuid
-   */
-  author_id?: string | null;
-
-  /** The unique IDs of the Member who are mentioned in the Comment. */
-  member_mention_ids: string[];
-
-  /**
-   * The time/date when the Comment was updated.
-   * @format date-time
-   */
-  updated_at?: string | null;
-
-  /** The unique IDs of the Group who are mentioned in the Comment. */
-  group_mention_ids: string[];
-
-  /** This field can be set to another unique ID. In the case that the Comment has been imported from another tool, the ID in the other tool can be indicated here. */
-  external_id?: string | null;
-
-  /**
-   * The unique ID of the Comment.
-   * @format int64
-   */
-  id: number;
-
-  /**
-   * The Comments numerical position in the list from oldest to newest.
-   * @format int64
-   */
-  position: number;
-
-  /** A set of Reactions to this Comment. */
-  reactions: Reaction[];
-
-  /**
-   * The time/date when the Comment was created.
-   * @format date-time
-   */
-  created_at: string;
-
-  /** The text of the Comment. */
-  text: string;
-}
-
-/**
  * Commit refers to a VCS commit and all associated details.
  */
 export interface Commit {
@@ -269,32 +204,6 @@ export interface CreateCategoryParams {
   color?: string;
 
   /** This field can be set to another unique ID. In the case that the Category has been imported from another tool, the ID in the other tool can be indicated here. */
-  external_id?: string;
-}
-
-export interface CreateComment {
-  /** The comment text. */
-  text: string;
-
-  /**
-   * The Member ID of the Comment's author. Defaults to the user identified by the API token.
-   * @format uuid
-   */
-  author_id?: string;
-
-  /**
-   * Defaults to the time/date the comment is created, but can be set to reflect another date.
-   * @format date-time
-   */
-  created_at?: string;
-
-  /**
-   * Defaults to the time/date the comment is last updated, but can be set to reflect another date.
-   * @format date-time
-   */
-  updated_at?: string;
-
-  /** This field can be set to another unique ID. In the case that the comment has been imported from another tool, the ID in the other tool can be indicated here. */
   external_id?: string;
 }
 
@@ -613,7 +522,7 @@ export interface CreateMilestone {
   categories?: CreateCategoryParams[];
 }
 
-export interface CreateOrDeleteReaction {
+export interface CreateOrDeleteStoryReaction {
   /** The emoji short-code to add / remove. E.g. `:thumbsup::skin-tone-4:`. */
   emoji: string;
 }
@@ -675,6 +584,32 @@ export interface CreateProject {
 export interface CreateStories {
   /** An array of stories to be created. */
   stories: CreateStoryParams[];
+}
+
+export interface CreateStoryComment {
+  /** The comment text. */
+  text: string;
+
+  /**
+   * The Member ID of the Comment's author. Defaults to the user identified by the API token.
+   * @format uuid
+   */
+  author_id?: string;
+
+  /**
+   * Defaults to the time/date the comment is created, but can be set to reflect another date.
+   * @format date-time
+   */
+  created_at?: string;
+
+  /**
+   * Defaults to the time/date the comment is last updated, but can be set to reflect another date.
+   * @format date-time
+   */
+  updated_at?: string;
+
+  /** This field can be set to another unique ID. In the case that the comment has been imported from another tool, the ID in the other tool can be indicated here. */
+  external_id?: string;
 }
 
 /**
@@ -777,7 +712,7 @@ export interface CreateStoryContents {
   estimate?: number | null;
 
   /** An array of files attached to the story. */
-  files?: File[];
+  files?: UploadedFile[];
 
   /**
    * The ID of the project the story belongs to.
@@ -1591,77 +1526,6 @@ export interface EpicWorkflow {
 
   /** A map of the Epic States in this Epic Workflow. */
   epic_states: EpicState[];
-}
-
-/**
- * A File is any document uploaded to your Shortcut. Files attached from a third-party service can be accessed using the Linked Files endpoint.
- */
-export interface File {
-  /** The description of the file. */
-  description?: string | null;
-
-  /** A string description of this resource. */
-  entity_type: string;
-
-  /** The unique IDs of the Stories associated with this file. */
-  story_ids: number[];
-
-  /** Deprecated: use member_mention_ids. */
-  mention_ids: string[];
-
-  /** The unique IDs of the Members who are mentioned in the file description. */
-  member_mention_ids: string[];
-
-  /** The optional User-specified name of the file. */
-  name: string;
-
-  /** The url where the thumbnail of the file can be found in Shortcut. */
-  thumbnail_url?: string | null;
-
-  /**
-   * The size of the file.
-   * @format int64
-   */
-  size: number;
-
-  /**
-   * The unique ID of the Member who uploaded the file.
-   * @format uuid
-   */
-  uploader_id: string;
-
-  /** Free form string corresponding to a text or image file. */
-  content_type: string;
-
-  /**
-   * The time/date that the file was updated.
-   * @format date-time
-   */
-  updated_at?: string | null;
-
-  /** The name assigned to the file in Shortcut upon upload. */
-  filename: string;
-
-  /** The unique IDs of the Groups who are mentioned in the file description. */
-  group_mention_ids: string[];
-
-  /** This field can be set to another unique ID. In the case that the File has been imported from another tool, the ID in the other tool can be indicated here. */
-  external_id?: string | null;
-
-  /**
-   * The unique ID for the file.
-   * @format int64
-   */
-  id: number;
-
-  /** The URL for the file. */
-  url?: string | null;
-
-  /**
-   * The time/date that the file was created.
-   * @format date-time
-   */
-  created_at: string;
 }
 
 export interface GetEpicStories {
@@ -3785,17 +3649,6 @@ export interface PullRequestLabel {
 }
 
 /**
- * Emoji reaction on a comment.
- */
-export interface Reaction {
-  /** Emoji text of the reaction. */
-  emoji: string;
-
-  /** Permissions who have reacted with this. */
-  permission_ids: string[];
-}
-
-/**
  * Repository refers to a VCS repository.
  */
 export interface Repository {
@@ -4064,7 +3917,7 @@ export interface Story {
   completed: boolean;
 
   /** An array of comments attached to the story. */
-  comments: Comment[];
+  comments: StoryComment[];
 
   /** A true/false boolean indicating if the Story is currently a blocker of another story. */
   blocker: boolean;
@@ -4169,7 +4022,7 @@ export interface Story {
   commits: Commit[];
 
   /** An array of files attached to the story. */
-  files: File[];
+  files: UploadedFile[];
 
   /**
    * A number representing the position of the story in relation to every other story in the current project.
@@ -4212,6 +4065,71 @@ export interface Story {
    * @format date-time
    */
   moved_at?: string | null;
+}
+
+/**
+ * A Comment is any note added within the Comment field of a Story.
+ */
+export interface StoryComment {
+  /** The Shortcut application url for the Comment. */
+  app_url: string;
+
+  /** A string description of this resource. */
+  entity_type: string;
+
+  /**
+   * The ID of the Story on which the Comment appears.
+   * @format int64
+   */
+  story_id: number;
+
+  /** Deprecated: use member_mention_ids. */
+  mention_ids: string[];
+
+  /**
+   * The unique ID of the Member who is the Comment's author.
+   * @format uuid
+   */
+  author_id?: string | null;
+
+  /** The unique IDs of the Member who are mentioned in the Comment. */
+  member_mention_ids: string[];
+
+  /**
+   * The time/date when the Comment was updated.
+   * @format date-time
+   */
+  updated_at?: string | null;
+
+  /** The unique IDs of the Group who are mentioned in the Comment. */
+  group_mention_ids: string[];
+
+  /** This field can be set to another unique ID. In the case that the Comment has been imported from another tool, the ID in the other tool can be indicated here. */
+  external_id?: string | null;
+
+  /**
+   * The unique ID of the Comment.
+   * @format int64
+   */
+  id: number;
+
+  /**
+   * The Comments numerical position in the list from oldest to newest.
+   * @format int64
+   */
+  position: number;
+
+  /** A set of Reactions to this Comment. */
+  reactions: StoryReaction[];
+
+  /**
+   * The time/date when the Comment was created.
+   * @format date-time
+   */
+  created_at: string;
+
+  /** The text of the Comment. */
+  text: string;
 }
 
 /**
@@ -4282,7 +4200,7 @@ export interface StoryContents {
   estimate?: number;
 
   /** An array of files attached to the story. */
-  files?: File[];
+  files?: UploadedFile[];
 
   /**
    * The ID of the project the story belongs to.
@@ -4440,6 +4358,17 @@ export interface StoryLink {
    * @format date-time
    */
   updated_at: string;
+}
+
+/**
+ * Emoji reaction on a comment.
+ */
+export interface StoryReaction {
+  /** Emoji text of the reaction. */
+  emoji: string;
+
+  /** Permissions who have reacted with this. */
+  permission_ids: string[];
 }
 
 /**
@@ -4893,8 +4822,8 @@ export interface UpdateEntityTemplate {
   /** The updated template name. */
   name?: string;
 
-  /** A map of story attributes this template populates. */
-  story_contents?: CreateStoryContents;
+  /** Updated attributes for the template to populate. */
+  story_contents?: UpdateStoryContents;
 }
 
 export interface UpdateEpic {
@@ -5431,6 +5360,100 @@ export interface UpdateStory {
   deadline?: string | null;
 }
 
+export interface UpdateStoryComment {
+  /** The updated comment text. */
+  text: string;
+}
+
+/**
+ * Updated attributes for the template to populate.
+ */
+export interface UpdateStoryContents {
+  /** The description of the story. */
+  description?: string;
+
+  /** A string description of this resource. */
+  entity_type?: string;
+
+  /** An array of labels to be populated by the template. */
+  labels?: CreateLabelParams[];
+
+  /** The type of story (feature, bug, chore). */
+  story_type?: string;
+
+  /** An array of linked files attached to the story. */
+  linked_files?: LinkedFile[];
+
+  /** An array of the attached file IDs to be populated. */
+  file_ids?: number[];
+
+  /** The name of the story. */
+  name?: string;
+
+  /**
+   * The ID of the epic the to be populated.
+   * @format int64
+   */
+  epic_id?: number | null;
+
+  /** An array of external links to be populated. */
+  external_links?: string[];
+
+  /**
+   * The ID of the iteration the to be populated.
+   * @format int64
+   */
+  iteration_id?: number | null;
+
+  /** An array of tasks to be populated by the template. */
+  tasks?: EntityTemplateTask[];
+
+  /** An array of label ids attached to the story. */
+  label_ids?: number[];
+
+  /**
+   * The ID of the group to be populated.
+   * @format uuid
+   */
+  group_id?: string | null;
+
+  /**
+   * The ID of the workflow state the story is currently in.
+   * @format int64
+   */
+  workflow_state_id?: number;
+
+  /** An array of UUIDs for any Members listed as Followers. */
+  follower_ids?: string[];
+
+  /** An array of UUIDs of the owners of this story. */
+  owner_ids?: string[];
+
+  /**
+   * The numeric point estimate to be populated.
+   * @format int64
+   */
+  estimate?: number | null;
+
+  /** An array of files attached to the story. */
+  files?: UploadedFile[];
+
+  /**
+   * The ID of the project the story belongs to.
+   * @format int64
+   */
+  project_id?: number | null;
+
+  /** An array of the linked file IDs to be populated. */
+  linked_file_ids?: number[];
+
+  /**
+   * The due date of the story.
+   * @format date-time
+   */
+  deadline?: string | null;
+}
+
 export interface UpdateStoryLink {
   /** The type of link. */
   verb?: "blocks" | "duplicates" | "relates to";
@@ -5469,6 +5492,77 @@ export interface UpdateTask {
    * @format int64
    */
   after_id?: number;
+}
+
+/**
+ * An UploadedFile is any document uploaded to your Shortcut Workspace. Files attached from a third-party service are different: see the Linked Files endpoint.
+ */
+export interface UploadedFile {
+  /** The description of the file. */
+  description?: string | null;
+
+  /** A string description of this resource. */
+  entity_type: string;
+
+  /** The unique IDs of the Stories associated with this file. */
+  story_ids: number[];
+
+  /** Deprecated: use member_mention_ids. */
+  mention_ids: string[];
+
+  /** The unique IDs of the Members who are mentioned in the file description. */
+  member_mention_ids: string[];
+
+  /** The optional User-specified name of the file. */
+  name: string;
+
+  /** The url where the thumbnail of the file can be found in Shortcut. */
+  thumbnail_url?: string | null;
+
+  /**
+   * The size of the file.
+   * @format int64
+   */
+  size: number;
+
+  /**
+   * The unique ID of the Member who uploaded the file.
+   * @format uuid
+   */
+  uploader_id: string;
+
+  /** Free form string corresponding to a text or image file. */
+  content_type: string;
+
+  /**
+   * The time/date that the file was updated.
+   * @format date-time
+   */
+  updated_at?: string | null;
+
+  /** The name assigned to the file in Shortcut upon upload. */
+  filename: string;
+
+  /** The unique IDs of the Groups who are mentioned in the file description. */
+  group_mention_ids: string[];
+
+  /** This field can be set to another unique ID. In the case that the File has been imported from another tool, the ID in the other tool can be indicated here. */
+  external_id?: string | null;
+
+  /**
+   * The unique ID for the file.
+   * @format int64
+   */
+  id: number;
+
+  /** The URL for the file. */
+  url?: string | null;
+
+  /**
+   * The time/date that the file was created.
+   * @format date-time
+   */
+  created_at: string;
 }
 
 /**
