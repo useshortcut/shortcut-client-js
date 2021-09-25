@@ -23,6 +23,7 @@
     "build:docs": "typedoc ./src",
     "sync:schema": "wget https://shortcut.com/api/rest/v3/shortcut.swagger.json --destination ./schema/shortcut.swagger.json && yarn validate:schema",
     "validate:schema": "swagger-cli validate ./schema/shortcut.swagger.json",
+    "validate:examples": "npx tsc examples/*.ts --noEmit",
     "lint": "eslint 'src/**/*.{js,ts}'",
     "test": "jest",
     "prepublishOnly": "yarn build"

@@ -43,6 +43,13 @@ jobs:
       - run:
           name: Run Jest
           command: yarn test
+  validate-examples:
+    <<: *defaults
+    steps:
+      - *attach_workspace
+      - run:
+          name: Run TSC
+          command: yarn validate:examples
   build:
     <<: *defaults
     steps:
@@ -62,6 +69,9 @@ workflows:
           requires:
             - checkout
       - test:
+          requires:
+            - checkout
+      - validate-examples:
           requires:
             - checkout
       - build:
