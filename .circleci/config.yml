@@ -8,17 +8,29 @@ aliases:
   - &attach_workspace
     attach_workspace:
       at: ~/shortcut-client-js
-
-orbs:
-  node: circleci/node@4.7.0
+  - &save-cache-yarn
+    key: yarn-packages-{{ checksum "yarn.lock" }}
+    paths:
+      - ~/.cache/yarn
+  - &restore-cache-yarn
+    name: Restore Yarn Package Cache
+    keys:
+      - yarn-packages-{{ checksum "yarn.lock" }}
 
 jobs:
   checkout:
     <<: *defaults
     steps:
       - checkout
-      - node/install-packages:
-          pkg-manager: yarn
+      - restore_cache: *restore-cache-yarn
+      - run:
+          name: Yarn version
+          command: yarn -v
+      - run:
+          name: Yarn Install
+          command: |
+            yarn install --frozen-lockfile --no-progress --non-interactive --cache-folder ~/.cache/yarn
+      - save_cache: *save-cache-yarn
       - persist_to_workspace:
           root: .
           paths: .
