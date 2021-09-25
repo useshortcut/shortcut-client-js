@@ -17,9 +17,9 @@ import { ShortcutApi } from '../src';
   // This is proper to Node, replace this based on your environment
   const fileStream = fs.createReadStream(FILE_PATH);
 
-  const { data: file } = await shortcut.createFiles({
+  const { data: file } = await shortcut.uploadFiles({
     story_id: story.id,
-    file0: fileStream as any,
+    file0: fileStream as any, // On Web, this is expecting a File object, but on Node, it's a ReadableStream
   });
 
   console.log(file);
