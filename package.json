@@ -1,7 +1,7 @@
 {
   "name": "@useshortcut/client",
   "version": "1.0.0",
-  "description": "A Promise based library to the Shortcut REST API",
+  "description": "A Promise based library to the Shortcut (formerly Clubhouse) REST API",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [

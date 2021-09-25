@@ -7,7 +7,7 @@
 </h3>
 
 <p align="center">
-  A library for interacting with the Shortcut REST API
+  A library for interacting with the Shortcut (formerly Clubhouse) REST API
 </p>
 
 <p align="center">
