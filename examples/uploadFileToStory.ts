@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import { ShortcutApi } from '../src';
 
 (async () => {
-  const shortcut = new ShortcutApi(process.env.SHORTCUT_API_TOKEN); // See https://github.com/useshortcut/clubhouse-lib#how-to-get-an-api-token
+  const shortcut = new ShortcutApi(process.env.SHORTCUT_API_TOKEN); // See https://github.com/useshortcut/shortcut-client-js#how-to-get-an-api-token
 
   const FILE_PATH = `${__dirname}/logo.png`;
 

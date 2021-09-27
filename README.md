@@ -11,13 +11,13 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.org/package/clubhouse-lib">
-    <img src="https://badge.fury.io/js/clubhouse-lib.svg" alt="Current npm package version." />
+  <a href="https://www.npmjs.org/package/@useshortcut/client">
+    <img src="https://badge.fury.io/js/@useshortcut/client.svg" alt="Current npm package version." />
   </a>
-  <a href="https://circleci.com/gh/useshortcut/clubhouse-lib">
-    <img src="https://circleci.com/gh/useshortcut/clubhouse-lib.svg?style=shield" alt="Current CircleCI build status." />
+  <a href="https://circleci.com/gh/useshortcut/shortcut-client-js">
+    <img src="https://circleci.com/gh/useshortcut/shortcut-client-js.svg?style=shield" alt="Current CircleCI build status." />
   </a>
-  <a href="https://circleci.com/gh/useshortcut/clubhouse-lib">
+  <a href="https://circleci.com/gh/useshortcut/shortcut-client-js">
     <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome!" />
   </a>
   <a href="https://twitter.com/intent/follow?screen_name=useshortcut">
@@ -60,9 +60,9 @@ Requests made with a missing or invalid token will get a `401 Unauthorized` resp
 ## Usage
 
 ```javascript
-import { ShortcutApi } from './';
+import { ShortcutApi } from '@useshortcut/client';
 
-const shortcut = new ShortcutApi('YOUR_API_TOKEN'); // See https://github.com/useshortcut/clubhouse-lib#how-to-get-an-api-token
+const shortcut = new ShortcutApi('YOUR_API_TOKEN'); // See https://github.com/useshortcut/shortcut-client-js#how-to-get-an-api-token
 
 shortcut.getCurrentMemberInfo().then((response) => console.log(response?.data));
 
@@ -73,7 +73,7 @@ shortcut.listProjects().then((response) => console.log(response?.data));
 
 You can play with it in your web browser with this live playground: 
 
-- [CodeSandbox](https://codesandbox.io/s/clubhouse-lib-playground-r447i)
+- [CodeSandbox](https://codesandbox.io/s/useshortcut-client-playground-48kq1)
 
 ## Documentation
 
