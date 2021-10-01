@@ -1,12 +1,12 @@
-import { ShortcutApi } from '../ShortcutApi';
+import { ShortcutClient } from '../ShortcutClient';
 
 jest.unmock('axios');
 
-describe('ShortcutApi', () => {
+describe('ShortcutClient', () => {
   const token = 'SOME-TOKEN';
 
   it('uses the expected baseURL', () => {
-    const shortcut = new ShortcutApi(token);
+    const shortcut = new ShortcutClient(token);
 
     expect(shortcut.instance.defaults.baseURL).toBe(
       'https://api.app.shortcut.com',
@@ -14,7 +14,7 @@ describe('ShortcutApi', () => {
   });
 
   it('adds Shortcut-Token to default headers', async () => {
-    const shortcut = new ShortcutApi(token);
+    const shortcut = new ShortcutClient(token);
 
     expect(shortcut.instance.defaults.headers).toHaveProperty(
       'Shortcut-Token',

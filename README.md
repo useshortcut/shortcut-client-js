@@ -60,9 +60,9 @@ Requests made with a missing or invalid token will get a `401 Unauthorized` resp
 ## Usage
 
 ```javascript
-import { ShortcutApi } from '@useshortcut/client';
+import { ShortcutClient } from '@useshortcut/client';
 
-const shortcut = new ShortcutApi('YOUR_API_TOKEN'); // See https://github.com/useshortcut/shortcut-client-js#how-to-get-an-api-token
+const shortcut = new ShortcutClient('YOUR_API_TOKEN'); // See https://github.com/useshortcut/shortcut-client-js#how-to-get-an-api-token
 
 shortcut.getCurrentMemberInfo().then((response) => console.log(response?.data));
 

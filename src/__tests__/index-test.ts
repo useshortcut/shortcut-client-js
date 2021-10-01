@@ -1,7 +1,7 @@
-import { ShortcutApi } from '../index';
+import { ShortcutClient } from '../index';
 
 describe('index', () => {
-  it('exposes ShortcutApi', () => {
-    expect(ShortcutApi).toBeDefined();
+  it('exposes ShortcutClient', () => {
+    expect(ShortcutClient).toBeDefined();
   });
 });

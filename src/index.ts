@@ -1,2 +1,2 @@
-export * from './ShortcutApi';
+export * from './ShortcutClient';
 export * from './generated/data-contracts';

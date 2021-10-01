@@ -1,7 +1,7 @@
 import { Api } from './generated/Api';
 import type { ApiConfig } from './generated/http-client';
 
-export class ShortcutApi<
+export class ShortcutClient<
   SecurityDataType = unknown,
 > extends Api<SecurityDataType> {
   constructor(apiToken: string, config: ApiConfig<SecurityDataType> = {}) {
