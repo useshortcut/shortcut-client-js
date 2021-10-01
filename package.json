@@ -20,7 +20,7 @@
   "scripts": {
     "build": "yarn build:client && tsc",
     "build:client": "swagger-typescript-api -p ./schema/shortcut.swagger.json -o ./src/generated --clean-output --axios --modular --templates ./templates",
-    "build:docs": "typedoc ./src",
+    "build:docs": "typedoc ./src --exclude 'src/__tests__/**'",
     "sync:schema": "wget https://shortcut.com/api/rest/v3/shortcut.swagger.json --destination ./schema/shortcut.swagger.json && yarn validate:schema",
     "validate:schema": "swagger-cli validate ./schema/shortcut.swagger.json",
     "validate:examples": "npx tsc examples/*.ts --noEmit",
