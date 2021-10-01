@@ -45,6 +45,11 @@ export enum ContentType {
   UrlEncoded = "application/x-www-form-urlencoded",
 }
 
+/** 
+* @internal
+* @private
+*/
+
 export class HttpClient<SecurityDataType = unknown> {
   public instance: AxiosInstance;
   private securityData: SecurityDataType | null = null;

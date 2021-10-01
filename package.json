@@ -19,11 +19,12 @@
   "license": "MIT",
   "scripts": {
     "build": "yarn build:client && tsc",
-    "build:client": "swagger-typescript-api -p ./schema/shortcut.swagger.json -o ./src/generated --clean-output --axios --modular --templates ./templates",
+    "build:client": "swagger-typescript-api -p ./schema/shortcut.swagger.json -o ./src/generated --clean-output --axios --modular --templates ./templates && yarn add-typedoc-comments",
     "build:docs": "typedoc ./src --exclude 'src/__tests__/**'",
     "sync:schema": "wget https://shortcut.com/api/rest/v3/shortcut.swagger.json --destination ./schema/shortcut.swagger.json && yarn validate:schema",
     "validate:schema": "swagger-cli validate ./schema/shortcut.swagger.json",
     "validate:examples": "npx tsc examples/*.ts --noEmit",
+    "add-typedoc-comments": "node ./node_modules/.bin/jscodeshift -t scripts/add-typedoc-comments-transform.js src/generated/**",
     "lint": "eslint 'src/**/*.{js,ts}'",
     "test": "jest",
     "prepublishOnly": "yarn build"
@@ -44,6 +45,7 @@
     "eslint-plugin-jest": "^24.4.2",
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "^27.2.0",
+    "jscodeshift": "^0.13.0",
     "node-wget": "^0.4.3",
     "prettier": "2.4.1",
     "rimraf": "^3.0.2",

@@ -89,6 +89,12 @@ import {
 } from "./data-contracts";
 import { ContentType, HttpClient, RequestParams } from "./http-client";
 
+/** 
+* Please don't use this class directly, instead use the `ShortcutClient` class we provided which is extending this class to add headers for authorization.
+* @internal
+* @private
+*/
+
 export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType> {
   /**
    * @description List Categories returns a list of all Categories and their attributes.
