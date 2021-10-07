@@ -20,7 +20,7 @@
   "scripts": {
     "build": "yarn build:client && tsc",
     "build:client": "swagger-typescript-api -p ./schema/shortcut.swagger.json -o ./src/generated --clean-output --axios --modular --templates ./templates && yarn add-typedoc-comments",
-    "build:docs": "typedoc ./src --exclude 'src/__tests__/**'",
+    "build:docs": "typedoc --entryPointStrategy expand ./src --exclude 'src/__tests__/**'",
     "sync:schema": "wget https://shortcut.com/api/rest/v3/shortcut.swagger.json --destination ./schema/shortcut.swagger.json && yarn validate:schema",
     "validate:schema": "swagger-cli validate ./schema/shortcut.swagger.json",
     "validate:examples": "npx tsc examples/*.ts --noEmit",
@@ -30,7 +30,7 @@
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
-    "axios": "^0.21.4",
+    "axios": "^0.21.3",
     "form-data": "^4.0.0"
   },
   "devDependencies": {
