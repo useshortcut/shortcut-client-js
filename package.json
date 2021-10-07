@@ -30,7 +30,7 @@
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
-    "axios": "^0.22.0",
+    "axios": "^0.21.4",
     "form-data": "^4.0.0"
   },
   "devDependencies": {
