@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - publish-gh-pages
 
 jobs:
   deploy:
