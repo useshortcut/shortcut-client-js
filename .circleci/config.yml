@@ -1,4 +1,13 @@
+version: 2.1
+
 aliases:
+  - &defaults
+    working_directory: ~/shortcut-client-js
+    docker:
+      - image: cimg/node:lts
+  - &attach_workspace
+    attach_workspace:
+      at: ~/shortcut-client-js
   - &save-cache-yarn
     key: yarn-packages-{{ checksum "yarn.lock" }}
     paths:
@@ -7,16 +16,7 @@ aliases:
     name: Restore Yarn Package Cache
     keys:
       - yarn-packages-{{ checksum "yarn.lock" }}
-  - &attach_workspace
-    attach_workspace:
-      at: ~/clubhouse-lib
 
-defaults: &defaults
-  working_directory: ~/clubhouse-lib
-  docker:
-    - image: circleci/node:14
-
-version: 2
 jobs:
   checkout:
     <<: *defaults
@@ -41,6 +41,13 @@ jobs:
       - run:
           name: Lint
           command: yarn lint
+  validate-schema:
+    <<: *defaults
+    steps:
+      - *attach_workspace
+      - run:
+          name: Validate Schema
+          command: yarn validate:schema
   test:
     <<: *defaults
     steps:
@@ -48,6 +55,13 @@ jobs:
       - run:
           name: Run Jest
           command: yarn test
+  validate-examples:
+    <<: *defaults
+    steps:
+      - *attach_workspace
+      - run:
+          name: Run TSC
+          command: yarn validate:examples
   build:
     <<: *defaults
     steps:
@@ -57,14 +71,19 @@ jobs:
           command: yarn build
 
 workflows:
-  version: 2
   tests:
     jobs:
       - checkout
       - lint:
           requires:
             - checkout
+      - validate-schema:
+          requires:
+            - checkout
       - test:
+          requires:
+            - checkout
+      - validate-examples:
           requires:
             - checkout
       - build:
