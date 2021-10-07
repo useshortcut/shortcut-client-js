@@ -59,7 +59,7 @@ Requests made with a missing or invalid token will get a `401 Unauthorized` resp
 
 ## Usage
 
-For further documentation, have a look at our types (`.d.ts` files) or [documentation](https://useshortcut.github.io/shortcut-client-js/) generated from it.
+To see all available exports, take a look at the [API documentation](https://useshortcut.github.io/shortcut-client-js/) or check out the `.d.ts` files in this repository.
 
 ```javascript
 import { ShortcutClient } from '@useshortcut/client';
