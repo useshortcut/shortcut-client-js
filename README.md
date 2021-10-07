@@ -12,7 +12,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.org/package/@useshortcut/client">
-    <img src="https://badge.fury.io/js/@useshortcut/client.svg" alt="Current npm package version." />
+    <img src="https://badge.fury.io/js/@useshortcut%2Fclient.svg" alt="Current npm package version." />
   </a>
   <a href="https://circleci.com/gh/useshortcut/shortcut-client-js">
     <img src="https://circleci.com/gh/useshortcut/shortcut-client-js.svg?style=shield" alt="Current CircleCI build status." />
