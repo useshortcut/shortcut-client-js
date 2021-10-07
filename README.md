@@ -61,6 +61,7 @@ Requests made with a missing or invalid token will get a `401 Unauthorized` resp
 
 ```javascript
 import { ShortcutClient } from '@useshortcut/client';
+// const { ShortcutClient } = require('@useshortcut/client');
 
 const shortcut = new ShortcutClient('YOUR_API_TOKEN'); // See https://github.com/useshortcut/shortcut-client-js#how-to-get-an-api-token
 
