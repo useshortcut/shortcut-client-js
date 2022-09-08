@@ -610,6 +610,12 @@ export interface CreateStoryComment {
 
   /** This field can be set to another unique ID. In the case that the comment has been imported from another tool, the ID in the other tool can be indicated here. */
   external_id?: string;
+
+  /**
+   * The ID of the Comment that this comment is threaded under.
+   * @format int64
+   */
+  parent_id?: number | null;
 }
 
 /**
@@ -639,6 +645,12 @@ export interface CreateStoryCommentParams {
 
   /** This field can be set to another unique ID. In the case that the comment has been imported from another tool, the ID in the other tool can be indicated here. */
   external_id?: string;
+
+  /**
+   * The ID of the Comment that this comment is threaded under.
+   * @format int64
+   */
+  parent_id?: number | null;
 }
 
 /**
@@ -657,11 +669,20 @@ export interface CreateStoryContents {
   /** The type of story (feature, bug, chore). */
   story_type?: string;
 
+  /** An array of maps specifying a CustomField ID and CustomFieldEnumValue ID that represents an assertion of some value for a CustomField. */
+  custom_fields?: CustomFieldValueParams[];
+
   /** An array of linked files attached to the story. */
   linked_files?: LinkedFile[];
 
   /** An array of the attached file IDs to be populated. */
   file_ids?: number[];
+
+  /**
+   * The ID of the workflow.
+   * @format int64
+   */
+  workflow_id?: number | null;
 
   /** The name of the story. */
   name?: string;
@@ -786,6 +807,12 @@ export interface CreateStoryParams {
   /** The type of story (feature, bug, chore). */
   story_type?: "feature" | "chore" | "bug";
 
+  /** A map specifying a CustomField ID and CustomFieldEnumValue ID that represents an assertion of some value for a CustomField. */
+  custom_fields?: CustomFieldValueParams[];
+
+  /** One of "first" or "last". This can be used to move the given story to the first or last position in the workflow state. */
+  move_to?: "last" | "first";
+
   /** An array of IDs of files attached to the story. */
   file_ids?: number[];
 
@@ -808,7 +835,7 @@ export interface CreateStoryParams {
   epic_id?: number | null;
 
   /**
-   * The id of the story template used to create this story, if applicable.
+   * The id of the story template used to create this story, if applicable. This is just an association; no content from the story template is inherited by the story simply by setting this field.
    * @format uuid
    */
   story_template_id?: string | null;
@@ -947,6 +974,115 @@ export interface CreateTaskParams {
   external_id?: string;
 }
 
+export interface CustomField {
+  /** A string description of the CustomField */
+  description?: string;
+
+  /** A string that represents the icon that corresponds to this custom field. */
+  icon_set_identifier?: string;
+
+  /** A string description of this resource. */
+  entity_type: "custom-field";
+
+  /** The types of stories this CustomField is scoped to. */
+  story_types?: string[];
+
+  /** The name of the Custom Field. */
+  name: string;
+
+  /** When true, the CustomFieldEnumValues may not be reordered. */
+  fixed_position?: boolean;
+
+  /**
+   * The instant when this CustomField was last updated.
+   * @format date-time
+   */
+  updated_at: string;
+
+  /**
+   * The unique public ID for the CustomField.
+   * @format uuid
+   */
+  id: string;
+
+  /** A collection of legal values for a CustomField. */
+  values?: CustomFieldEnumValue[];
+
+  /** The type of Custom Field, eg. 'enum'. */
+  field_type: "enum";
+
+  /**
+   * An integer indicating the position of this Custom Field with respect to the other CustomField
+   * @format int64
+   */
+  position: number;
+
+  /** The canonical name for a Shortcut-defined field. */
+  canonical_name?: string;
+
+  /** When true, the CustomField can be applied to entities in the Workspace. */
+  enabled: boolean;
+
+  /**
+   * The instant when this CustomField was created.
+   * @format date-time
+   */
+  created_at: string;
+}
+
+export interface CustomFieldEnumValue {
+  /**
+   * The unique public ID for the Custom Field.
+   * @format uuid
+   */
+  id: string;
+
+  /** A string value within the domain of this Custom Field. */
+  value: string;
+
+  /**
+   * An integer indicating the position of this Value with respect to the other CustomFieldEnumValues in the enumeration.
+   * @format int64
+   */
+  position: number;
+
+  /** A color key associated with this CustomFieldEnumValue. */
+  color_key?: string | null;
+
+  /** A string description of this resource. */
+  entity_type: "custom-field-enum-value";
+
+  /** When true, the CustomFieldEnumValue can be selected for the CustomField. */
+  enabled: boolean;
+}
+
+export interface CustomFieldValueParams {
+  /**
+   * The unique public ID for the CustomField.
+   * @format uuid
+   */
+  field_id: string;
+
+  /**
+   * The unique public ID for the CustomFieldEnumValue.
+   * @format uuid
+   */
+  value_id: string;
+
+  /** A literal value for the CustomField. Currently ignored. */
+  value?: string;
+}
+
+/**
+ * Error returned when Datomic tx fails due to Datomc :db.error/cas-failed error
+ */
+export interface DataConflictError {
+  error: "data-conflict-error";
+
+  /** An explanatory message: "The update failed due to a data conflict. Please refresh and try again." */
+  message: string;
+}
+
 export interface DeleteStories {
   /** An array of IDs of Stories to delete. */
   story_ids: number[];
@@ -1014,7 +1150,7 @@ export interface EntityTemplateTask {
 }
 
 /**
- * An Epic is a collection of stories that together might make up a release, a milestone, or some other large initiative that your organization is working on.
+ * An Epic is a collection of stories that together might make up a release, a milestone, or some other large initiative that you are working on.
  */
 export interface Epic {
   /** The Shortcut application url for the Epic. */
@@ -1076,6 +1212,7 @@ export interface Epic {
 
   /** The name of the Epic. */
   name: string;
+  global_id: string;
 
   /** A true/false boolean indicating if the Epic has been completed. */
   completed: boolean;
@@ -1261,6 +1398,7 @@ export interface EpicSlim {
 
   /** The name of the Epic. */
   name: string;
+  global_id: string;
 
   /** A true/false boolean indicating if the Epic has been completed. */
   completed: boolean;
@@ -1381,6 +1519,7 @@ export interface EpicState {
 
   /** The Epic State's name. */
   name: string;
+  global_id: string;
 
   /** The type of Epic State (Unstarted, Started, or Done) */
   type: string;
@@ -1640,14 +1779,11 @@ export interface Group {
    */
   id: string;
 
-  /** Icons are used to attach images to Organizations, Members, and Loading screens in the Shortcut web application. */
+  /** Icons are used to attach images to Groups, Workspaces, Members, and Loading screens in the Shortcut web application. */
   display_icon: Icon | null;
 
   /** The Member IDs contain within the Group. */
   member_ids: string[];
-
-  /** The Workflow IDs which have stories assigned to the group. */
-  story_workflow_ids: number[];
 
   /** The Workflow IDs contained within the Group. */
   workflow_ids: number[];
@@ -1660,11 +1796,8 @@ export interface History {
   /** The date when the change occurred. */
   changed_at: string;
 
-  /**
-   * The ID of the primary entity that has changed, if applicable.
-   * @format int64
-   */
-  primary_id?: number;
+  /** The ID of the primary entity that has changed, if applicable. */
+  primary_id?: number | string;
 
   /** An array of objects affected by the change. Reference objects provide basic information for the entities reference in the history actions. Some have specific fields, but they always contain an id, entity_type, and a name. */
   references?: (
@@ -1677,6 +1810,7 @@ export interface History {
     | HistoryReferenceProject
     | HistoryReferenceStory
     | HistoryReferenceStoryTask
+    | HistoryReferenceCustomFieldEnumValue
     | HistoryReferenceWorkflowState
     | HistoryReferenceGeneral
   )[];
@@ -1701,6 +1835,7 @@ export interface History {
     | HistoryActionTaskCreate
     | HistoryActionTaskUpdate
     | HistoryActionTaskDelete
+    | HistoryActionWorkspace2BulkUpdate
   )[];
 
   /**
@@ -2003,6 +2138,12 @@ export interface HistoryActionStoryCreate {
   label_ids?: number[];
 
   /**
+   * The Team IDs for the followers of the Story.
+   * @format uuid
+   */
+  group_id?: string;
+
+  /**
    * An array of Workflow State IDs attached to the Story.
    * @format int64
    */
@@ -2016,6 +2157,9 @@ export interface HistoryActionStoryCreate {
 
   /** An array of Member IDs that are the owners of the Story. */
   owner_ids?: string[];
+
+  /** An array of Custom Field Enum Value ids on this Story. */
+  custom_field_value_ids?: string[];
 
   /**
    * The ID of the entity referenced.
@@ -2290,6 +2434,26 @@ export interface HistoryActionTaskUpdate {
 }
 
 /**
+ * An action representing a bulk operation within a workspace2.
+ */
+export interface HistoryActionWorkspace2BulkUpdate {
+  /**
+   * The ID of the entity referenced.
+   * @format uuid
+   */
+  id: string;
+
+  /** The type of entity referenced. */
+  entity_type: string;
+
+  /** The action of the entity referenced. */
+  action: "bulk-update";
+
+  /** The name of the workspace2 in which the BulkUpdate occurred. */
+  name: string;
+}
+
+/**
  * The changes that have occurred as a result of the action.
  */
 export interface HistoryChangesStory {
@@ -2305,7 +2469,7 @@ export interface HistoryChangesStory {
   /** Task IDs that have been added or removed from the Story. */
   task_ids?: StoryHistoryChangeAddsRemovesInt;
 
-  /** Member IDs that have been added or removed as a owner of the Story. */
+  /** Custom Field Enum Value IDs that have been added or removed from the Story. */
   mention_ids?: StoryHistoryChangeAddsRemovesUuid;
 
   /** A timestamp that represents the Story's deadline. */
@@ -2329,7 +2493,7 @@ export interface HistoryChangesStory {
   /** Task IDs that have been added or removed from the Story. */
   commit_ids?: StoryHistoryChangeAddsRemovesInt;
 
-  /** The Member ID of the preson who requested the Story. */
+  /** The Team ID for the Story. */
   requested_by_id?: StoryHistoryChangeOldNewUuid;
 
   /** The estimate value for the Story */
@@ -2338,17 +2502,23 @@ export interface HistoryChangesStory {
   /** Task IDs that have been added or removed from the Story. */
   label_ids?: StoryHistoryChangeAddsRemovesInt;
 
+  /** The Team ID for the Story. */
+  group_id?: StoryHistoryChangeOldNewUuid;
+
   /** The estimate value for the Story */
   workflow_state_id?: StoryHistoryChangeOldNewInt;
 
   /** Task IDs that have been added or removed from the Story. */
   object_story_link_ids?: StoryHistoryChangeAddsRemovesInt;
 
-  /** Member IDs that have been added or removed as a owner of the Story. */
+  /** Custom Field Enum Value IDs that have been added or removed from the Story. */
   follower_ids?: StoryHistoryChangeAddsRemovesUuid;
 
-  /** Member IDs that have been added or removed as a owner of the Story. */
+  /** Custom Field Enum Value IDs that have been added or removed from the Story. */
   owner_ids?: StoryHistoryChangeAddsRemovesUuid;
+
+  /** Custom Field Enum Value IDs that have been added or removed from the Story. */
+  custom_field_value_ids?: StoryHistoryChangeAddsRemovesUuid;
 
   /** The estimate value for the Story */
   estimate?: StoryHistoryChangeOldNewInt;
@@ -2390,10 +2560,10 @@ export interface HistoryChangesTask {
   /** A timestamp that represents the Story's deadline. */
   description?: StoryHistoryChangeOldNewStr;
 
-  /** Member IDs that have been added or removed as a owner of the Story. */
+  /** Custom Field Enum Value IDs that have been added or removed from the Story. */
   mention_ids?: StoryHistoryChangeAddsRemovesUuid;
 
-  /** Member IDs that have been added or removed as a owner of the Story. */
+  /** Custom Field Enum Value IDs that have been added or removed from the Story. */
   owner_ids?: StoryHistoryChangeAddsRemovesUuid;
 }
 
@@ -2401,11 +2571,8 @@ export interface HistoryChangesTask {
  * A reference to a VCS Branch.
  */
 export interface HistoryReferenceBranch {
-  /**
-   * The ID of the entity referenced.
-   * @format int64
-   */
-  id: number;
+  /** The ID of the entity referenced. */
+  id: number | string;
 
   /** The type of entity referenced. */
   entity_type: string;
@@ -2424,11 +2591,8 @@ export interface HistoryReferenceBranch {
  * A reference to a VCS Commit.
  */
 export interface HistoryReferenceCommit {
-  /**
-   * The ID of the entity referenced.
-   * @format int64
-   */
-  id: number;
+  /** The ID of the entity referenced. */
+  id: number | string;
 
   /** The type of entity referenced. */
   entity_type: string;
@@ -2444,14 +2608,49 @@ export interface HistoryReferenceCommit {
 }
 
 /**
+ * A reference to a CustomField value asserted on a Story.
+ */
+export interface HistoryReferenceCustomFieldEnumValue {
+  /** The type of entity referenced. */
+  entity_type: string;
+
+  /** The name as it is displayed to the user of the parent custom-field of this enum value. */
+  field_name: string;
+
+  /**
+   * The custom-field enum value as a string.
+   * @format int64
+   */
+  integer_value?: number | null;
+
+  /** Whether or not the custom-field is enabled. */
+  field_enabled: boolean;
+
+  /** The ID of the entity referenced. */
+  id: number | string;
+
+  /** The type variety of the parent custom-field of this enum value. */
+  field_type: string;
+
+  /**
+   * The public-id of the parent custom-field of this enum value.
+   * @format uuid
+   */
+  field_id: string;
+
+  /** The custom-field enum value as a string. */
+  string_value?: string | null;
+
+  /** Whether or not the custom-field enum value is enabled. */
+  enum_value_enabled?: boolean | null;
+}
+
+/**
  * A reference to an Epic.
  */
 export interface HistoryReferenceEpic {
-  /**
-   * The ID of the entity referenced.
-   * @format int64
-   */
-  id: number;
+  /** The ID of the entity referenced. */
+  id: number | string;
 
   /** The type of entity referenced. */
   entity_type: string;
@@ -2470,11 +2669,8 @@ export interface HistoryReferenceEpic {
  * A default reference for entity types that don't have extra fields.
  */
 export interface HistoryReferenceGeneral {
-  /**
-   * The ID of the entity referenced.
-   * @format int64
-   */
-  id: number;
+  /** The ID of the entity referenced. */
+  id: number | string;
 
   /** The type of entity referenced. */
   entity_type: string;
@@ -2504,11 +2700,8 @@ export interface HistoryReferenceGroup {
  * A reference to an Iteration.
  */
 export interface HistoryReferenceIteration {
-  /**
-   * The ID of the entity referenced.
-   * @format int64
-   */
-  id: number;
+  /** The ID of the entity referenced. */
+  id: number | string;
 
   /** The type of entity referenced. */
   entity_type: string;
@@ -2527,11 +2720,8 @@ export interface HistoryReferenceIteration {
  * A reference to an Label.
  */
 export interface HistoryReferenceLabel {
-  /**
-   * The ID of the entity referenced.
-   * @format int64
-   */
-  id: number;
+  /** The ID of the entity referenced. */
+  id: number | string;
 
   /** The type of entity referenced. */
   entity_type: string;
@@ -2550,11 +2740,8 @@ export interface HistoryReferenceLabel {
  * A reference to an Project.
  */
 export interface HistoryReferenceProject {
-  /**
-   * The ID of the entity referenced.
-   * @format int64
-   */
-  id: number;
+  /** The ID of the entity referenced. */
+  id: number | string;
 
   /** The type of entity referenced. */
   entity_type: string;
@@ -2573,11 +2760,8 @@ export interface HistoryReferenceProject {
  * A reference to a Story.
  */
 export interface HistoryReferenceStory {
-  /**
-   * The ID of the entity referenced.
-   * @format int64
-   */
-  id: number;
+  /** The ID of the entity referenced. */
+  id: number | string;
 
   /** The type of entity referenced. */
   entity_type: string;
@@ -2599,11 +2783,8 @@ export interface HistoryReferenceStory {
  * A reference to a Story Task.
  */
 export interface HistoryReferenceStoryTask {
-  /**
-   * The ID of the entity referenced.
-   * @format int64
-   */
-  id: number;
+  /** The ID of the entity referenced. */
+  id: number | string;
 
   /** The type of entity referenced. */
   entity_type: string;
@@ -2616,11 +2797,8 @@ export interface HistoryReferenceStoryTask {
  * A references to a Story Workflow State.
  */
 export interface HistoryReferenceWorkflowState {
-  /**
-   * The ID of the entity referenced.
-   * @format int64
-   */
-  id: number;
+  /** The ID of the entity referenced. */
+  id: number | string;
 
   /** The type of entity referenced. */
   entity_type: string;
@@ -2633,7 +2811,7 @@ export interface HistoryReferenceWorkflowState {
 }
 
 /**
- * Icons are used to attach images to Organizations, Members, and Loading screens in the Shortcut web application.
+ * Icons are used to attach images to Groups, Workspaces, Members, and Loading screens in the Shortcut web application.
  */
 export interface Icon {
   /** A string description of this resource. */
@@ -2747,6 +2925,24 @@ export interface Iteration {
    * @format date-time
    */
   created_at: string;
+}
+
+/**
+ * The results of the Iteration search query.
+ */
+export interface IterationSearchResults {
+  /**
+   * The total number of matches for the search query. The first 1000 matches can be paged through via the API.
+   * @format int64
+   */
+  total: number;
+
+  /** A list of search results. */
+  data: IterationSlim[];
+
+  /** The URL path and query string for the next page of search results. */
+  next?: string | null;
+  cursors?: string[];
 }
 
 /**
@@ -2916,6 +3112,7 @@ export interface Label {
 
   /** The name of the Label. */
   name: string;
+  global_id: string;
 
   /**
    * The time/date that the Label was updated.
@@ -2967,6 +3164,7 @@ export interface LabelSlim {
 
   /** The name of the Label. */
   name: string;
+  global_id: string;
 
   /**
    * The time/date that the Label was updated.
@@ -3019,13 +3217,13 @@ export interface LabelStats {
   num_stories_total: number;
 
   /**
-   * The number of unstarted epics assoicated with this label.
+   * The number of unstarted epics associated with this label.
    * @format int64
    */
   num_epics_unstarted: number;
 
   /**
-   * The number of in progress epics assoicated with this label.
+   * The number of in progress epics associated with this label.
    * @format int64
    */
   num_epics_in_progress: number;
@@ -3049,7 +3247,7 @@ export interface LabelStats {
   num_points_in_progress: number;
 
   /**
-   * The total number of Epics assoicated with this Label.
+   * The total number of Epics associated with this Label.
    * @format int64
    */
   num_epics_total: number;
@@ -3079,7 +3277,7 @@ export interface LabelStats {
   num_stories_in_progress: number;
 
   /**
-   * The number of completed Epics assoicated with this Label.
+   * The number of completed Epics associated with this Label.
    * @format int64
    */
   num_epics_completed: number;
@@ -3203,25 +3401,20 @@ export interface MaxSearchResultsExceededError {
 }
 
 /**
- * Details about individual Shortcut user within the Shortcut organization that has issued the token.
+ * Details about an individual user within the Workspace.
  */
 export interface Member {
-  /** The Member's role in the Shortcut organization. */
+  /** The Member's role in the Workspace. */
   role: string;
 
   /** A string description of this resource. */
   entity_type: string;
 
-  /** True/false boolean indicating whether the Member has been disabled within this Organization. */
+  /** True/false boolean indicating whether the Member has been disabled within the Workspace. */
   disabled: boolean;
+  global_id: string;
 
-  /**
-   * The user state, one of partial, full, disabled, or imported.  A partial
-   *            user is disabled, has no means to log in, and is not an import user.  A full
-   *            user is enabled and has a means to log in.  A disabled user is disabled and has
-   *            a means to log in.  An import user is disabled, has no means to log in, and is
-   *            marked as an import user.
-   */
+  /** The user state, one of partial, full, disabled, or imported.  A partial user is disabled, has no means to log in, and is not an import user.  A full user is enabled and has a means to log in.  A disabled user is disabled and has a means to log in.  An import user is disabled, has no means to log in, and is marked as an import user. */
   state: "partial" | "full" | "disabled" | "imported";
 
   /**
@@ -3267,7 +3460,7 @@ export interface MemberInfo {
 }
 
 /**
- * A Milestone is a collection of Epics that represent a release or some other large initiative that your organization is working on.
+ * A Milestone is a collection of Epics that represent a release or some other large initiative that you are working on.
  */
 export interface Milestone {
   /** The Shortcut application url for the Milestone. */
@@ -3275,6 +3468,9 @@ export interface Milestone {
 
   /** The Milestone's description. */
   description: string;
+
+  /** A boolean indicating whether the Milestone has been archived or not. */
+  archived: boolean;
 
   /** A true/false boolean indicating if the Milestone has been started. */
   started: boolean;
@@ -3302,6 +3498,7 @@ export interface Milestone {
 
   /** The name of the Milestone. */
   name: string;
+  global_id: string;
 
   /** A true/false boolean indicating if the Milestone has been completed. */
   completed: boolean;
@@ -3331,7 +3528,7 @@ export interface Milestone {
   id: number;
 
   /**
-   * A number representing the position of the Milestone in relation to every other Milestone within the Organization.
+   * A number representing the position of the Milestone in relation to every other Milestone within the Workspace.
    * @format int64
    */
   position: number;
@@ -3344,6 +3541,24 @@ export interface Milestone {
    * @format date-time
    */
   created_at: string;
+}
+
+/**
+ * The results of the Milestone search query.
+ */
+export interface MilestoneSearchResults {
+  /**
+   * The total number of matches for the search query. The first 1000 matches can be paged through via the API.
+   * @format int64
+   */
+  total: number;
+
+  /** A list of search results. */
+  data: Milestone[];
+
+  /** The URL path and query string for the next page of search results. */
+  next?: string | null;
+  cursors?: string[];
 }
 
 /**
@@ -3397,7 +3612,7 @@ export interface Profile {
    */
   id: string;
 
-  /** Icons are used to attach images to Organizations, Members, and Loading screens in the Shortcut web application. */
+  /** Icons are used to attach images to Groups, Workspaces, Members, and Loading screens in the Shortcut web application. */
   display_icon: Icon | null;
 
   /** The primary email address of the Member with the Organization. */
@@ -3702,6 +3917,9 @@ export interface Search {
   /** The next page token. */
   next?: string;
   include?: "cursors";
+
+  /** A collection of entity_types to search. Defaults to story and epic. Suports: epic, iteration, story. */
+  entity_types?: ("story" | "milestone" | "epic" | "iteration")[];
 }
 
 /**
@@ -3709,10 +3927,16 @@ export interface Search {
  */
 export interface SearchResults {
   /** The results of the Epic search query. */
-  epics: EpicSearchResults;
+  epics?: EpicSearchResults;
 
   /** The results of the Story search query. */
-  stories: StorySearchResults;
+  stories?: StorySearchResults;
+
+  /** The results of the Iteration search query. */
+  iterations?: IterationSearchResults;
+
+  /** The results of the Milestone search query. */
+  milestones?: MilestoneSearchResults;
 }
 
 export interface SearchStories {
@@ -3732,7 +3956,7 @@ export interface SearchStories {
   epic_ids?: number[];
 
   /** The IDs for the Projects the Stories may be assigned to. */
-  project_ids?: number[];
+  project_ids?: (number | null)[];
 
   /**
    * Stories should have been updated before this date.
@@ -3834,10 +4058,10 @@ export interface SearchStories {
    * The IDs for the Projects the Stories may be assigned to.
    * @format int64
    */
-  project_id?: number;
+  project_id?: number | null;
 
   /**
-   * Stories should have been competed after this date.
+   * Stories should have been completed after this date.
    * @format date-time
    */
   completed_at_start?: string;
@@ -3882,6 +4106,9 @@ export interface Story {
 
   /** The type of story (feature, bug, chore). */
   story_type: string;
+
+  /** An array of CustomField value assertions for the story. */
+  custom_fields?: StoryCustomField[];
 
   /** An array of linked files attached to the story. */
   linked_files: LinkedFile[];
@@ -4077,6 +4304,9 @@ export interface StoryComment {
   /** A string description of this resource. */
   entity_type: string;
 
+  /** True/false boolean indicating whether the Comment has been deleted. */
+  deleted: boolean;
+
   /**
    * The ID of the Story on which the Comment appears.
    * @format int64
@@ -4108,6 +4338,12 @@ export interface StoryComment {
   external_id?: string | null;
 
   /**
+   * The ID of the parent Comment this Comment is threaded under.
+   * @format int64
+   */
+  parent_id?: number | null;
+
+  /**
    * The unique ID of the Comment.
    * @format int64
    */
@@ -4128,8 +4364,8 @@ export interface StoryComment {
    */
   created_at: string;
 
-  /** The text of the Comment. */
-  text: string;
+  /** The text of the Comment. In the case that the Comment has been deleted, this field can be set to nil. */
+  text?: string | null;
 }
 
 /**
@@ -4147,6 +4383,9 @@ export interface StoryContents {
 
   /** The type of story (feature, bug, chore). */
   story_type?: string;
+
+  /** An array of maps specifying a CustomField ID and CustomFieldEnumValue ID that represents an assertion of some value for a CustomField. */
+  custom_fields?: CustomFieldValueParams[];
 
   /** An array of linked files attached to the story. */
   linked_files?: LinkedFile[];
@@ -4235,6 +4474,23 @@ export interface StoryContentsTask {
   external_id?: string | null;
 }
 
+export interface StoryCustomField {
+  /**
+   * The unique public ID for a CustomField.
+   * @format uuid
+   */
+  field_id: string;
+
+  /**
+   * The unique public ID for a CustomFieldEnumValue.
+   * @format uuid
+   */
+  value_id: string;
+
+  /** A string representation of the value, if applicable. */
+  value: string;
+}
+
 /**
  * Task IDs that have been added or removed from the Story.
  */
@@ -4247,7 +4503,7 @@ export interface StoryHistoryChangeAddsRemovesInt {
 }
 
 /**
- * Member IDs that have been added or removed as a owner of the Story.
+ * Custom Field Enum Value IDs that have been added or removed from the Story.
  */
 export interface StoryHistoryChangeAddsRemovesUuid {
   /** The values that have been added. */
@@ -4297,7 +4553,7 @@ export interface StoryHistoryChangeOldNewStr {
 }
 
 /**
- * The Member ID of the preson who requested the Story.
+ * The Team ID for the Story.
  */
 export interface StoryHistoryChangeOldNewUuid {
   /**
@@ -4425,6 +4681,9 @@ export interface StorySlim {
 
   /** The type of story (feature, bug, chore). */
   story_type: string;
+
+  /** An array of CustomField value assertions for the story. */
+  custom_fields?: StoryCustomField[];
 
   /** An array of IDs of Files attached to the story. */
   file_ids: number[];
@@ -4615,6 +4874,9 @@ export interface StoryStats {
   num_related_documents: number;
 }
 
+/**
+ * A Task on a Story.
+ */
 export interface Task {
   /** Full text of the Task. */
   description: string;
@@ -4812,6 +5074,52 @@ export interface UpdateCategory {
 export interface UpdateComment {
   /** The updated comment text. */
   text: string;
+}
+
+export interface UpdateCustomField {
+  /** Indicates whether the Field is enabled for the Workspace. Only enabled fields can be applied to Stories. */
+  enabled?: boolean;
+
+  /** A collection of objects representing reporting periods for years. */
+  name?: string;
+
+  /** A collection of EnumValue objects representing the values in the domain of some Custom Field. */
+  values?: UpdateCustomFieldEnumValue[];
+
+  /** A frontend-controlled string that represents the icon for this custom field. */
+  icon_set_identifier?: string;
+
+  /** A description of the purpose of this field. */
+  description?: string;
+
+  /**
+   * The ID of the CustomField we want to move this CustomField before.
+   * @format uuid
+   */
+  before_id?: string;
+
+  /**
+   * The ID of the CustomField we want to move this CustomField after.
+   * @format uuid
+   */
+  after_id?: string;
+}
+
+export interface UpdateCustomFieldEnumValue {
+  /**
+   * The unique ID of an existing EnumValue within the CustomField's domain.
+   * @format uuid
+   */
+  id?: string;
+
+  /** A string value within the domain of this Custom Field. */
+  value?: string;
+
+  /** A color key associated with this EnumValue within the CustomField's domain. */
+  color_key?: string | null;
+
+  /** Whether this EnumValue is enabled for its CustomField or not. Leaving this key out of the request leaves the current enabled state untouched. */
+  enabled?: boolean;
 }
 
 /**
@@ -5076,6 +5384,9 @@ export interface UpdateMilestone {
   /** The Milestone's description. */
   description?: string;
 
+  /** A boolean indicating whether the Milestone is archived or not */
+  archived?: boolean;
+
   /**
    * A manual override for the time/date the Milestone was completed.
    * @format date-time
@@ -5189,6 +5500,9 @@ export interface UpdateStories {
    */
   iteration_id?: number | null;
 
+  /** A map specifying a CustomField ID and CustomFieldEnumValue ID that represents an assertion of some value for a CustomField. */
+  custom_fields_remove?: CustomFieldValueParams[];
+
   /** An array of labels to be added. */
   labels_add?: CreateLabelParams[];
 
@@ -5225,6 +5539,9 @@ export interface UpdateStories {
   /** The UUIDs of the owners to be removed. */
   owner_ids_remove?: string[];
 
+  /** A map specifying a CustomField ID and CustomFieldEnumValue ID that represents an assertion of some value for a CustomField. */
+  custom_fields_add?: CustomFieldValueParams[];
+
   /**
    * The ID of the Project the Stories should belong to.
    * @format int64
@@ -5259,6 +5576,9 @@ export interface UpdateStory {
 
   /** The type of story (feature, bug, chore). */
   story_type?: "feature" | "chore" | "bug";
+
+  /** A map specifying a CustomField ID and CustomFieldEnumValue ID that represents an assertion of some value for a CustomField. */
+  custom_fields?: CustomFieldValueParams[];
 
   /** One of "first" or "last". This can be used to move the given story to the first or last position in the workflow state. */
   move_to?: "last" | "first";
@@ -5380,6 +5700,9 @@ export interface UpdateStoryContents {
 
   /** The type of story (feature, bug, chore). */
   story_type?: string;
+
+  /** An array of maps specifying a CustomField ID and CustomFieldEnumValue ID that represents an assertion of some value for a CustomField. */
+  custom_fields?: CustomFieldValueParams[];
 
   /** An array of linked files attached to the story. */
   linked_files?: LinkedFile[];
@@ -5640,6 +5963,7 @@ export interface WorkflowState {
 
   /** The Workflow State's name. */
   name: string;
+  global_id: string;
 
   /**
    * The number of Stories currently in that Workflow State.

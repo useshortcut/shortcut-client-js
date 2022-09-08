@@ -28,6 +28,8 @@ import {
   CreateStoryLink,
   CreateStoryParams,
   CreateTask,
+  CustomField,
+  DataConflictError,
   DeleteStories,
   EntityTemplate,
   Epic,
@@ -43,6 +45,7 @@ import {
   Group,
   History,
   Iteration,
+  IterationSearchResults,
   IterationSlim,
   Label,
   LinkedFile,
@@ -54,6 +57,7 @@ import {
   Member,
   MemberInfo,
   Milestone,
+  MilestoneSearchResults,
   Project,
   Repository,
   Search,
@@ -70,6 +74,7 @@ import {
   UnusableEntitlementError,
   UpdateCategory,
   UpdateComment,
+  UpdateCustomField,
   UpdateEntityTemplate,
   UpdateEpic,
   UpdateFile,
@@ -196,7 +201,72 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description List all the entity templates for an organization.
+   * No description
+   *
+   * @name ListCustomFields
+   * @summary List Custom Fields
+   * @request GET:/api/v3/custom-fields
+   * @secure
+   */
+  listCustomFields = (params: RequestParams = {}) =>
+    this.request<CustomField[], void>({
+      path: `/api/v3/custom-fields`,
+      method: "GET",
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * No description
+   *
+   * @name GetCustomField
+   * @summary Get Custom Field
+   * @request GET:/api/v3/custom-fields/{custom-field-public-id}
+   * @secure
+   */
+  getCustomField = (customFieldPublicId: string, params: RequestParams = {}) =>
+    this.request<CustomField, void>({
+      path: `/api/v3/custom-fields/${customFieldPublicId}`,
+      method: "GET",
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Update Custom Field can be used to update the definition of a Custom Field. The order of items in the 'values' collection is interpreted to be their ascending sort order.To delete an existing enum value, simply omit it from the 'values' collection. New enum values may be created inline by including an object in the 'values' collection having a 'value' entry with no 'id' (eg. {'value': 'myNewValue', 'color_key': 'green'}).
+   *
+   * @name UpdateCustomField
+   * @summary Update Custom Field
+   * @request PUT:/api/v3/custom-fields/{custom-field-public-id}
+   * @secure
+   */
+  updateCustomField = (customFieldPublicId: string, UpdateCustomField: UpdateCustomField, params: RequestParams = {}) =>
+    this.request<CustomField, void | DataConflictError>({
+      path: `/api/v3/custom-fields/${customFieldPublicId}`,
+      method: "PUT",
+      body: UpdateCustomField,
+      secure: true,
+      type: ContentType.Json,
+      format: "json",
+      ...params,
+    });
+  /**
+   * No description
+   *
+   * @name DeleteCustomField
+   * @summary Delete Custom Field
+   * @request DELETE:/api/v3/custom-fields/{custom-field-public-id}
+   * @secure
+   */
+  deleteCustomField = (customFieldPublicId: string, params: RequestParams = {}) =>
+    this.request<void, void>({
+      path: `/api/v3/custom-fields/${customFieldPublicId}`,
+      method: "DELETE",
+      secure: true,
+      ...params,
+    });
+  /**
+   * @description List all the entity templates for the Workspace.
    *
    * @name ListEntityTemplates
    * @summary List Entity Templates
@@ -212,7 +282,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description Create a new entity template for your organization.
+   * @description Create a new entity template for the Workspace.
    *
    * @name CreateEntityTemplate
    * @summary Create Entity Template
@@ -230,7 +300,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description Disables the Story Template feature for the given Organization.
+   * @description Disables the Story Template feature for the Workspace.
    *
    * @name DisableStoryTemplates
    * @summary Disable Story Templates
@@ -245,7 +315,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description Enables the Story Template feature for the given Organization.
+   * @description Enables the Story Template feature for the Workspace.
    *
    * @name EnableStoryTemplates
    * @summary Enable Story Templates
@@ -313,7 +383,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description Get Epic Workflow returns the Epic Workflow for the organization.
+   * @description Returns the Epic Workflow for the Workspace.
    *
    * @name GetEpicWorkflow
    * @summary Get Epic Workflow
@@ -1131,7 +1201,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description List Members returns information about members of the organization.
+   * @description Returns information about members of the Workspace.
    *
    * @name ListMembers
    * @summary List Members
@@ -1426,6 +1496,40 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   searchEpics = (Search: Search, params: RequestParams = {}) =>
     this.request<EpicSearchResults, MaxSearchResultsExceededError | void>({
       path: `/api/v3/search/epics`,
+      method: "GET",
+      body: Search,
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Search Iterations lets you search Iterations based on desired parameters. Since ordering of results can change over time (due to search ranking decay, new Iterations being created), the `next` value from the previous response can be used as the path and query string for the next page to ensure stable ordering.
+   *
+   * @name SearchIterations
+   * @summary Search Iterations
+   * @request GET:/api/v3/search/iterations
+   * @secure
+   */
+  searchIterations = (Search: Search, params: RequestParams = {}) =>
+    this.request<IterationSearchResults, MaxSearchResultsExceededError | void>({
+      path: `/api/v3/search/iterations`,
+      method: "GET",
+      body: Search,
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Search Milestones lets you search Milestones based on desired parameters. Since ordering of results can change over time (due to search ranking decay, new Milestones being created), the `next` value from the previous response can be used as the path and query string for the next page to ensure stable ordering.
+   *
+   * @name SearchMilestones
+   * @summary Search Milestones
+   * @request GET:/api/v3/search/milestones
+   * @secure
+   */
+  searchMilestones = (Search: Search, params: RequestParams = {}) =>
+    this.request<MilestoneSearchResults, MaxSearchResultsExceededError | void>({
+      path: `/api/v3/search/milestones`,
       method: "GET",
       body: Search,
       secure: true,
@@ -1853,7 +1957,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description List Workflows returns a list of all Workflows in the organization.
+   * @description Returns a list of all Workflows in the Workspace.
    *
    * @name ListWorkflows
    * @summary List Workflows
