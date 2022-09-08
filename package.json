@@ -23,7 +23,7 @@
     "build:docs": "typedoc --entryPointStrategy expand ./src --exclude 'src/__tests__/**'",
     "sync:schema": "wget https://shortcut.com/api/rest/v3/shortcut.swagger.json --destination ./schema/shortcut.swagger.json && yarn validate:schema",
     "validate:schema": "swagger-cli validate ./schema/shortcut.swagger.json",
-    "validate:examples": "npx tsc examples/*.ts --noEmit",
+    "validate:examples": "npx tsc -p examples/tsconfig.json --noEmit",
     "add-typedoc-comments": "node ./node_modules/.bin/jscodeshift -t scripts/add-typedoc-comments-transform.js src/generated/**",
     "lint": "eslint 'src/**/*.{js,ts}'",
     "test": "jest",
