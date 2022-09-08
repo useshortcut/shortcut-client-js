@@ -50,7 +50,7 @@
     "prettier": "2.4.1",
     "rimraf": "^3.0.2",
     "swagger-cli": "^4.0.4",
-    "swagger-typescript-api": "9.2.0",
+    "swagger-typescript-api": "^9.2.0",
     "ts-jest": "^27.0.5",
     "typedoc": "0.22.5",
     "typedoc-plugin-merge-modules": "3.0.2",

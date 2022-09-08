@@ -100,7 +100,9 @@ import { ContentType, HttpClient, RequestParams } from "./http-client";
 * @private
 */
 
-export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType> {
+export class Api<
+  SecurityDataType = unknown,
+> extends HttpClient<SecurityDataType> {
   /**
    * @description List Categories returns a list of all Categories and their attributes.
    *
@@ -125,7 +127,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/categories
    * @secure
    */
-  createCategory = (CreateCategory: CreateCategory, params: RequestParams = {}) =>
+  createCategory = (
+    CreateCategory: CreateCategory,
+    params: RequestParams = {},
+  ) =>
     this.request<Category, void>({
       path: `/api/v3/categories`,
       method: "POST",
@@ -159,7 +164,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/categories/{category-public-id}
    * @secure
    */
-  updateCategory = (categoryPublicId: number, UpdateCategory: UpdateCategory, params: RequestParams = {}) =>
+  updateCategory = (
+    categoryPublicId: number,
+    UpdateCategory: UpdateCategory,
+    params: RequestParams = {},
+  ) =>
     this.request<Category, void>({
       path: `/api/v3/categories/${categoryPublicId}`,
       method: "PUT",
@@ -192,7 +201,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/categories/{category-public-id}/milestones
    * @secure
    */
-  listCategoryMilestones = (categoryPublicId: number, params: RequestParams = {}) =>
+  listCategoryMilestones = (
+    categoryPublicId: number,
+    params: RequestParams = {},
+  ) =>
     this.request<Milestone[], void>({
       path: `/api/v3/categories/${categoryPublicId}/milestones`,
       method: "GET",
@@ -240,7 +252,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/custom-fields/{custom-field-public-id}
    * @secure
    */
-  updateCustomField = (customFieldPublicId: string, UpdateCustomField: UpdateCustomField, params: RequestParams = {}) =>
+  updateCustomField = (
+    customFieldPublicId: string,
+    UpdateCustomField: UpdateCustomField,
+    params: RequestParams = {},
+  ) =>
     this.request<CustomField, void | DataConflictError>({
       path: `/api/v3/custom-fields/${customFieldPublicId}`,
       method: "PUT",
@@ -258,7 +274,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request DELETE:/api/v3/custom-fields/{custom-field-public-id}
    * @secure
    */
-  deleteCustomField = (customFieldPublicId: string, params: RequestParams = {}) =>
+  deleteCustomField = (
+    customFieldPublicId: string,
+    params: RequestParams = {},
+  ) =>
     this.request<void, void>({
       path: `/api/v3/custom-fields/${customFieldPublicId}`,
       method: "DELETE",
@@ -289,7 +308,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/entity-templates
    * @secure
    */
-  createEntityTemplate = (CreateEntityTemplate: CreateEntityTemplate, params: RequestParams = {}) =>
+  createEntityTemplate = (
+    CreateEntityTemplate: CreateEntityTemplate,
+    params: RequestParams = {},
+  ) =>
     this.request<EntityTemplate, void>({
       path: `/api/v3/entity-templates`,
       method: "POST",
@@ -337,7 +359,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/entity-templates/{entity-template-public-id}
    * @secure
    */
-  getEntityTemplate = (entityTemplatePublicId: string, params: RequestParams = {}) =>
+  getEntityTemplate = (
+    entityTemplatePublicId: string,
+    params: RequestParams = {},
+  ) =>
     this.request<EntityTemplate, void>({
       path: `/api/v3/entity-templates/${entityTemplatePublicId}`,
       method: "GET",
@@ -375,7 +400,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request DELETE:/api/v3/entity-templates/{entity-template-public-id}
    * @secure
    */
-  deleteEntityTemplate = (entityTemplatePublicId: string, params: RequestParams = {}) =>
+  deleteEntityTemplate = (
+    entityTemplatePublicId: string,
+    params: RequestParams = {},
+  ) =>
     this.request<void, void>({
       path: `/api/v3/entity-templates/${entityTemplatePublicId}`,
       method: "DELETE",
@@ -458,7 +486,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/epics/{epic-public-id}
    * @secure
    */
-  updateEpic = (epicPublicId: number, UpdateEpic: UpdateEpic, params: RequestParams = {}) =>
+  updateEpic = (
+    epicPublicId: number,
+    UpdateEpic: UpdateEpic,
+    params: RequestParams = {},
+  ) =>
     this.request<Epic, void>({
       path: `/api/v3/epics/${epicPublicId}`,
       method: "PUT",
@@ -507,7 +539,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/epics/{epic-public-id}/comments
    * @secure
    */
-  createEpicComment = (epicPublicId: number, CreateEpicComment: CreateEpicComment, params: RequestParams = {}) =>
+  createEpicComment = (
+    epicPublicId: number,
+    CreateEpicComment: CreateEpicComment,
+    params: RequestParams = {},
+  ) =>
     this.request<ThreadedComment, void>({
       path: `/api/v3/epics/${epicPublicId}/comments`,
       method: "POST",
@@ -548,7 +584,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/epics/{epic-public-id}/comments/{comment-public-id}
    * @secure
    */
-  getEpicComment = (epicPublicId: number, commentPublicId: number, params: RequestParams = {}) =>
+  getEpicComment = (
+    epicPublicId: number,
+    commentPublicId: number,
+    params: RequestParams = {},
+  ) =>
     this.request<ThreadedComment, void>({
       path: `/api/v3/epics/${epicPublicId}/comments/${commentPublicId}`,
       method: "GET",
@@ -587,7 +627,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request DELETE:/api/v3/epics/{epic-public-id}/comments/{comment-public-id}
    * @secure
    */
-  deleteEpicComment = (epicPublicId: number, commentPublicId: number, params: RequestParams = {}) =>
+  deleteEpicComment = (
+    epicPublicId: number,
+    commentPublicId: number,
+    params: RequestParams = {},
+  ) =>
     this.request<void, void>({
       path: `/api/v3/epics/${epicPublicId}/comments/${commentPublicId}`,
       method: "DELETE",
@@ -602,7 +646,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/epics/{epic-public-id}/stories
    * @secure
    */
-  listEpicStories = (epicPublicId: number, GetEpicStories: GetEpicStories, params: RequestParams = {}) =>
+  listEpicStories = (
+    epicPublicId: number,
+    GetEpicStories: GetEpicStories,
+    params: RequestParams = {},
+  ) =>
     this.request<StorySlim[], void>({
       path: `/api/v3/epics/${epicPublicId}/stories`,
       method: "GET",
@@ -620,7 +668,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/epics/{epic-public-id}/unlink-productboard
    * @secure
    */
-  unlinkProductboardFromEpic = (epicPublicId: number, params: RequestParams = {}) =>
+  unlinkProductboardFromEpic = (
+    epicPublicId: number,
+    params: RequestParams = {},
+  ) =>
     this.request<void, void>({
       path: `/api/v3/epics/${epicPublicId}/unlink-productboard`,
       method: "POST",
@@ -635,7 +686,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/external-link/stories
    * @secure
    */
-  getExternalLinkStories = (GetExternalLinkStoriesParams: GetExternalLinkStoriesParams, params: RequestParams = {}) =>
+  getExternalLinkStories = (
+    GetExternalLinkStoriesParams: GetExternalLinkStoriesParams,
+    params: RequestParams = {},
+  ) =>
     this.request<StorySlim[], void>({
       path: `/api/v3/external-link/stories`,
       method: "GET",
@@ -670,7 +724,13 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @secure
    */
   uploadFiles = (
-    data: { story_id?: number; file0: File; file1?: File; file2?: File; file3?: File },
+    data: {
+      story_id?: number;
+      file0: File;
+      file1?: File;
+      file2?: File;
+      file3?: File;
+    },
     params: RequestParams = {},
   ) =>
     this.request<UploadedFile[], void>({
@@ -706,7 +766,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/files/{file-public-id}
    * @secure
    */
-  updateFile = (filePublicId: number, UpdateFile: UpdateFile, params: RequestParams = {}) =>
+  updateFile = (
+    filePublicId: number,
+    UpdateFile: UpdateFile,
+    params: RequestParams = {},
+  ) =>
     this.request<UploadedFile, void>({
       path: `/api/v3/files/${filePublicId}`,
       method: "PUT",
@@ -819,7 +883,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/groups/{group-public-id}
    * @secure
    */
-  updateGroup = (groupPublicId: string, UpdateGroup: UpdateGroup, params: RequestParams = {}) =>
+  updateGroup = (
+    groupPublicId: string,
+    UpdateGroup: UpdateGroup,
+    params: RequestParams = {},
+  ) =>
     this.request<Group, void | UnusableEntitlementError>({
       path: `/api/v3/groups/${groupPublicId}`,
       method: "PUT",
@@ -837,7 +905,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/groups/{group-public-id}/stories
    * @secure
    */
-  listGroupStories = (groupPublicId: string, ListGroupStories: ListGroupStories, params: RequestParams = {}) =>
+  listGroupStories = (
+    groupPublicId: string,
+    ListGroupStories: ListGroupStories,
+    params: RequestParams = {},
+  ) =>
     this.request<StorySlim[], void>({
       path: `/api/v3/groups/${groupPublicId}/stories`,
       method: "GET",
@@ -871,7 +943,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/iterations
    * @secure
    */
-  createIteration = (CreateIteration: CreateIteration, params: RequestParams = {}) =>
+  createIteration = (
+    CreateIteration: CreateIteration,
+    params: RequestParams = {},
+  ) =>
     this.request<Iteration, void>({
       path: `/api/v3/iterations`,
       method: "POST",
@@ -935,7 +1010,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/iterations/{iteration-public-id}
    * @secure
    */
-  updateIteration = (iterationPublicId: number, UpdateIteration: UpdateIteration, params: RequestParams = {}) =>
+  updateIteration = (
+    iterationPublicId: number,
+    UpdateIteration: UpdateIteration,
+    params: RequestParams = {},
+  ) =>
     this.request<Iteration, void>({
       path: `/api/v3/iterations/${iterationPublicId}`,
       method: "PUT",
@@ -1008,7 +1087,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/labels
    * @secure
    */
-  createLabel = (CreateLabelParams: CreateLabelParams, params: RequestParams = {}) =>
+  createLabel = (
+    CreateLabelParams: CreateLabelParams,
+    params: RequestParams = {},
+  ) =>
     this.request<Label, void>({
       path: `/api/v3/labels`,
       method: "POST",
@@ -1042,7 +1124,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/labels/{label-public-id}
    * @secure
    */
-  updateLabel = (labelPublicId: number, UpdateLabel: UpdateLabel, params: RequestParams = {}) =>
+  updateLabel = (
+    labelPublicId: number,
+    UpdateLabel: UpdateLabel,
+    params: RequestParams = {},
+  ) =>
     this.request<Label, void>({
       path: `/api/v3/labels/${labelPublicId}`,
       method: "PUT",
@@ -1091,7 +1177,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/labels/{label-public-id}/stories
    * @secure
    */
-  listLabelStories = (labelPublicId: number, GetLabelStories: GetLabelStories, params: RequestParams = {}) =>
+  listLabelStories = (
+    labelPublicId: number,
+    GetLabelStories: GetLabelStories,
+    params: RequestParams = {},
+  ) =>
     this.request<StorySlim[], void>({
       path: `/api/v3/labels/${labelPublicId}/stories`,
       method: "GET",
@@ -1125,7 +1215,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/linked-files
    * @secure
    */
-  createLinkedFile = (CreateLinkedFile: CreateLinkedFile, params: RequestParams = {}) =>
+  createLinkedFile = (
+    CreateLinkedFile: CreateLinkedFile,
+    params: RequestParams = {},
+  ) =>
     this.request<LinkedFile, void>({
       path: `/api/v3/linked-files`,
       method: "POST",
@@ -1159,7 +1252,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/linked-files/{linked-file-public-id}
    * @secure
    */
-  updateLinkedFile = (linkedFilePublicId: number, UpdateLinkedFile: UpdateLinkedFile, params: RequestParams = {}) =>
+  updateLinkedFile = (
+    linkedFilePublicId: number,
+    UpdateLinkedFile: UpdateLinkedFile,
+    params: RequestParams = {},
+  ) =>
     this.request<LinkedFile, void>({
       path: `/api/v3/linked-files/${linkedFilePublicId}`,
       method: "PUT",
@@ -1226,7 +1323,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/members/{member-public-id}
    * @secure
    */
-  getMember = (memberPublicId: string, GetMember: GetMember, params: RequestParams = {}) =>
+  getMember = (
+    memberPublicId: string,
+    GetMember: GetMember,
+    params: RequestParams = {},
+  ) =>
     this.request<Member, void>({
       path: `/api/v3/members/${memberPublicId}`,
       method: "GET",
@@ -1260,7 +1361,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/milestones
    * @secure
    */
-  createMilestone = (CreateMilestone: CreateMilestone, params: RequestParams = {}) =>
+  createMilestone = (
+    CreateMilestone: CreateMilestone,
+    params: RequestParams = {},
+  ) =>
     this.request<Milestone, void | UnusableEntitlementError>({
       path: `/api/v3/milestones`,
       method: "POST",
@@ -1294,7 +1398,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/milestones/{milestone-public-id}
    * @secure
    */
-  updateMilestone = (milestonePublicId: number, UpdateMilestone: UpdateMilestone, params: RequestParams = {}) =>
+  updateMilestone = (
+    milestonePublicId: number,
+    UpdateMilestone: UpdateMilestone,
+    params: RequestParams = {},
+  ) =>
     this.request<Milestone, void>({
       path: `/api/v3/milestones/${milestonePublicId}`,
       method: "PUT",
@@ -1327,7 +1435,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/milestones/{milestone-public-id}/epics
    * @secure
    */
-  listMilestoneEpics = (milestonePublicId: number, params: RequestParams = {}) =>
+  listMilestoneEpics = (
+    milestonePublicId: number,
+    params: RequestParams = {},
+  ) =>
     this.request<EpicSlim[], void>({
       path: `/api/v3/milestones/${milestonePublicId}/epics`,
       method: "GET",
@@ -1393,7 +1504,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/projects/{project-public-id}
    * @secure
    */
-  updateProject = (projectPublicId: number, UpdateProject: UpdateProject, params: RequestParams = {}) =>
+  updateProject = (
+    projectPublicId: number,
+    UpdateProject: UpdateProject,
+    params: RequestParams = {},
+  ) =>
     this.request<Project, void>({
       path: `/api/v3/projects/${projectPublicId}`,
       method: "PUT",
@@ -1426,7 +1541,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/projects/{project-public-id}/stories
    * @secure
    */
-  listStories = (projectPublicId: number, GetProjectStories: GetProjectStories, params: RequestParams = {}) =>
+  listStories = (
+    projectPublicId: number,
+    GetProjectStories: GetProjectStories,
+    params: RequestParams = {},
+  ) =>
     this.request<StorySlim[], void>({
       path: `/api/v3/projects/${projectPublicId}/stories`,
       method: "GET",
@@ -1561,7 +1680,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/stories
    * @secure
    */
-  createStory = (CreateStoryParams: CreateStoryParams, params: RequestParams = {}) =>
+  createStory = (
+    CreateStoryParams: CreateStoryParams,
+    params: RequestParams = {},
+  ) =>
     this.request<Story, void>({
       path: `/api/v3/stories`,
       method: "POST",
@@ -1579,7 +1701,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/stories/bulk
    * @secure
    */
-  createMultipleStories = (CreateStories: CreateStories, params: RequestParams = {}) =>
+  createMultipleStories = (
+    CreateStories: CreateStories,
+    params: RequestParams = {},
+  ) =>
     this.request<StorySlim[], void>({
       path: `/api/v3/stories/bulk`,
       method: "POST",
@@ -1597,7 +1722,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/stories/bulk
    * @secure
    */
-  updateMultipleStories = (UpdateStories: UpdateStories, params: RequestParams = {}) =>
+  updateMultipleStories = (
+    UpdateStories: UpdateStories,
+    params: RequestParams = {},
+  ) =>
     this.request<StorySlim[], void>({
       path: `/api/v3/stories/bulk`,
       method: "PUT",
@@ -1615,7 +1743,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request DELETE:/api/v3/stories/bulk
    * @secure
    */
-  deleteMultipleStories = (DeleteStories: DeleteStories, params: RequestParams = {}) =>
+  deleteMultipleStories = (
+    DeleteStories: DeleteStories,
+    params: RequestParams = {},
+  ) =>
     this.request<void, void>({
       path: `/api/v3/stories/bulk`,
       method: "DELETE",
@@ -1632,7 +1763,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/stories/search
    * @secure
    */
-  searchStoriesOld = (SearchStories: SearchStories, params: RequestParams = {}) =>
+  searchStoriesOld = (
+    SearchStories: SearchStories,
+    params: RequestParams = {},
+  ) =>
     this.request<StorySlim[], void>({
       path: `/api/v3/stories/search`,
       method: "POST",
@@ -1666,7 +1800,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/stories/{story-public-id}
    * @secure
    */
-  updateStory = (storyPublicId: number, UpdateStory: UpdateStory, params: RequestParams = {}) =>
+  updateStory = (
+    storyPublicId: number,
+    UpdateStory: UpdateStory,
+    params: RequestParams = {},
+  ) =>
     this.request<Story, void>({
       path: `/api/v3/stories/${storyPublicId}`,
       method: "PUT",
@@ -1699,7 +1837,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/stories/{story-public-id}/comments
    * @secure
    */
-  createStoryComment = (storyPublicId: number, CreateStoryComment: CreateStoryComment, params: RequestParams = {}) =>
+  createStoryComment = (
+    storyPublicId: number,
+    CreateStoryComment: CreateStoryComment,
+    params: RequestParams = {},
+  ) =>
     this.request<StoryComment, void>({
       path: `/api/v3/stories/${storyPublicId}/comments`,
       method: "POST",
@@ -1717,7 +1859,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/stories/{story-public-id}/comments/{comment-public-id}
    * @secure
    */
-  getStoryComment = (storyPublicId: number, commentPublicId: number, params: RequestParams = {}) =>
+  getStoryComment = (
+    storyPublicId: number,
+    commentPublicId: number,
+    params: RequestParams = {},
+  ) =>
     this.request<StoryComment, void>({
       path: `/api/v3/stories/${storyPublicId}/comments/${commentPublicId}`,
       method: "GET",
@@ -1756,7 +1902,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request DELETE:/api/v3/stories/{story-public-id}/comments/{comment-public-id}
    * @secure
    */
-  deleteStoryComment = (storyPublicId: number, commentPublicId: number, params: RequestParams = {}) =>
+  deleteStoryComment = (
+    storyPublicId: number,
+    commentPublicId: number,
+    params: RequestParams = {},
+  ) =>
     this.request<void, void>({
       path: `/api/v3/stories/${storyPublicId}/comments/${commentPublicId}`,
       method: "DELETE",
@@ -1830,7 +1980,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/stories/{story-public-id}/tasks
    * @secure
    */
-  createTask = (storyPublicId: number, CreateTask: CreateTask, params: RequestParams = {}) =>
+  createTask = (
+    storyPublicId: number,
+    CreateTask: CreateTask,
+    params: RequestParams = {},
+  ) =>
     this.request<Task, void>({
       path: `/api/v3/stories/${storyPublicId}/tasks`,
       method: "POST",
@@ -1848,7 +2002,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/stories/{story-public-id}/tasks/{task-public-id}
    * @secure
    */
-  getTask = (storyPublicId: number, taskPublicId: number, params: RequestParams = {}) =>
+  getTask = (
+    storyPublicId: number,
+    taskPublicId: number,
+    params: RequestParams = {},
+  ) =>
     this.request<Task, void>({
       path: `/api/v3/stories/${storyPublicId}/tasks/${taskPublicId}`,
       method: "GET",
@@ -1864,7 +2022,12 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/stories/{story-public-id}/tasks/{task-public-id}
    * @secure
    */
-  updateTask = (storyPublicId: number, taskPublicId: number, UpdateTask: UpdateTask, params: RequestParams = {}) =>
+  updateTask = (
+    storyPublicId: number,
+    taskPublicId: number,
+    UpdateTask: UpdateTask,
+    params: RequestParams = {},
+  ) =>
     this.request<Task, void>({
       path: `/api/v3/stories/${storyPublicId}/tasks/${taskPublicId}`,
       method: "PUT",
@@ -1882,7 +2045,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request DELETE:/api/v3/stories/{story-public-id}/tasks/{task-public-id}
    * @secure
    */
-  deleteTask = (storyPublicId: number, taskPublicId: number, params: RequestParams = {}) =>
+  deleteTask = (
+    storyPublicId: number,
+    taskPublicId: number,
+    params: RequestParams = {},
+  ) =>
     this.request<void, void>({
       path: `/api/v3/stories/${storyPublicId}/tasks/${taskPublicId}`,
       method: "DELETE",
@@ -1897,7 +2064,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/story-links
    * @secure
    */
-  createStoryLink = (CreateStoryLink: CreateStoryLink, params: RequestParams = {}) =>
+  createStoryLink = (
+    CreateStoryLink: CreateStoryLink,
+    params: RequestParams = {},
+  ) =>
     this.request<StoryLink, void>({
       path: `/api/v3/story-links`,
       method: "POST",
@@ -1931,7 +2101,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/story-links/{story-link-public-id}
    * @secure
    */
-  updateStoryLink = (storyLinkPublicId: number, UpdateStoryLink: UpdateStoryLink, params: RequestParams = {}) =>
+  updateStoryLink = (
+    storyLinkPublicId: number,
+    UpdateStoryLink: UpdateStoryLink,
+    params: RequestParams = {},
+  ) =>
     this.request<StoryLink, void>({
       path: `/api/v3/story-links/${storyLinkPublicId}`,
       method: "PUT",
