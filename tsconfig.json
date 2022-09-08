@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es2015",
     "module": "commonjs",
     "moduleResolution": "node",
     "lib": [
@@ -10,22 +10,21 @@
     "pretty": true,
     "declaration": true,
     "outDir": "lib",
-
     "noImplicitAny": true,
     "noImplicitThis": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "strictNullChecks": false,
-
     "types": [
       "node",
       "jest"
     ],
-
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src"],
-  "exclude":[
+  "include": [
+    "src"
+  ],
+  "exclude": [
     "**/__tests__/**"
   ],
   "ts-node": {
