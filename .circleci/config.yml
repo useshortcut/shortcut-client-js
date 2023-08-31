@@ -2,12 +2,9 @@ version: 2.1
 
 aliases:
   - &defaults
-    working_directory: ~/shortcut-client-js
+    resource_class: small
     docker:
       - image: cimg/node:lts
-  - &attach_workspace
-    attach_workspace:
-      at: ~/shortcut-client-js
   - &save-cache-yarn
     key: yarn-packages-{{ checksum "yarn.lock" }}
     paths:
@@ -16,6 +13,19 @@ aliases:
     name: Restore Yarn Package Cache
     keys:
       - yarn-packages-{{ checksum "yarn.lock" }}
+
+commands:
+  persist-workspace:
+    steps:
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project
+  attach-workspace:
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run: yarn install
 
 jobs:
   checkout:
@@ -31,41 +41,46 @@ jobs:
           command: |
             yarn install --frozen-lockfile --no-progress --non-interactive --cache-folder ~/.cache/yarn
       - save_cache: *save-cache-yarn
-      - persist_to_workspace:
-          root: .
-          paths: .
+      - persist-workspace
   lint:
     <<: *defaults
     steps:
-      - *attach_workspace
+      - attach-workspace
       - run:
           name: Lint
           command: yarn lint
   validate-schema:
     <<: *defaults
     steps:
-      - *attach_workspace
+      - attach-workspace
       - run:
           name: Validate Schema
           command: yarn validate:schema
   test:
     <<: *defaults
     steps:
-      - *attach_workspace
+      - attach-workspace
       - run:
           name: Run Jest
           command: yarn test
+  format-check:
+    <<: *defaults
+    steps:
+      - attach-workspace
+      - run:
+          name: Format Check
+          command: yarn format:check
   validate-examples:
     <<: *defaults
     steps:
-      - *attach_workspace
+      - attach-workspace
       - run:
           name: Run TSC
           command: yarn validate:examples
   build:
     <<: *defaults
     steps:
-      - *attach_workspace
+      - attach-workspace
       - run:
           name: Build
           command: yarn build
@@ -84,6 +99,9 @@ workflows:
           requires:
             - checkout
       - validate-examples:
+          requires:
+            - checkout
+      - format-check:
           requires:
             - checkout
       - build:

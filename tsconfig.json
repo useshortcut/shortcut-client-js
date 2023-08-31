@@ -1,34 +1,23 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "ES2015",
     "module": "commonjs",
     "moduleResolution": "node",
-    "lib": [
-      "es6",
-      "dom"
-    ],
+    "lib": ["es6", "dom"],
     "pretty": true,
     "declaration": true,
     "outDir": "lib",
-
     "noImplicitAny": true,
     "noImplicitThis": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "strictNullChecks": false,
-
-    "types": [
-      "node",
-      "jest"
-    ],
-
+    "types": ["node", "jest"],
     "forceConsistentCasingInFileNames": true
   },
   "include": ["src"],
-  "exclude":[
-    "**/__tests__/**"
-  ],
+  "exclude": ["**/__tests__/**"],
   "ts-node": {
     "files": true
-  },
+  }
 }
