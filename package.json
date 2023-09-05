@@ -32,8 +32,7 @@
     "format:check": "prettier --check *.{json,md,prettierrc} '{src,scripts}/**/*.ts'"
   },
   "dependencies": {
-    "axios": "^1.5.0",
-    "form-data": "^4.0.0"
+    "axios": "^1.5.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.4",
