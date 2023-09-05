@@ -84,8 +84,7 @@
         "repository_id": {
           "description": "The ID of the Repository that contains the Branch.",
           "type": "integer",
-          "format": "int64",
-          "x-nullable": true
+          "format": "int64"
         },
         "created_at": {
           "description": "The time/date the Branch was created.",
@@ -133,6 +132,11 @@
           "description": "The name of the Category.",
           "type": "string"
         },
+        "global_id": {
+          "description": "The Global ID of the Category.",
+          "x-doc-skip": true,
+          "type": "string"
+        },
         "type": {
           "description": "The type of entity this Category is associated with; currently Milestone is the only type of Category.",
           "type": "string"
@@ -164,6 +168,7 @@
         "entity_type",
         "color",
         "name",
+        "global_id",
         "type",
         "updated_at",
         "external_id",
@@ -194,14 +199,6 @@
           "type": "string",
           "format": "date-time",
           "x-nullable": true
-        },
-        "merged_branch_ids": {
-          "description": "The IDs of the Branches the Commit has been merged into.",
-          "type": "array",
-          "items": {
-            "type": "integer",
-            "format": "int64"
-          }
         },
         "id": {
           "description": "The unique ID of the Commit.",
@@ -247,7 +244,6 @@
         "author_id",
         "hash",
         "updated_at",
-        "merged_branch_ids",
         "id",
         "url",
         "author_email",
@@ -551,11 +547,13 @@
         },
         "name": {
           "minLength": 1,
+          "maxLength": 63,
           "description": "The name of this Group.",
           "type": "string"
         },
         "mention_name": {
           "minLength": 1,
+          "maxLength": 63,
           "description": "The mention name of this Group.",
           "type": "string"
         },
@@ -633,6 +631,7 @@
         },
         "name": {
           "minLength": 1,
+          "maxLength": 256,
           "description": "The name of this Iteration.",
           "type": "string"
         },
@@ -701,6 +700,7 @@
         },
         "name": {
           "minLength": 1,
+          "maxLength": 256,
           "description": "The name of the file.",
           "type": "string"
         },
@@ -901,20 +901,14 @@
       "x-doc-skip": true,
       "type": "object",
       "properties": {
-        "text": {
-          "maxLength": 100000,
-          "description": "The comment text.",
-          "type": "string"
-        },
         "author_id": {
           "description": "The Member ID of the Comment's author. Defaults to the user identified by the API token.",
           "type": "string",
           "format": "uuid"
         },
-        "created_at": {
-          "description": "Defaults to the time/date the comment is created, but can be set to reflect another date.",
-          "type": "string",
-          "format": "date-time"
+        "blocker": {
+          "description": "Marks the comment as a blocker that can be surfaced to permissions or teams mentioned in the comment. Can only be used on a top-level comment.",
+          "type": "boolean"
         },
         "updated_at": {
           "description": "Defaults to the time/date the comment is last updated, but can be set to reflect another date.",
@@ -923,6 +917,26 @@
         },
         "external_id": {
           "description": "This field can be set to another unique ID. In the case that the comment has been imported from another tool, the ID in the other tool can be indicated here.",
+          "type": "string"
+        },
+        "parent_id": {
+          "description": "The ID of the Comment that this comment is threaded under.",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
+        },
+        "unblocks_parent": {
+          "description": "Marks the comment as an unblocker to its  blocker parent. Can only be set on a threaded comment who has a parent with `blocker` set.",
+          "type": "boolean"
+        },
+        "created_at": {
+          "description": "Defaults to the time/date the comment is created, but can be set to reflect another date.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "text": {
+          "maxLength": 100000,
+          "description": "The comment text.",
           "type": "string"
         }
       },
@@ -958,6 +972,20 @@
         "external_id": {
           "description": "This field can be set to another unique ID. In the case that the comment has been imported from another tool, the ID in the other tool can be indicated here.",
           "type": "string"
+        },
+        "parent_id": {
+          "description": "The ID of the Comment that this comment is threaded under.",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
+        },
+        "blocker": {
+          "description": "Marks the comment as a blocker that can be surfaced to permissions or teams mentioned in the comment. Can only be used on a top-level comment.",
+          "type": "boolean"
+        },
+        "unblocks_parent": {
+          "description": "Marks the comment as an unblocker to its  blocker parent. Can only be set on a threaded comment who has a parent with `blocker` set.",
+          "type": "boolean"
         }
       },
       "additionalProperties": false,
@@ -988,6 +1016,13 @@
           "description": "The type of story (feature, bug, chore).",
           "type": "string"
         },
+        "custom_fields": {
+          "description": "An array of maps specifying a CustomField ID and CustomFieldEnumValue ID that represents an assertion of some value for a CustomField.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CustomFieldValueParams"
+          }
+        },
         "linked_files": {
           "description": "An array of linked files attached to the story.",
           "type": "array",
@@ -1003,6 +1038,12 @@
             "format": "int64"
           },
           "uniqueItems": true
+        },
+        "workflow_id": {
+          "description": "The ID of the workflow.",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
         },
         "name": {
           "description": "The name of the story.",
@@ -1201,6 +1242,21 @@
             "bug"
           ]
         },
+        "custom_fields": {
+          "description": "A map specifying a CustomField ID and CustomFieldEnumValue ID that represents an assertion of some value for a CustomField.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CustomFieldValueParams"
+          }
+        },
+        "move_to": {
+          "description": "One of \"first\" or \"last\". This can be used to move the given story to the first or last position in the workflow state.",
+          "type": "string",
+          "enum": [
+            "last",
+            "first"
+          ]
+        },
         "file_ids": {
           "description": "An array of IDs of files attached to the story.",
           "type": "array",
@@ -1235,7 +1291,7 @@
           "x-nullable": true
         },
         "story_template_id": {
-          "description": "The id of the story template used to create this story, if applicable.",
+          "description": "The id of the story template used to create this story, if applicable. This is just an association; no content from the story template is inherited by the story simply by setting this field.",
           "type": "string",
           "format": "uuid",
           "x-nullable": true
@@ -1351,6 +1407,8 @@
       "type": "object",
       "properties": {
         "description": {
+          "minLength": 1,
+          "maxLength": 2048,
           "description": "The Task description.",
           "type": "string"
         },
@@ -1391,6 +1449,8 @@
       "type": "object",
       "properties": {
         "description": {
+          "minLength": 1,
+          "maxLength": 2048,
           "description": "The Task description.",
           "type": "string"
         },
@@ -1424,6 +1484,195 @@
       "additionalProperties": false,
       "required": [
         "description"
+      ]
+    },
+    "CustomField": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "A string description of the CustomField",
+          "type": "string"
+        },
+        "icon_set_identifier": {
+          "minLength": 1,
+          "maxLength": 63,
+          "description": "A string that represents the icon that corresponds to this custom field.",
+          "type": "string"
+        },
+        "entity_type": {
+          "description": "A string description of this resource.",
+          "type": "string",
+          "enum": [
+            "custom-field"
+          ]
+        },
+        "story_types": {
+          "description": "The types of stories this CustomField is scoped to.",
+          "x-doc-skip": true,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "name": {
+          "minLength": 1,
+          "maxLength": 63,
+          "description": "The name of the Custom Field.",
+          "type": "string"
+        },
+        "fixed_position": {
+          "description": "When true, the CustomFieldEnumValues may not be reordered.",
+          "x-doc-skip": true,
+          "type": "boolean"
+        },
+        "updated_at": {
+          "description": "The instant when this CustomField was last updated.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "id": {
+          "description": "The unique public ID for the CustomField.",
+          "type": "string",
+          "format": "uuid"
+        },
+        "values": {
+          "description": "A collection of legal values for a CustomField.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CustomFieldEnumValue"
+          }
+        },
+        "field_type": {
+          "description": "The type of Custom Field, eg. 'enum'.",
+          "type": "string",
+          "enum": [
+            "enum"
+          ]
+        },
+        "position": {
+          "description": "An integer indicating the position of this Custom Field with respect to the other CustomField",
+          "type": "integer",
+          "format": "int64"
+        },
+        "canonical_name": {
+          "description": "The canonical name for a Shortcut-defined field.",
+          "type": "string"
+        },
+        "enabled": {
+          "description": "When true, the CustomField can be applied to entities in the Workspace.",
+          "type": "boolean"
+        },
+        "created_at": {
+          "description": "The instant when this CustomField was created.",
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "entity_type",
+        "name",
+        "updated_at",
+        "id",
+        "field_type",
+        "position",
+        "enabled",
+        "created_at"
+      ]
+    },
+    "CustomFieldEnumValue": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "The unique public ID for the Custom Field.",
+          "type": "string",
+          "format": "uuid"
+        },
+        "value": {
+          "minLength": 1,
+          "maxLength": 63,
+          "description": "A string value within the domain of this Custom Field.",
+          "type": "string"
+        },
+        "position": {
+          "description": "An integer indicating the position of this Value with respect to the other CustomFieldEnumValues in the enumeration.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "color_key": {
+          "description": "A color key associated with this CustomFieldEnumValue.",
+          "type": "string",
+          "x-nullable": true
+        },
+        "entity_type": {
+          "description": "A string description of this resource.",
+          "type": "string",
+          "enum": [
+            "custom-field-enum-value"
+          ]
+        },
+        "enabled": {
+          "description": "When true, the CustomFieldEnumValue can be selected for the CustomField.",
+          "x-doc-skip": true,
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "value",
+        "position",
+        "color_key",
+        "entity_type",
+        "enabled"
+      ]
+    },
+    "CustomFieldValueParams": {
+      "type": "object",
+      "properties": {
+        "field_id": {
+          "description": "The unique public ID for the CustomField.",
+          "type": "string",
+          "format": "uuid"
+        },
+        "value_id": {
+          "description": "The unique public ID for the CustomFieldEnumValue.",
+          "type": "string",
+          "format": "uuid"
+        },
+        "value": {
+          "description": "A literal value for the CustomField. Currently ignored.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "field_id",
+        "value_id"
+      ]
+    },
+    "DataConflictError": {
+      "description": "Error returned when Datomic tx fails due to Datomc :db.error/cas-failed error",
+      "x-doc-skip": true,
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string",
+          "enum": [
+            "data-conflict-error"
+          ]
+        },
+        "message": {
+          "description": "An explanatory message: \"The update failed due to a data conflict. Please refresh and try again.\"",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "error",
+        "message"
       ]
     },
     "DeleteStories": {
@@ -1503,6 +1752,8 @@
       "type": "object",
       "properties": {
         "description": {
+          "minLength": 1,
+          "maxLength": 2048,
           "description": "The Task description.",
           "type": "string"
         },
@@ -1529,7 +1780,7 @@
       ]
     },
     "Epic": {
-      "description": "An Epic is a collection of stories that together might make up a release, a milestone, or some other large initiative that your organization is working on.",
+      "description": "An Epic is a collection of stories that together might make up a release, a milestone, or some other large initiative that you are working on.",
       "type": "object",
       "properties": {
         "app_url": {
@@ -1575,6 +1826,13 @@
             "format": "uuid"
           }
         },
+        "associated_groups": {
+          "description": "An array containing Group IDs and Group-owned story counts for the Epic's associated groups.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EpicAssociatedGroup"
+          }
+        },
         "project_ids": {
           "description": "The IDs of Projects related to this Epic.",
           "type": "array",
@@ -1614,6 +1872,10 @@
         },
         "name": {
           "description": "The name of the Epic.",
+          "type": "string"
+        },
+        "global_id": {
+          "x-doc-skip": true,
           "type": "string"
         },
         "completed": {
@@ -1759,6 +2021,7 @@
         "labels",
         "mention_ids",
         "member_mention_ids",
+        "associated_groups",
         "project_ids",
         "stories_without_projects",
         "completed_at_override",
@@ -1766,8 +2029,303 @@
         "started_at",
         "completed_at",
         "name",
+        "global_id",
         "completed",
         "comments",
+        "productboard_url",
+        "planned_start_date",
+        "state",
+        "milestone_id",
+        "requested_by_id",
+        "epic_state_id",
+        "label_ids",
+        "started_at_override",
+        "group_id",
+        "updated_at",
+        "group_mention_ids",
+        "productboard_id",
+        "follower_ids",
+        "owner_ids",
+        "external_id",
+        "id",
+        "position",
+        "productboard_name",
+        "deadline",
+        "stats",
+        "created_at"
+      ]
+    },
+    "EpicAssociatedGroup": {
+      "x-doc-skip": true,
+      "type": "object",
+      "properties": {
+        "group_id": {
+          "description": "The Group ID of the associated group.",
+          "type": "string",
+          "format": "uuid"
+        },
+        "associated_stories_count": {
+          "description": "The number of stories this Group owns in the Epic.",
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "group_id"
+      ]
+    },
+    "EpicSearchResult": {
+      "description": "An Epic in search results. This is typed differently from Epic because the details=slim search argument will omit some fields.",
+      "type": "object",
+      "properties": {
+        "app_url": {
+          "description": "The Shortcut application url for the Epic.",
+          "type": "string"
+        },
+        "description": {
+          "description": "The Epic's description.",
+          "type": "string"
+        },
+        "archived": {
+          "description": "True/false boolean that indicates whether the Epic is archived or not.",
+          "type": "boolean"
+        },
+        "started": {
+          "description": "A true/false boolean indicating if the Epic has been started.",
+          "type": "boolean"
+        },
+        "entity_type": {
+          "description": "A string description of this resource.",
+          "type": "string"
+        },
+        "labels": {
+          "description": "An array of Labels attached to the Epic.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LabelSlim"
+          }
+        },
+        "mention_ids": {
+          "description": "Deprecated: use member_mention_ids.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "member_mention_ids": {
+          "description": "An array of Member IDs that have been mentioned in the Epic description.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "associated_groups": {
+          "description": "An array containing Group IDs and Group-owned story counts for the Epic's associated groups.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EpicAssociatedGroup"
+          }
+        },
+        "project_ids": {
+          "description": "The IDs of Projects related to this Epic.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "stories_without_projects": {
+          "description": "The number of stories in this epic which are not associated with a project.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "completed_at_override": {
+          "description": "A manual override for the time/date the Epic was completed.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "productboard_plugin_id": {
+          "description": "The ID of the associated productboard integration.",
+          "type": "string",
+          "format": "uuid",
+          "x-nullable": true
+        },
+        "started_at": {
+          "description": "The time/date the Epic was started.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "completed_at": {
+          "description": "The time/date the Epic was completed.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "name": {
+          "description": "The name of the Epic.",
+          "type": "string"
+        },
+        "global_id": {
+          "x-doc-skip": true,
+          "type": "string"
+        },
+        "completed": {
+          "description": "A true/false boolean indicating if the Epic has been completed.",
+          "type": "boolean"
+        },
+        "comments": {
+          "description": "A nested array of threaded comments.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ThreadedComment"
+          }
+        },
+        "productboard_url": {
+          "description": "The URL of the associated productboard feature.",
+          "type": "string",
+          "x-nullable": true
+        },
+        "planned_start_date": {
+          "description": "The Epic's planned start date.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "state": {
+          "description": "`Deprecated` The workflow state that the Epic is in.",
+          "type": "string"
+        },
+        "milestone_id": {
+          "description": "The ID of the Milestone this Epic is related to.",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
+        },
+        "requested_by_id": {
+          "description": "The ID of the Member that requested the epic.",
+          "type": "string",
+          "format": "uuid"
+        },
+        "epic_state_id": {
+          "description": "The ID of the Epic State.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "label_ids": {
+          "description": "An array of Label ids attached to the Epic.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "started_at_override": {
+          "description": "A manual override for the time/date the Epic was started.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "group_id": {
+          "type": "string",
+          "format": "uuid",
+          "x-nullable": true
+        },
+        "updated_at": {
+          "description": "The time/date the Epic was updated.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "group_mention_ids": {
+          "description": "An array of Group IDs that have been mentioned in the Epic description.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "productboard_id": {
+          "description": "The ID of the associated productboard feature.",
+          "type": "string",
+          "format": "uuid",
+          "x-nullable": true
+        },
+        "follower_ids": {
+          "description": "An array of UUIDs for any Members you want to add as Followers on this Epic.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "owner_ids": {
+          "description": "An array of UUIDs for any members you want to add as Owners on this new Epic.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "external_id": {
+          "description": "This field can be set to another unique ID. In the case that the Epic has been imported from another tool, the ID in the other tool can be indicated here.",
+          "type": "string",
+          "x-nullable": true
+        },
+        "id": {
+          "description": "The unique ID of the Epic.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "position": {
+          "description": "The Epic's relative position in the Epic workflow state.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "productboard_name": {
+          "description": "The name of the associated productboard feature.",
+          "type": "string",
+          "x-nullable": true
+        },
+        "deadline": {
+          "description": "The Epic's deadline.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "stats": {
+          "$ref": "#/definitions/EpicStats"
+        },
+        "created_at": {
+          "description": "The time/date the Epic was created.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "app_url",
+        "archived",
+        "started",
+        "entity_type",
+        "labels",
+        "mention_ids",
+        "member_mention_ids",
+        "associated_groups",
+        "project_ids",
+        "stories_without_projects",
+        "completed_at_override",
+        "productboard_plugin_id",
+        "started_at",
+        "completed_at",
+        "name",
+        "global_id",
+        "completed",
         "productboard_url",
         "planned_start_date",
         "state",
@@ -1804,7 +2362,7 @@
           "description": "A list of search results.",
           "type": "array",
           "items": {
-            "$ref": "#/definitions/Epic"
+            "$ref": "#/definitions/EpicSearchResult"
           }
         },
         "next": {
@@ -1873,6 +2431,13 @@
             "format": "uuid"
           }
         },
+        "associated_groups": {
+          "description": "An array containing Group IDs and Group-owned story counts for the Epic's associated groups.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EpicAssociatedGroup"
+          }
+        },
         "project_ids": {
           "description": "The IDs of Projects related to this Epic.",
           "type": "array",
@@ -1912,6 +2477,10 @@
         },
         "name": {
           "description": "The name of the Epic.",
+          "type": "string"
+        },
+        "global_id": {
+          "x-doc-skip": true,
           "type": "string"
         },
         "completed": {
@@ -2049,6 +2618,7 @@
         "labels",
         "mention_ids",
         "member_mention_ids",
+        "associated_groups",
         "project_ids",
         "stories_without_projects",
         "completed_at_override",
@@ -2056,6 +2626,7 @@
         "started_at",
         "completed_at",
         "name",
+        "global_id",
         "completed",
         "productboard_url",
         "planned_start_date",
@@ -2103,6 +2674,10 @@
           "description": "The Epic State's name.",
           "type": "string"
         },
+        "global_id": {
+          "x-doc-skip": true,
+          "type": "string"
+        },
         "type": {
           "description": "The type of Epic State (Unstarted, Started, or Done)",
           "type": "string"
@@ -2133,6 +2708,7 @@
         "description",
         "entity_type",
         "name",
+        "global_id",
         "type",
         "updated_at",
         "id",
@@ -2195,8 +2771,18 @@
           "type": "integer",
           "format": "int64"
         },
+        "num_stories_backlog": {
+          "description": "The total number of backlog Stories in this Epic.",
+          "type": "integer",
+          "format": "int64"
+        },
         "average_lead_time": {
           "description": "The average lead time (in seconds) of completed stories in this Epic.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "num_points_backlog": {
+          "description": "The total number of backlog points in this Epic.",
           "type": "integer",
           "format": "int64"
         },
@@ -2222,6 +2808,8 @@
         "num_points_unstarted",
         "num_stories_started",
         "num_stories_unestimated",
+        "num_stories_backlog",
+        "num_points_backlog",
         "num_points",
         "num_stories_done"
       ]
@@ -2325,6 +2913,7 @@
       "properties": {
         "org-public-id": {
           "description": "The unique ID of the Organization to limit the lookup to.",
+          "x-doc-skip": true,
           "type": "string",
           "format": "uuid"
         }
@@ -2385,6 +2974,10 @@
           "description": "The name of the Group.",
           "type": "string"
         },
+        "global_id": {
+          "x-doc-skip": true,
+          "type": "string"
+        },
         "color_key": {
           "description": "The color key to be displayed with the Group.",
           "type": "string",
@@ -2418,6 +3011,11 @@
           "type": "integer",
           "format": "int64"
         },
+        "num_stories_backlog": {
+          "description": "The number of stories assigned to the group which are in a backlog workflow state.",
+          "type": "integer",
+          "format": "int64"
+        },
         "id": {
           "description": "The id of the Group.",
           "type": "string",
@@ -2433,14 +3031,6 @@
           "items": {
             "type": "string",
             "format": "uuid"
-          }
-        },
-        "story_workflow_ids": {
-          "description": "The Workflow IDs which have stories assigned to the group.",
-          "type": "array",
-          "items": {
-            "type": "integer",
-            "format": "int64"
           }
         },
         "workflow_ids": {
@@ -2462,13 +3052,14 @@
         "num_stories_started",
         "mention_name",
         "name",
+        "global_id",
         "color_key",
         "num_stories",
         "num_epics_started",
+        "num_stories_backlog",
         "id",
         "display_icon",
         "member_ids",
-        "story_workflow_ids",
         "workflow_ids"
       ]
     },
@@ -2482,8 +3073,16 @@
         },
         "primary_id": {
           "description": "The ID of the primary entity that has changed, if applicable.",
-          "type": "integer",
-          "format": "int64"
+          "x-oneOf": [
+            {
+              "type": "integer",
+              "format": "int64"
+            },
+            {
+              "type": "string",
+              "format": "uuid"
+            }
+          ]
         },
         "references": {
           "description": "An array of objects affected by the change. Reference objects provide basic information for the entities reference in the history actions. Some have specific fields, but they always contain an id, entity_type, and a name.",
@@ -2516,6 +3115,9 @@
               },
               {
                 "$ref": "#/definitions/HistoryReferenceStoryTask"
+              },
+              {
+                "$ref": "#/definitions/HistoryReferenceCustomFieldEnumValue"
               },
               {
                 "$ref": "#/definitions/HistoryReferenceWorkflowState"
@@ -2584,6 +3186,9 @@
               },
               {
                 "$ref": "#/definitions/HistoryActionTaskDelete"
+              },
+              {
+                "$ref": "#/definitions/HistoryActionWorkspace2BulkUpdate"
               }
             ]
           }
@@ -3050,6 +3655,11 @@
             "format": "int64"
           }
         },
+        "group_id": {
+          "description": "The Team IDs for the followers of the Story.",
+          "type": "string",
+          "format": "uuid"
+        },
         "workflow_state_id": {
           "description": "An array of Workflow State IDs attached to the Story.",
           "type": "integer",
@@ -3073,6 +3683,14 @@
         },
         "owner_ids": {
           "description": "An array of Member IDs that are the owners of the Story.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "custom_field_value_ids": {
+          "description": "An array of Custom Field Enum Value ids on this Story.",
           "type": "array",
           "items": {
             "type": "string",
@@ -3526,6 +4144,39 @@
         "story_id"
       ]
     },
+    "HistoryActionWorkspace2BulkUpdate": {
+      "description": "An action representing a bulk operation within a workspace2.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "The ID of the entity referenced.",
+          "type": "string",
+          "format": "uuid"
+        },
+        "entity_type": {
+          "description": "The type of entity referenced.",
+          "type": "string"
+        },
+        "action": {
+          "description": "The action of the entity referenced.",
+          "type": "string",
+          "enum": [
+            "bulk-update"
+          ]
+        },
+        "name": {
+          "description": "The name of the workspace2 in which the BulkUpdate occurred.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "entity_type",
+        "action",
+        "name"
+      ]
+    },
     "HistoryChangesStory": {
       "description": "The changes that have occurred as a result of the action.",
       "type": "object",
@@ -3575,6 +4226,9 @@
         "label_ids": {
           "$ref": "#/definitions/StoryHistoryChangeAddsRemovesInt"
         },
+        "group_id": {
+          "$ref": "#/definitions/StoryHistoryChangeOldNewUuid"
+        },
         "workflow_state_id": {
           "$ref": "#/definitions/StoryHistoryChangeOldNewInt"
         },
@@ -3585,6 +4239,9 @@
           "$ref": "#/definitions/StoryHistoryChangeAddsRemovesUuid"
         },
         "owner_ids": {
+          "$ref": "#/definitions/StoryHistoryChangeAddsRemovesUuid"
+        },
+        "custom_field_value_ids": {
           "$ref": "#/definitions/StoryHistoryChangeAddsRemovesUuid"
         },
         "estimate": {
@@ -3646,8 +4303,16 @@
       "properties": {
         "id": {
           "description": "The ID of the entity referenced.",
-          "type": "integer",
-          "format": "int64"
+          "x-oneOf": [
+            {
+              "type": "integer",
+              "format": "int64"
+            },
+            {
+              "type": "string",
+              "format": "uuid"
+            }
+          ]
         },
         "entity_type": {
           "description": "The type of entity referenced.",
@@ -3678,8 +4343,16 @@
       "properties": {
         "id": {
           "description": "The ID of the entity referenced.",
-          "type": "integer",
-          "format": "int64"
+          "x-oneOf": [
+            {
+              "type": "integer",
+              "format": "int64"
+            },
+            {
+              "type": "string",
+              "format": "uuid"
+            }
+          ]
         },
         "entity_type": {
           "description": "The type of entity referenced.",
@@ -3704,14 +4377,90 @@
         "url"
       ]
     },
+    "HistoryReferenceCustomFieldEnumValue": {
+      "description": "A reference to a CustomField value asserted on a Story.",
+      "type": "object",
+      "properties": {
+        "entity_type": {
+          "description": "The type of entity referenced.",
+          "type": "string"
+        },
+        "field_name": {
+          "description": "The name as it is displayed to the user of the parent custom-field of this enum value.",
+          "type": "string"
+        },
+        "integer_value": {
+          "description": "The custom-field enum value as a string.",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
+        },
+        "field_enabled": {
+          "description": "Whether or not the custom-field is enabled.",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "The ID of the entity referenced.",
+          "x-oneOf": [
+            {
+              "type": "integer",
+              "format": "int64"
+            },
+            {
+              "type": "string",
+              "format": "uuid"
+            }
+          ]
+        },
+        "field_type": {
+          "description": "The type variety of the parent custom-field of this enum value.",
+          "type": "string"
+        },
+        "field_id": {
+          "description": "The public-id of the parent custom-field of this enum value.",
+          "type": "string",
+          "format": "uuid"
+        },
+        "string_value": {
+          "description": "The custom-field enum value as a string.",
+          "type": "string",
+          "x-nullable": true
+        },
+        "enum_value_enabled": {
+          "description": "Whether or not the custom-field enum value is enabled.",
+          "type": "boolean",
+          "x-nullable": true
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "entity_type",
+        "field_name",
+        "integer_value",
+        "field_enabled",
+        "id",
+        "field_type",
+        "field_id",
+        "string_value",
+        "enum_value_enabled"
+      ]
+    },
     "HistoryReferenceEpic": {
       "description": "A reference to an Epic.",
       "type": "object",
       "properties": {
         "id": {
           "description": "The ID of the entity referenced.",
-          "type": "integer",
-          "format": "int64"
+          "x-oneOf": [
+            {
+              "type": "integer",
+              "format": "int64"
+            },
+            {
+              "type": "string",
+              "format": "uuid"
+            }
+          ]
         },
         "entity_type": {
           "description": "The type of entity referenced.",
@@ -3742,8 +4491,16 @@
       "properties": {
         "id": {
           "description": "The ID of the entity referenced.",
-          "type": "integer",
-          "format": "int64"
+          "x-oneOf": [
+            {
+              "type": "integer",
+              "format": "int64"
+            },
+            {
+              "type": "string",
+              "format": "uuid"
+            }
+          ]
         },
         "entity_type": {
           "description": "The type of entity referenced.",
@@ -3792,8 +4549,16 @@
       "properties": {
         "id": {
           "description": "The ID of the entity referenced.",
-          "type": "integer",
-          "format": "int64"
+          "x-oneOf": [
+            {
+              "type": "integer",
+              "format": "int64"
+            },
+            {
+              "type": "string",
+              "format": "uuid"
+            }
+          ]
         },
         "entity_type": {
           "description": "The type of entity referenced.",
@@ -3824,8 +4589,16 @@
       "properties": {
         "id": {
           "description": "The ID of the entity referenced.",
-          "type": "integer",
-          "format": "int64"
+          "x-oneOf": [
+            {
+              "type": "integer",
+              "format": "int64"
+            },
+            {
+              "type": "string",
+              "format": "uuid"
+            }
+          ]
         },
         "entity_type": {
           "description": "The type of entity referenced.",
@@ -3856,8 +4629,16 @@
       "properties": {
         "id": {
           "description": "The ID of the entity referenced.",
-          "type": "integer",
-          "format": "int64"
+          "x-oneOf": [
+            {
+              "type": "integer",
+              "format": "int64"
+            },
+            {
+              "type": "string",
+              "format": "uuid"
+            }
+          ]
         },
         "entity_type": {
           "description": "The type of entity referenced.",
@@ -3888,8 +4669,16 @@
       "properties": {
         "id": {
           "description": "The ID of the entity referenced.",
-          "type": "integer",
-          "format": "int64"
+          "x-oneOf": [
+            {
+              "type": "integer",
+              "format": "int64"
+            },
+            {
+              "type": "string",
+              "format": "uuid"
+            }
+          ]
         },
         "entity_type": {
           "description": "The type of entity referenced.",
@@ -3930,8 +4719,16 @@
       "properties": {
         "id": {
           "description": "The ID of the entity referenced.",
-          "type": "integer",
-          "format": "int64"
+          "x-oneOf": [
+            {
+              "type": "integer",
+              "format": "int64"
+            },
+            {
+              "type": "string",
+              "format": "uuid"
+            }
+          ]
         },
         "entity_type": {
           "description": "The type of entity referenced.",
@@ -3955,8 +4752,16 @@
       "properties": {
         "id": {
           "description": "The ID of the entity referenced.",
-          "type": "integer",
-          "format": "int64"
+          "x-oneOf": [
+            {
+              "type": "integer",
+              "format": "int64"
+            },
+            {
+              "type": "string",
+              "format": "uuid"
+            }
+          ]
         },
         "entity_type": {
           "description": "The type of entity referenced.",
@@ -3985,7 +4790,7 @@
       ]
     },
     "Icon": {
-      "description": "Icons are used to attach images to Organizations, Members, and Loading screens in the Shortcut web application.",
+      "description": "Icons are used to attach images to Groups, Workspaces, Members, and Loading screens in the Shortcut web application.",
       "type": "object",
       "properties": {
         "entity_type": {
@@ -4035,8 +4840,14 @@
           "x-nullable": true
         },
         "type": {
-          "description": "The type of Identity; currently only type is github.",
+          "description": "The service this Identity is for.",
           "type": "string",
+          "enum": [
+            "slack",
+            "github",
+            "gitlab",
+            "bitbucket"
+          ],
           "x-nullable": true
         }
       },
@@ -4086,8 +4897,20 @@
             "format": "uuid"
           }
         },
+        "associated_groups": {
+          "description": "An array containing Group IDs and Group-owned story counts for the Iteration's associated groups.",
+          "x-doc-skip": true,
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/IterationAssociatedGroup"
+          }
+        },
         "name": {
           "description": "The name of the iteration.",
+          "type": "string"
+        },
+        "global_id": {
+          "x-doc-skip": true,
           "type": "string"
         },
         "label_ids": {
@@ -4163,7 +4986,9 @@
         "labels",
         "mention_ids",
         "member_mention_ids",
+        "associated_groups",
         "name",
+        "global_id",
         "label_ids",
         "updated_at",
         "group_mention_ids",
@@ -4175,6 +5000,61 @@
         "id",
         "stats",
         "created_at"
+      ]
+    },
+    "IterationAssociatedGroup": {
+      "x-doc-skip": true,
+      "type": "object",
+      "properties": {
+        "group_id": {
+          "description": "The Group ID of the associated group.",
+          "type": "string",
+          "format": "uuid"
+        },
+        "associated_stories_count": {
+          "description": "The number of stories this Group owns in the Iteration.",
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "group_id"
+      ]
+    },
+    "IterationSearchResults": {
+      "description": "The results of the Iteration search query.",
+      "type": "object",
+      "properties": {
+        "total": {
+          "description": "The total number of matches for the search query. The first 1000 matches can be paged through via the API.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "data": {
+          "description": "A list of search results.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/IterationSlim"
+          }
+        },
+        "next": {
+          "description": "The URL path and query string for the next page of search results.",
+          "type": "string",
+          "x-nullable": true
+        },
+        "cursors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "total",
+        "data",
+        "next"
       ]
     },
     "IterationSlim": {
@@ -4212,8 +5092,20 @@
             "format": "uuid"
           }
         },
+        "associated_groups": {
+          "description": "An array containing Group IDs and Group-owned story counts for the Iteration's associated groups.",
+          "x-doc-skip": true,
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/IterationAssociatedGroup"
+          }
+        },
         "name": {
           "description": "The name of the iteration.",
+          "type": "string"
+        },
+        "global_id": {
+          "x-doc-skip": true,
           "type": "string"
         },
         "label_ids": {
@@ -4288,7 +5180,9 @@
         "labels",
         "mention_ids",
         "member_mention_ids",
+        "associated_groups",
         "name",
+        "global_id",
         "label_ids",
         "updated_at",
         "group_mention_ids",
@@ -4346,8 +5240,18 @@
           "type": "integer",
           "format": "int64"
         },
+        "num_stories_backlog": {
+          "description": "The total number of backlog Stories in this Iteration.",
+          "type": "integer",
+          "format": "int64"
+        },
         "average_lead_time": {
           "description": "The average lead time (in seconds) of completed stories in this Iteration.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "num_points_backlog": {
+          "description": "The total number of backlog points in this Iteration.",
           "type": "integer",
           "format": "int64"
         },
@@ -4371,6 +5275,8 @@
         "num_points_unstarted",
         "num_stories_started",
         "num_stories_unestimated",
+        "num_stories_backlog",
+        "num_points_backlog",
         "num_points",
         "num_stories_done"
       ]
@@ -4408,6 +5314,10 @@
           "description": "The name of the Label.",
           "type": "string"
         },
+        "global_id": {
+          "x-doc-skip": true,
+          "type": "string"
+        },
         "updated_at": {
           "description": "The time/date that the Label was updated.",
           "type": "string",
@@ -4442,6 +5352,7 @@
         "entity_type",
         "color",
         "name",
+        "global_id",
         "updated_at",
         "external_id",
         "id",
@@ -4481,6 +5392,10 @@
           "description": "The name of the Label.",
           "type": "string"
         },
+        "global_id": {
+          "x-doc-skip": true,
+          "type": "string"
+        },
         "updated_at": {
           "description": "The time/date that the Label was updated.",
           "type": "string",
@@ -4512,6 +5427,7 @@
         "entity_type",
         "color",
         "name",
+        "global_id",
         "updated_at",
         "external_id",
         "id",
@@ -4543,12 +5459,12 @@
           "format": "int64"
         },
         "num_epics_unstarted": {
-          "description": "The number of unstarted epics assoicated with this label.",
+          "description": "The number of unstarted epics associated with this label.",
           "type": "integer",
           "format": "int64"
         },
         "num_epics_in_progress": {
-          "description": "The number of in progress epics assoicated with this label.",
+          "description": "The number of in progress epics associated with this label.",
           "type": "integer",
           "format": "int64"
         },
@@ -4568,7 +5484,7 @@
           "format": "int64"
         },
         "num_epics_total": {
-          "description": "The total number of Epics assoicated with this Label.",
+          "description": "The total number of Epics associated with this Label.",
           "type": "integer",
           "format": "int64"
         },
@@ -4582,6 +5498,11 @@
           "type": "integer",
           "format": "int64"
         },
+        "num_stories_backlog": {
+          "description": "The total number of stories backlog Stories with this Label.",
+          "type": "integer",
+          "format": "int64"
+        },
         "num_points_total": {
           "description": "The total number of points with this Label.",
           "type": "integer",
@@ -4592,8 +5513,13 @@
           "type": "integer",
           "format": "int64"
         },
+        "num_points_backlog": {
+          "description": "The total number of backlog points with this Label.",
+          "type": "integer",
+          "format": "int64"
+        },
         "num_epics_completed": {
-          "description": "The number of completed Epics assoicated with this Label.",
+          "description": "The number of completed Epics associated with this Label.",
           "type": "integer",
           "format": "int64"
         }
@@ -4612,8 +5538,10 @@
         "num_epics_total",
         "num_stories_completed",
         "num_points_completed",
+        "num_stories_backlog",
         "num_points_total",
         "num_stories_in_progress",
+        "num_points_backlog",
         "num_epics_completed"
       ]
     },
@@ -4775,6 +5703,7 @@
       "properties": {
         "org-public-id": {
           "description": "The unique ID of the Organization to limit the list to.",
+          "x-doc-skip": true,
           "type": "string",
           "format": "uuid"
         }
@@ -4813,11 +5742,11 @@
       ]
     },
     "Member": {
-      "description": "Details about individual Shortcut user within the Shortcut organization that has issued the token.",
+      "description": "Details about an individual user within the Workspace.",
       "type": "object",
       "properties": {
         "role": {
-          "description": "The Member's role in the Shortcut organization.",
+          "description": "The Member's role in the Workspace.",
           "type": "string"
         },
         "entity_type": {
@@ -4825,11 +5754,15 @@
           "type": "string"
         },
         "disabled": {
-          "description": "True/false boolean indicating whether the Member has been disabled within this Organization.",
+          "description": "True/false boolean indicating whether the Member has been disabled within the Workspace.",
           "type": "boolean"
         },
+        "global_id": {
+          "x-doc-skip": true,
+          "type": "string"
+        },
         "state": {
-          "description": "The user state, one of partial, full, disabled, or imported.  A partial\n           user is disabled, has no means to log in, and is not an import user.  A full\n           user is enabled and has a means to log in.  A disabled user is disabled and has\n           a means to log in.  An import user is disabled, has no means to log in, and is\n           marked as an import user.",
+          "description": "The user state, one of partial, full, disabled, or imported.  A partial user is disabled, has no means to log in, and is not an import user.  A full user is enabled and has a means to log in.  A disabled user is disabled and has a means to log in.  An import user is disabled, has no means to log in, and is marked as an import user.",
           "type": "string",
           "enum": [
             "partial",
@@ -4883,6 +5816,7 @@
         "role",
         "entity_type",
         "disabled",
+        "global_id",
         "state",
         "updated_at",
         "created_without_invite",
@@ -4918,7 +5852,7 @@
       ]
     },
     "Milestone": {
-      "description": "A Milestone is a collection of Epics that represent a release or some other large initiative that your organization is working on.",
+      "description": "A Milestone is a collection of Epics that represent a release or some other large initiative that you are working on.",
       "type": "object",
       "properties": {
         "app_url": {
@@ -4928,6 +5862,10 @@
         "description": {
           "description": "The Milestone's description.",
           "type": "string"
+        },
+        "archived": {
+          "description": "A boolean indicating whether the Milestone has been archived or not.",
+          "type": "boolean"
         },
         "started": {
           "description": "A true/false boolean indicating if the Milestone has been started.",
@@ -4957,6 +5895,10 @@
         },
         "name": {
           "description": "The name of the Milestone.",
+          "type": "string"
+        },
+        "global_id": {
+          "x-doc-skip": true,
           "type": "string"
         },
         "completed": {
@@ -4991,7 +5933,7 @@
           "format": "int64"
         },
         "position": {
-          "description": "A number representing the position of the Milestone in relation to every other Milestone within the Organization.",
+          "description": "A number representing the position of the Milestone in relation to every other Milestone within the Workspace.",
           "type": "integer",
           "format": "int64"
         },
@@ -5008,12 +5950,14 @@
       "required": [
         "app_url",
         "description",
+        "archived",
         "started",
         "entity_type",
         "completed_at_override",
         "started_at",
         "completed_at",
         "name",
+        "global_id",
         "completed",
         "state",
         "started_at_override",
@@ -5021,7 +5965,160 @@
         "categories",
         "id",
         "position",
+        "stats",
         "created_at"
+      ]
+    },
+    "MilestoneSearchResult": {
+      "description": "A Milestone in search results. This is typed differently from Milestone because the details=slim search argument will omit some fields.",
+      "type": "object",
+      "properties": {
+        "app_url": {
+          "description": "The Shortcut application url for the Milestone.",
+          "type": "string"
+        },
+        "description": {
+          "description": "The Milestone's description.",
+          "type": "string"
+        },
+        "archived": {
+          "description": "A boolean indicating whether the Milestone has been archived or not.",
+          "type": "boolean"
+        },
+        "started": {
+          "description": "A true/false boolean indicating if the Milestone has been started.",
+          "type": "boolean"
+        },
+        "entity_type": {
+          "description": "A string description of this resource.",
+          "type": "string"
+        },
+        "completed_at_override": {
+          "description": "A manual override for the time/date the Milestone was completed.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "started_at": {
+          "description": "The time/date the Milestone was started.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "completed_at": {
+          "description": "The time/date the Milestone was completed.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "name": {
+          "description": "The name of the Milestone.",
+          "type": "string"
+        },
+        "global_id": {
+          "x-doc-skip": true,
+          "type": "string"
+        },
+        "completed": {
+          "description": "A true/false boolean indicating if the Milestone has been completed.",
+          "type": "boolean"
+        },
+        "state": {
+          "description": "The workflow state that the Milestone is in.",
+          "type": "string"
+        },
+        "started_at_override": {
+          "description": "A manual override for the time/date the Milestone was started.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "updated_at": {
+          "description": "The time/date the Milestone was updated.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "categories": {
+          "description": "An array of Categories attached to the Milestone.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Category"
+          }
+        },
+        "id": {
+          "description": "The unique ID of the Milestone.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "position": {
+          "description": "A number representing the position of the Milestone in relation to every other Milestone within the Workspace.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "stats": {
+          "$ref": "#/definitions/MilestoneStats"
+        },
+        "created_at": {
+          "description": "The time/date the Milestone was created.",
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "app_url",
+        "archived",
+        "started",
+        "entity_type",
+        "completed_at_override",
+        "started_at",
+        "completed_at",
+        "name",
+        "global_id",
+        "completed",
+        "state",
+        "started_at_override",
+        "updated_at",
+        "categories",
+        "id",
+        "position",
+        "stats",
+        "created_at"
+      ]
+    },
+    "MilestoneSearchResults": {
+      "description": "The results of the Milestone search query.",
+      "type": "object",
+      "properties": {
+        "total": {
+          "description": "The total number of matches for the search query. The first 1000 matches can be paged through via the API.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "data": {
+          "description": "A list of search results.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MilestoneSearchResult"
+          }
+        },
+        "next": {
+          "description": "The URL path and query string for the next page of search results.",
+          "type": "string",
+          "x-nullable": true
+        },
+        "cursors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "total",
+        "data",
+        "next"
       ]
     },
     "MilestoneStats": {
@@ -5088,6 +6185,10 @@
           "$ref": "#/definitions/Icon",
           "x-nullable": true
         },
+        "is_owner": {
+          "description": "A boolean indicating whether this profile is an owner at their associated organization.",
+          "type": "boolean"
+        },
         "email_address": {
           "description": "The primary email address of the Member with the Organization.",
           "type": "string",
@@ -5103,6 +6204,7 @@
         "gravatar_hash",
         "id",
         "display_icon",
+        "is_owner",
         "email_address"
       ]
     },
@@ -5147,6 +6249,11 @@
         },
         "name": {
           "description": "The name of the Project",
+          "type": "string"
+        },
+        "global_id": {
+          "description": "The Global ID of the Project.",
+          "x-doc-skip": true,
           "type": "string"
         },
         "start_time": {
@@ -5217,6 +6324,7 @@
         "color",
         "workflow_id",
         "name",
+        "global_id",
         "start_time",
         "updated_at",
         "follower_ids",
@@ -5283,6 +6391,14 @@
           "type": "integer",
           "format": "int64"
         },
+        "overlapping_stories": {
+          "description": "An array of Story ids that have Pull Requests that change at least one of the same lines this Pull Request changes.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
         "number": {
           "description": "The pull request's unique number ID in VCS.",
           "type": "integer",
@@ -5310,6 +6426,10 @@
           "description": "The time/date the pull request was created.",
           "type": "string",
           "format": "date-time"
+        },
+        "has_overlapping_stories": {
+          "description": "Boolean indicating that the Pull Request has Stories that have Pull Requests that change at least one of the same lines this Pull Request changes.",
+          "type": "boolean"
         },
         "draft": {
           "description": "True/False boolean indicating whether the VCS pull request is in the draft state.",
@@ -5380,6 +6500,7 @@
         "num_commits",
         "title",
         "updated_at",
+        "has_overlapping_stories",
         "draft",
         "id",
         "url",
@@ -5442,8 +6563,13 @@
           "x-nullable": true
         },
         "type": {
-          "description": "The type of Repository. Currently this can only be \"github\".",
-          "type": "string"
+          "description": "The VCS provider for the Repository.",
+          "type": "string",
+          "enum": [
+            "github",
+            "gitlab",
+            "bitbucket"
+          ]
         },
         "updated_at": {
           "description": "The time/date the Repository was updated.",
@@ -5506,6 +6632,14 @@
           "type": "integer",
           "format": "int64"
         },
+        "detail": {
+          "description": "The amount of detail included in each result item.\n   \"full\" will include all descriptions and comments and more fields on\n   related items such as pull requests, branches and tasks.\n   \"slim\" omits larger fulltext fields such as descriptions and comments\n   and only references related items by id.\n   The default is \"full\".",
+          "type": "string",
+          "enum": [
+            "full",
+            "slim"
+          ]
+        },
         "next": {
           "description": "The next page token.",
           "x-doc-skip": true,
@@ -5517,6 +6651,20 @@
           "enum": [
             "cursors"
           ]
+        },
+        "entity_types": {
+          "description": "A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, milestone, story.",
+          "x-doc-skip": true,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "story",
+              "milestone",
+              "epic",
+              "iteration"
+            ]
+          }
         }
       },
       "additionalProperties": false,
@@ -5533,13 +6681,15 @@
         },
         "stories": {
           "$ref": "#/definitions/StorySearchResults"
+        },
+        "iterations": {
+          "$ref": "#/definitions/IterationSearchResults"
+        },
+        "milestones": {
+          "$ref": "#/definitions/MilestoneSearchResults"
         }
       },
-      "additionalProperties": false,
-      "required": [
-        "epics",
-        "stories"
-      ]
+      "additionalProperties": false
     },
     "SearchStories": {
       "x-doc-skip": true,
@@ -5578,7 +6728,8 @@
           "type": "array",
           "items": {
             "type": "integer",
-            "format": "int64"
+            "format": "int64",
+            "x-nullable": true
           },
           "uniqueItems": true
         },
@@ -5599,6 +6750,7 @@
             "type": "string",
             "enum": [
               "started",
+              "backlog",
               "unstarted",
               "done"
             ]
@@ -5709,10 +6861,11 @@
         "project_id": {
           "description": "The IDs for the Projects the Stories may be assigned to.",
           "type": "integer",
-          "format": "int64"
+          "format": "int64",
+          "x-nullable": true
         },
         "completed_at_start": {
-          "description": "Stories should have been competed after this date.",
+          "description": "Stories should have been completed after this date.",
           "type": "string",
           "format": "date-time"
         },
@@ -5770,6 +6923,9 @@
             "format": "uuid"
           }
         },
+        "synced_item": {
+          "$ref": "#/definitions/SyncedItem"
+        },
         "member_mention_ids": {
           "description": "An array of Member IDs that have been mentioned in the Story description.",
           "type": "array",
@@ -5781,6 +6937,13 @@
         "story_type": {
           "description": "The type of story (feature, bug, chore).",
           "type": "string"
+        },
+        "custom_fields": {
+          "description": "An array of CustomField value assertions for the story.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StoryCustomField"
+          }
         },
         "linked_files": {
           "description": "An array of linked files attached to the story.",
@@ -5816,6 +6979,10 @@
           "description": "The name of the story.",
           "type": "string"
         },
+        "global_id": {
+          "x-doc-skip": true,
+          "type": "string"
+        },
         "completed": {
           "description": "A true/false boolean indicating if the Story has been completed.",
           "type": "boolean"
@@ -5843,6 +7010,14 @@
           "type": "integer",
           "format": "int64",
           "x-nullable": true
+        },
+        "unresolved_blocker_comments": {
+          "description": "The IDs of any unresolved blocker comments on the Story.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
         },
         "story_template_id": {
           "description": "The ID of the story template used to create this story, or null if not created using a template.",
@@ -6039,6 +7214,7 @@
         "started_at",
         "completed_at",
         "name",
+        "global_id",
         "completed",
         "comments",
         "blocker",
@@ -6085,6 +7261,10 @@
           "description": "A string description of this resource.",
           "type": "string"
         },
+        "deleted": {
+          "description": "True/false boolean indicating whether the Comment has been deleted.",
+          "type": "boolean"
+        },
         "story_id": {
           "description": "The ID of the Story on which the Comment appears.",
           "type": "integer",
@@ -6112,6 +7292,10 @@
             "format": "uuid"
           }
         },
+        "blocker": {
+          "description": "Marks the comment as a blocker that can be surfaced to permissions or teams mentioned in the comment. Can only be used on a top-level comment.",
+          "type": "boolean"
+        },
         "updated_at": {
           "description": "The time/date when the Comment was updated.",
           "type": "string",
@@ -6131,6 +7315,12 @@
           "type": "string",
           "x-nullable": true
         },
+        "parent_id": {
+          "description": "The ID of the parent Comment this Comment is threaded under.",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
+        },
         "id": {
           "description": "The unique ID of the Comment.",
           "type": "integer",
@@ -6140,6 +7330,10 @@
           "description": "The Comments numerical position in the list from oldest to newest.",
           "type": "integer",
           "format": "int64"
+        },
+        "unblocks_parent": {
+          "description": "Marks the comment as an unblocker to its  blocker parent. Can only be set on a threaded comment who has a parent with `blocker` set.",
+          "type": "boolean"
         },
         "reactions": {
           "description": "A set of Reactions to this Comment.",
@@ -6155,14 +7349,16 @@
           "format": "date-time"
         },
         "text": {
-          "description": "The text of the Comment.",
-          "type": "string"
+          "description": "The text of the Comment. In the case that the Comment has been deleted, this field can be set to nil.",
+          "type": "string",
+          "x-nullable": true
         }
       },
       "additionalProperties": false,
       "required": [
         "app_url",
         "entity_type",
+        "deleted",
         "story_id",
         "mention_ids",
         "author_id",
@@ -6199,6 +7395,13 @@
         "story_type": {
           "description": "The type of story (feature, bug, chore).",
           "type": "string"
+        },
+        "custom_fields": {
+          "description": "An array of maps specifying a CustomField ID and CustomFieldEnumValue ID that represents an assertion of some value for a CustomField.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CustomFieldValueParams"
+          }
         },
         "linked_files": {
           "description": "An array of linked files attached to the story.",
@@ -6329,6 +7532,31 @@
         "description"
       ]
     },
+    "StoryCustomField": {
+      "type": "object",
+      "properties": {
+        "field_id": {
+          "description": "The unique public ID for a CustomField.",
+          "type": "string",
+          "format": "uuid"
+        },
+        "value_id": {
+          "description": "The unique public ID for a CustomFieldEnumValue.",
+          "type": "string",
+          "format": "uuid"
+        },
+        "value": {
+          "description": "A string representation of the value, if applicable.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "field_id",
+        "value_id",
+        "value"
+      ]
+    },
     "StoryHistoryChangeAddsRemovesInt": {
       "description": "Task IDs that have been added or removed from the Story.",
       "type": "object",
@@ -6353,7 +7581,7 @@
       "additionalProperties": false
     },
     "StoryHistoryChangeAddsRemovesUuid": {
-      "description": "Member IDs that have been added or removed as a owner of the Story.",
+      "description": "Custom Field Enum Value IDs that have been added or removed from the Story.",
       "type": "object",
       "properties": {
         "adds": {
@@ -6413,7 +7641,8 @@
       "properties": {
         "old": {
           "description": "The old value.",
-          "type": "string"
+          "type": "string",
+          "x-nullable": true
         },
         "new": {
           "description": "The new value.",
@@ -6423,7 +7652,7 @@
       "additionalProperties": false
     },
     "StoryHistoryChangeOldNewUuid": {
-      "description": "The Member ID of the preson who requested the Story.",
+      "description": "The Team ID for the Story.",
       "type": "object",
       "properties": {
         "old": {
@@ -6519,6 +7748,407 @@
         "permission_ids"
       ]
     },
+    "StorySearchResult": {
+      "description": "A Story in search results. This is typed differently from Story because the details=slim search argument will omit some fields.",
+      "type": "object",
+      "properties": {
+        "app_url": {
+          "description": "The Shortcut application url for the Story.",
+          "type": "string"
+        },
+        "description": {
+          "description": "The description of the story.",
+          "type": "string"
+        },
+        "archived": {
+          "description": "True if the story has been archived or not.",
+          "type": "boolean"
+        },
+        "started": {
+          "description": "A true/false boolean indicating if the Story has been started.",
+          "type": "boolean"
+        },
+        "story_links": {
+          "description": "An array of story links attached to the Story.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TypedStoryLink"
+          }
+        },
+        "entity_type": {
+          "description": "A string description of this resource.",
+          "type": "string"
+        },
+        "labels": {
+          "description": "An array of labels attached to the story.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LabelSlim"
+          }
+        },
+        "task_ids": {
+          "description": "An array of IDs of Tasks attached to the story.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "mention_ids": {
+          "description": "Deprecated: use member_mention_ids.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "synced_item": {
+          "$ref": "#/definitions/SyncedItem"
+        },
+        "member_mention_ids": {
+          "description": "An array of Member IDs that have been mentioned in the Story description.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "story_type": {
+          "description": "The type of story (feature, bug, chore).",
+          "type": "string"
+        },
+        "custom_fields": {
+          "description": "An array of CustomField value assertions for the story.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StoryCustomField"
+          }
+        },
+        "linked_files": {
+          "description": "An array of linked files attached to the story.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LinkedFile"
+          }
+        },
+        "file_ids": {
+          "description": "An array of IDs of Files attached to the story.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "num_tasks_completed": {
+          "description": "The number of tasks on the story which are complete.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "workflow_id": {
+          "description": "The ID of the workflow the story belongs to.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "completed_at_override": {
+          "description": "A manual override for the time/date the Story was completed.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "started_at": {
+          "description": "The time/date the Story was started.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "completed_at": {
+          "description": "The time/date the Story was completed.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "name": {
+          "description": "The name of the story.",
+          "type": "string"
+        },
+        "global_id": {
+          "x-doc-skip": true,
+          "type": "string"
+        },
+        "completed": {
+          "description": "A true/false boolean indicating if the Story has been completed.",
+          "type": "boolean"
+        },
+        "comments": {
+          "description": "An array of comments attached to the story.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StoryComment"
+          }
+        },
+        "blocker": {
+          "description": "A true/false boolean indicating if the Story is currently a blocker of another story.",
+          "type": "boolean"
+        },
+        "branches": {
+          "description": "An array of Git branches attached to the story.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Branch"
+          }
+        },
+        "epic_id": {
+          "description": "The ID of the epic the story belongs to.",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
+        },
+        "unresolved_blocker_comments": {
+          "description": "The IDs of any unresolved blocker comments on the Story.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "story_template_id": {
+          "description": "The ID of the story template used to create this story, or null if not created using a template.",
+          "type": "string",
+          "format": "uuid",
+          "x-nullable": true
+        },
+        "external_links": {
+          "description": "An array of external links (strings) associated with a Story",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "previous_iteration_ids": {
+          "description": "The IDs of the iteration the story belongs to.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "requested_by_id": {
+          "description": "The ID of the Member that requested the story.",
+          "type": "string",
+          "format": "uuid"
+        },
+        "iteration_id": {
+          "description": "The ID of the iteration the story belongs to.",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
+        },
+        "tasks": {
+          "description": "An array of tasks connected to the story.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Task"
+          }
+        },
+        "label_ids": {
+          "description": "An array of label ids attached to the story.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "started_at_override": {
+          "description": "A manual override for the time/date the Story was started.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "group_id": {
+          "description": "The ID of the group associated with the story.",
+          "type": "string",
+          "format": "uuid",
+          "x-nullable": true
+        },
+        "workflow_state_id": {
+          "description": "The ID of the workflow state the story is currently in.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "updated_at": {
+          "description": "The time/date the Story was updated.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "pull_requests": {
+          "description": "An array of Pull/Merge Requests attached to the story.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PullRequest"
+          }
+        },
+        "group_mention_ids": {
+          "description": "An array of Group IDs that have been mentioned in the Story description.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "follower_ids": {
+          "description": "An array of UUIDs for any Members listed as Followers.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "owner_ids": {
+          "description": "An array of UUIDs of the owners of this story.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "external_id": {
+          "description": "This field can be set to another unique ID. In the case that the Story has been imported from another tool, the ID in the other tool can be indicated here.",
+          "type": "string",
+          "x-nullable": true
+        },
+        "id": {
+          "description": "The unique ID of the Story.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "lead_time": {
+          "description": "The lead time (in seconds) of this story when complete.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "estimate": {
+          "description": "The numeric point estimate of the story. Can also be null, which means unestimated.",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
+        },
+        "commits": {
+          "description": "An array of commits attached to the story.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Commit"
+          }
+        },
+        "files": {
+          "description": "An array of files attached to the story.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UploadedFile"
+          }
+        },
+        "position": {
+          "description": "A number representing the position of the story in relation to every other story in the current project.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "blocked": {
+          "description": "A true/false boolean indicating if the Story is currently blocked.",
+          "type": "boolean"
+        },
+        "project_id": {
+          "description": "The ID of the project the story belongs to.",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
+        },
+        "linked_file_ids": {
+          "description": "An array of IDs of LinkedFiles attached to the story.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "deadline": {
+          "description": "The due date of the story.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "stats": {
+          "$ref": "#/definitions/StoryStats"
+        },
+        "comment_ids": {
+          "description": "An array of IDs of Comments attached to the story.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "cycle_time": {
+          "description": "The cycle time (in seconds) of this story when complete.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "created_at": {
+          "description": "The time/date the Story was created.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "moved_at": {
+          "description": "The time/date the Story was last changed workflow-state.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "app_url",
+        "archived",
+        "started",
+        "story_links",
+        "entity_type",
+        "labels",
+        "mention_ids",
+        "member_mention_ids",
+        "story_type",
+        "workflow_id",
+        "completed_at_override",
+        "started_at",
+        "completed_at",
+        "name",
+        "global_id",
+        "completed",
+        "blocker",
+        "epic_id",
+        "story_template_id",
+        "external_links",
+        "previous_iteration_ids",
+        "requested_by_id",
+        "iteration_id",
+        "label_ids",
+        "started_at_override",
+        "group_id",
+        "workflow_state_id",
+        "updated_at",
+        "group_mention_ids",
+        "follower_ids",
+        "owner_ids",
+        "external_id",
+        "id",
+        "estimate",
+        "position",
+        "blocked",
+        "project_id",
+        "deadline",
+        "stats",
+        "created_at",
+        "moved_at"
+      ]
+    },
     "StorySearchResults": {
       "description": "The results of the Story search query.",
       "type": "object",
@@ -6532,7 +8162,7 @@
           "description": "A list of search results.",
           "type": "array",
           "items": {
-            "$ref": "#/definitions/Story"
+            "$ref": "#/definitions/StorySearchResult"
           }
         },
         "next": {
@@ -6608,6 +8238,9 @@
             "format": "uuid"
           }
         },
+        "synced_item": {
+          "$ref": "#/definitions/SyncedItem"
+        },
         "member_mention_ids": {
           "description": "An array of Member IDs that have been mentioned in the Story description.",
           "type": "array",
@@ -6619,6 +8252,13 @@
         "story_type": {
           "description": "The type of story (feature, bug, chore).",
           "type": "string"
+        },
+        "custom_fields": {
+          "description": "An array of CustomField value assertions for the story.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StoryCustomField"
+          }
         },
         "file_ids": {
           "description": "An array of IDs of Files attached to the story.",
@@ -6660,6 +8300,10 @@
           "description": "The name of the story.",
           "type": "string"
         },
+        "global_id": {
+          "x-doc-skip": true,
+          "type": "string"
+        },
         "completed": {
           "description": "A true/false boolean indicating if the Story has been completed.",
           "type": "boolean"
@@ -6673,6 +8317,14 @@
           "type": "integer",
           "format": "int64",
           "x-nullable": true
+        },
+        "unresolved_blocker_comments": {
+          "description": "The IDs of any unresolved blocker comments on the Story.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
         },
         "story_template_id": {
           "description": "The ID of the story template used to create this story, or null if not created using a template.",
@@ -6858,6 +8510,7 @@
         "started_at",
         "completed_at",
         "name",
+        "global_id",
         "completed",
         "blocker",
         "epic_id",
@@ -6904,7 +8557,28 @@
         "num_related_documents"
       ]
     },
+    "SyncedItem": {
+      "x-doc-skip": true,
+      "description": "The synced item for the story.",
+      "type": "object",
+      "properties": {
+        "external_id": {
+          "description": "The id used to reference an external entity.",
+          "type": "string"
+        },
+        "url": {
+          "description": "The url to the external entity.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "external_id",
+        "url"
+      ]
+    },
     "Task": {
+      "description": "A Task on a Story.",
       "type": "object",
       "properties": {
         "description": {
@@ -7231,6 +8905,75 @@
         "text"
       ]
     },
+    "UpdateCustomField": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "description": "Indicates whether the Field is enabled for the Workspace. Only enabled fields can be applied to Stories.",
+          "type": "boolean"
+        },
+        "name": {
+          "minLength": 1,
+          "maxLength": 63,
+          "description": "A collection of objects representing reporting periods for years.",
+          "type": "string"
+        },
+        "values": {
+          "description": "A collection of EnumValue objects representing the values in the domain of some Custom Field.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UpdateCustomFieldEnumValue"
+          }
+        },
+        "icon_set_identifier": {
+          "minLength": 1,
+          "maxLength": 63,
+          "description": "A frontend-controlled string that represents the icon for this custom field.",
+          "type": "string"
+        },
+        "description": {
+          "description": "A description of the purpose of this field.",
+          "type": "string"
+        },
+        "before_id": {
+          "description": "The ID of the CustomField we want to move this CustomField before.",
+          "type": "string",
+          "format": "uuid"
+        },
+        "after_id": {
+          "description": "The ID of the CustomField we want to move this CustomField after.",
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "additionalProperties": false
+    },
+    "UpdateCustomFieldEnumValue": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "The unique ID of an existing EnumValue within the CustomField's domain.",
+          "type": "string",
+          "format": "uuid"
+        },
+        "value": {
+          "minLength": 1,
+          "maxLength": 63,
+          "description": "A string value within the domain of this Custom Field.",
+          "type": "string"
+        },
+        "color_key": {
+          "description": "A color key associated with this EnumValue within the CustomField's domain.",
+          "type": "string",
+          "x-nullable": true
+        },
+        "enabled": {
+          "description": "Whether this EnumValue is enabled for its CustomField or not. Leaving this key out of the request leaves the current enabled state untouched.",
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
     "UpdateEntityTemplate": {
       "description": "Request parameters for changing either a template's name or any of\n  the attributes it is designed to pre-populate.",
       "type": "object",
@@ -7337,6 +9080,10 @@
             "format": "uuid"
           }
         },
+        "external_id": {
+          "description": "This field can be set to another unique ID. In the case that the Epic has been imported from another tool, the ID in the other tool can be indicated here.",
+          "type": "string"
+        },
         "before_id": {
           "description": "The ID of the Epic we want to move this Epic before.",
           "type": "integer",
@@ -7420,11 +9167,13 @@
         },
         "mention_name": {
           "minLength": 1,
+          "maxLength": 63,
           "description": "The mention name of this Group.",
           "type": "string"
         },
         "name": {
           "minLength": 1,
+          "maxLength": 63,
           "description": "The name of this Group.",
           "type": "string"
         },
@@ -7503,6 +9252,7 @@
         },
         "name": {
           "minLength": 1,
+          "maxLength": 256,
           "description": "The name of this Iteration",
           "type": "string"
         },
@@ -7610,6 +9360,10 @@
           "maxLength": 100000,
           "description": "The Milestone's description.",
           "type": "string"
+        },
+        "archived": {
+          "description": "A boolean indicating whether the Milestone is archived or not",
+          "type": "boolean"
         },
         "completed_at_override": {
           "description": "A manual override for the time/date the Milestone was completed.",
@@ -7789,6 +9543,13 @@
           "format": "int64",
           "x-nullable": true
         },
+        "custom_fields_remove": {
+          "description": "A map specifying a CustomField ID and CustomFieldEnumValue ID that represents an assertion of some value for a CustomField.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CustomFieldValueParams"
+          }
+        },
         "labels_add": {
           "description": "An array of labels to be added.",
           "type": "array",
@@ -7831,6 +9592,13 @@
             "format": "uuid"
           },
           "uniqueItems": true
+        },
+        "custom_fields_add": {
+          "description": "A map specifying a CustomField ID and CustomFieldEnumValue ID that represents an assertion of some value for a CustomField.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CustomFieldValueParams"
+          }
         },
         "project_id": {
           "description": "The ID of the Project the Stories should belong to.",
@@ -7903,6 +9671,13 @@
             "chore",
             "bug"
           ]
+        },
+        "custom_fields": {
+          "description": "A map specifying a CustomField ID and CustomFieldEnumValue ID that represents an assertion of some value for a CustomField.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CustomFieldValueParams"
+          }
         },
         "move_to": {
           "description": "One of \"first\" or \"last\". This can be used to move the given story to the first or last position in the workflow state.",
@@ -8088,6 +9863,13 @@
           "description": "The type of story (feature, bug, chore).",
           "type": "string"
         },
+        "custom_fields": {
+          "description": "An array of maps specifying a CustomField ID and CustomFieldEnumValue ID that represents an assertion of some value for a CustomField.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CustomFieldValueParams"
+          }
+        },
         "linked_files": {
           "description": "An array of linked files attached to the story.",
           "type": "array",
@@ -8237,6 +10019,8 @@
       "type": "object",
       "properties": {
         "description": {
+          "minLength": 1,
+          "maxLength": 2048,
           "description": "The Task's description.",
           "type": "string"
         },
@@ -8489,6 +10273,10 @@
           "description": "The Workflow State's name.",
           "type": "string"
         },
+        "global_id": {
+          "x-doc-skip": true,
+          "type": "string"
+        },
         "num_stories": {
           "description": "The number of Stories currently in that Workflow State.",
           "type": "integer",
@@ -8530,6 +10318,7 @@
         "entity_type",
         "verb",
         "name",
+        "global_id",
         "num_stories",
         "type",
         "updated_at",
@@ -8750,6 +10539,140 @@
         "summary": "List Category Milestones"
       }
     },
+    "/api/v3/custom-fields": {
+      "get": {
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/CustomField"
+              }
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "listCustomFields",
+        "summary": "List Custom Fields"
+      }
+    },
+    "/api/v3/custom-fields/{custom-field-public-id}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "custom-field-public-id",
+            "description": "The unique ID of the CustomField.",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/CustomField"
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "getCustomField",
+        "summary": "Get Custom Field"
+      },
+      "put": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "custom-field-public-id",
+            "description": "The unique ID of the CustomField.",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "in": "body",
+            "name": "UpdateCustomField",
+            "description": "",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UpdateCustomField"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/CustomField"
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "409": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/DataConflictError"
+            }
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "updateCustomField",
+        "description": "Update Custom Field can be used to update the definition of a Custom Field. The order of items in the 'values' collection is interpreted to be their ascending sort order.To delete an existing enum value, simply omit it from the 'values' collection. New enum values may be created inline by including an object in the 'values' collection having a 'value' entry with no 'id' (eg. {'value': 'myNewValue', 'color_key': 'green'}).",
+        "summary": "Update Custom Field"
+      },
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "custom-field-public-id",
+            "description": "The unique ID of the CustomField.",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "deleteCustomField",
+        "summary": "Delete Custom Field"
+      }
+    },
     "/api/v3/entity-templates": {
       "get": {
         "responses": {
@@ -8773,7 +10696,7 @@
           }
         },
         "operationId": "listEntityTemplates",
-        "description": "List all the entity templates for an organization.",
+        "description": "List all the entity templates for the Workspace.",
         "summary": "List Entity Templates"
       },
       "post": {
@@ -8806,7 +10729,7 @@
           }
         },
         "operationId": "createEntityTemplate",
-        "description": "Create a new entity template for your organization.",
+        "description": "Create a new entity template for the Workspace.",
         "summary": "Create Entity Template"
       }
     },
@@ -8827,7 +10750,7 @@
           }
         },
         "operationId": "disableStoryTemplates",
-        "description": "Disables the Story Template feature for the given Organization.",
+        "description": "Disables the Story Template feature for the Workspace.",
         "summary": "Disable Story Templates"
       }
     },
@@ -8848,7 +10771,7 @@
           }
         },
         "operationId": "enableStoryTemplates",
-        "description": "Enables the Story Template feature for the given Organization.",
+        "description": "Enables the Story Template feature for the Workspace.",
         "summary": "Enable Story Templates"
       }
     },
@@ -8975,7 +10898,7 @@
           }
         },
         "operationId": "getEpicWorkflow",
-        "description": "Get Epic Workflow returns the Epic Workflow for the organization.",
+        "description": "Returns the Epic Workflow for the Workspace.",
         "summary": "Get Epic Workflow"
       }
     },
@@ -10680,7 +12603,7 @@
           }
         },
         "operationId": "listMembers",
-        "description": "List Members returns information about members of the organization.",
+        "description": "Returns information about members of the Workspace.",
         "summary": "List Members"
       }
     },
@@ -11281,6 +13204,82 @@
         "summary": "Search Epics"
       }
     },
+    "/api/v3/search/iterations": {
+      "get": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "Search",
+            "description": "",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Search"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/IterationSearchResults"
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "**Either:** (1) Schema mismatch **or** (2) Maximum of 1000 search results exceeded ",
+            "schema": {
+              "$ref": "#/definitions/MaxSearchResultsExceededError"
+            }
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "searchIterations",
+        "description": "Search Iterations lets you search Iterations based on desired parameters. Since ordering of results can change over time (due to search ranking decay, new Iterations being created), the `next` value from the previous response can be used as the path and query string for the next page to ensure stable ordering.",
+        "summary": "Search Iterations"
+      }
+    },
+    "/api/v3/search/milestones": {
+      "get": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "Search",
+            "description": "",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Search"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/MilestoneSearchResults"
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "**Either:** (1) Schema mismatch **or** (2) Maximum of 1000 search results exceeded ",
+            "schema": {
+              "$ref": "#/definitions/MaxSearchResultsExceededError"
+            }
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "searchMilestones",
+        "description": "Search Milestones lets you search Milestones based on desired parameters. Since ordering of results can change over time (due to search ranking decay, new Milestones being created), the `next` value from the previous response can be used as the path and query string for the next page to ensure stable ordering.",
+        "summary": "Search Milestones"
+      }
+    },
     "/api/v3/search/stories": {
       "get": {
         "parameters": [
@@ -11388,7 +13387,7 @@
           }
         },
         "operationId": "createMultipleStories",
-        "description": "Create Multiple Stories allows you to create multiple stories in a single request using the same syntax as [Create Story](https://shortcut.com/api/#create-story).",
+        "description": "Create Multiple Stories allows you to create multiple stories in a single request using the same syntax as [Create Story](https://developer.shortcut.com/api/rest/v3#create-story).",
         "summary": "Create Multiple Stories"
       },
       "put": {
@@ -11601,6 +13600,41 @@
       }
     },
     "/api/v3/stories/{story-public-id}/comments": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "story-public-id",
+            "description": "The ID of the Story that the Comment is in.",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/StoryComment"
+              }
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "listStoryComment",
+        "description": "Lists Comments associated with a Story",
+        "summary": "List Story Comment"
+      },
       "post": {
         "parameters": [
           {
@@ -12240,7 +14274,7 @@
           }
         },
         "operationId": "listWorkflows",
-        "description": "List Workflows returns a list of all Workflows in the organization.",
+        "description": "Returns a list of all Workflows in the Workspace.",
         "summary": "List Workflows"
       }
     },

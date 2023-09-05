@@ -1,5 +1,14 @@
 {
-  "parser": "typescript",
+  "singleQuote": true,
+  "semi": true,
   "trailingComma": "all",
-  "singleQuote": true
+  "arrowParens": "always",
+  "overrides": [
+    {
+      "files": "*.ts",
+      "options": {
+        "parser": "typescript"
+      }
+    }
+  ]
 }
