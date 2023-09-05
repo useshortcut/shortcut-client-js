@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as streamToBlob from 'stream-to-blob';
 
 import { ShortcutClient } from '../src';
 
@@ -19,7 +20,7 @@ import { ShortcutClient } from '../src';
 
   const { data: file } = await shortcut.uploadFiles({
     story_id: story.id,
-    file0: fileStream as any, // On Web, this is expecting a File object, but on Node, it's a ReadableStream
+    file0: (await streamToBlob(fileStream)) as any, // On Web, this is expecting a File object, but on Node, it's a ReadableStream
   });
 
   console.log(file);
