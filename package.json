@@ -19,7 +19,7 @@
   "license": "MIT",
   "scripts": {
     "build": "yarn build:client && yarn build:add-typedoc-comments && tsc",
-    "build:client": "swagger-typescript-api -p ./schema/shortcut.swagger.json -o ./src/generated --clean-output --axios --modular",
+    "build:client": "swagger-typescript-api -p ./schema/shortcut.swagger.json -o ./src/generated --clean-output --axios --modular --templates ./templates",
     "build:add-typedoc-comments": "npx jscodeshift -t scripts/add-typedoc-comments.ts --extensions=ts --parser=ts src/generated/**",
     "build:docs": "typedoc --entryPointStrategy expand ./src --exclude 'src/__tests__/**'",
     "validate:examples": "npx tsc examples/*.ts --noEmit",
