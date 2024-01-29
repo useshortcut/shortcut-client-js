@@ -9,7 +9,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write # Required for deploying pages
       pages: write # Required for deploying pages
     steps:
       - uses: actions/checkout@v2
