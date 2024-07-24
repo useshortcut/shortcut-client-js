@@ -8,9 +8,11 @@ import { ShortcutClient } from '../src';
 
   const FILE_PATH = `${__dirname}/logo.png`;
 
+  const { data: workflows } = await shortcut.listWorkflows();
+
   const { data: story } = await shortcut.createStory({
     name: 'Upload a file to a story',
-    project_id: 2,
+    workflow_state_id: workflows[0].states[0].id,
   });
 
   console.log('Story created with ID:', story.id);

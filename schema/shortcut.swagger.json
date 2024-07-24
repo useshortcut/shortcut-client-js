@@ -10,6 +10,38 @@
     }
   },
   "definitions": {
+    "BaseTaskParams": {
+      "description": "Request parameters for specifying how to pre-populate a task through a template.",
+      "type": "object",
+      "properties": {
+        "description": {
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The Task description.",
+          "type": "string"
+        },
+        "complete": {
+          "description": "True/false boolean indicating whether the Task is completed. Defaults to false.",
+          "type": "boolean"
+        },
+        "owner_ids": {
+          "description": "An array of UUIDs for any members you want to add as Owners on this new Task.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "external_id": {
+          "description": "This field can be set to another unique ID. In the case that the Task has been imported from another tool, the ID in the other tool can be indicated here.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "description"
+      ]
+    },
     "BasicWorkspaceInfo": {
       "type": "object",
       "properties": {
@@ -109,7 +141,7 @@
       ]
     },
     "Category": {
-      "description": "A Category can be used to associate Milestones.",
+      "description": "A Category can be used to associate Objectives.",
       "type": "object",
       "properties": {
         "archived": {
@@ -138,7 +170,8 @@
           "type": "string"
         },
         "type": {
-          "description": "The type of entity this Category is associated with; currently Milestone is the only type of Category.",
+          "description": "The type of entity this Category is associated with; currently Milestone or Objective is the only type of Category.",
+          "x-doc-skip": true,
           "type": "string"
         },
         "updated_at": {
@@ -276,21 +309,17 @@
           "type": "string"
         },
         "type": {
-          "description": "The type of entity this Category is associated with; currently Milestone is the only type of Category.",
-          "type": "string",
-          "enum": [
-            "milestone"
-          ]
+          "description": "The type of entity this Category is associated with; currently Milestone or Objective is the only type of Category.",
+          "x-doc-skip": true
         }
       },
       "additionalProperties": false,
       "required": [
-        "name",
-        "type"
+        "name"
       ]
     },
     "CreateCategoryParams": {
-      "description": "Request parameters for creating a Category with a Milestone.",
+      "description": "Request parameters for creating a Category with a Objective.",
       "type": "object",
       "properties": {
         "name": {
@@ -352,7 +381,7 @@
       ]
     },
     "CreateEntityTemplate": {
-      "description": "Request paramaters for creating an entirely new entity template.",
+      "description": "Request parameters for creating an entirely new entity template.",
       "type": "object",
       "properties": {
         "name": {
@@ -396,6 +425,14 @@
           "type": "string",
           "format": "date-time"
         },
+        "objective_ids": {
+          "description": "An array of IDs for Objectives to which this Epic is related.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
         "name": {
           "minLength": 1,
           "maxLength": 256,
@@ -418,7 +455,7 @@
           ]
         },
         "milestone_id": {
-          "description": "The ID of the Milestone this Epic is related to.",
+          "description": "`Deprecated` The ID of the Milestone this Epic is related to. Use `objective_ids`.",
           "type": "integer",
           "format": "int64",
           "x-nullable": true
@@ -439,7 +476,7 @@
           "format": "date-time"
         },
         "group_id": {
-          "description": "The ID of the group to associate with the epic.",
+          "description": "`Deprecated` The ID of the group to associate with the epic. Use `group_ids`.",
           "type": "string",
           "format": "uuid",
           "x-nullable": true
@@ -451,6 +488,14 @@
         },
         "follower_ids": {
           "description": "An array of UUIDs for any Members you want to add as Followers on this new Epic.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "group_ids": {
+          "description": "An array of UUIDS for Groups to which this Epic is related.",
           "type": "array",
           "items": {
             "type": "string",
@@ -796,6 +841,53 @@
         "name"
       ]
     },
+    "CreateObjective": {
+      "x-doc-skip": true,
+      "type": "object",
+      "properties": {
+        "name": {
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "The name of the Objective.",
+          "type": "string"
+        },
+        "description": {
+          "maxLength": 100000,
+          "description": "The Objective's description.",
+          "type": "string"
+        },
+        "state": {
+          "description": "The workflow state that the Objective is in.",
+          "type": "string",
+          "enum": [
+            "in progress",
+            "to do",
+            "done"
+          ]
+        },
+        "started_at_override": {
+          "description": "A manual override for the time/date the Objective was started.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "completed_at_override": {
+          "description": "A manual override for the time/date the Objective was completed.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "categories": {
+          "description": "An array of IDs of Categories attached to the Objective.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CreateCategoryParams"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ]
+    },
     "CreateOrDeleteStoryReaction": {
       "x-doc-skip": true,
       "type": "object",
@@ -901,14 +993,20 @@
       "x-doc-skip": true,
       "type": "object",
       "properties": {
+        "text": {
+          "maxLength": 100000,
+          "description": "The comment text.",
+          "type": "string"
+        },
         "author_id": {
           "description": "The Member ID of the Comment's author. Defaults to the user identified by the API token.",
           "type": "string",
           "format": "uuid"
         },
-        "blocker": {
-          "description": "Marks the comment as a blocker that can be surfaced to permissions or teams mentioned in the comment. Can only be used on a top-level comment.",
-          "type": "boolean"
+        "created_at": {
+          "description": "Defaults to the time/date the comment is created, but can be set to reflect another date.",
+          "type": "string",
+          "format": "date-time"
         },
         "updated_at": {
           "description": "Defaults to the time/date the comment is last updated, but can be set to reflect another date.",
@@ -924,20 +1022,6 @@
           "type": "integer",
           "format": "int64",
           "x-nullable": true
-        },
-        "unblocks_parent": {
-          "description": "Marks the comment as an unblocker to its  blocker parent. Can only be set on a threaded comment who has a parent with `blocker` set.",
-          "type": "boolean"
-        },
-        "created_at": {
-          "description": "Defaults to the time/date the comment is created, but can be set to reflect another date.",
-          "type": "string",
-          "format": "date-time"
-        },
-        "text": {
-          "maxLength": 100000,
-          "description": "The comment text.",
-          "type": "string"
         }
       },
       "additionalProperties": false,
@@ -978,14 +1062,6 @@
           "type": "integer",
           "format": "int64",
           "x-nullable": true
-        },
-        "blocker": {
-          "description": "Marks the comment as a blocker that can be surfaced to permissions or teams mentioned in the comment. Can only be used on a top-level comment.",
-          "type": "boolean"
-        },
-        "unblocks_parent": {
-          "description": "Marks the comment as an unblocker to its  blocker parent. Can only be set on a threaded comment who has a parent with `blocker` set.",
-          "type": "boolean"
         }
       },
       "additionalProperties": false,
@@ -999,10 +1075,6 @@
       "properties": {
         "description": {
           "description": "The description of the story.",
-          "type": "string"
-        },
-        "entity_type": {
-          "description": "A string description of this resource.",
           "type": "string"
         },
         "labels": {
@@ -1023,13 +1095,6 @@
             "$ref": "#/definitions/CustomFieldValueParams"
           }
         },
-        "linked_files": {
-          "description": "An array of linked files attached to the story.",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/LinkedFile"
-          }
-        },
         "file_ids": {
           "description": "An array of the attached file IDs to be populated.",
           "type": "array",
@@ -1038,12 +1103,6 @@
             "format": "int64"
           },
           "uniqueItems": true
-        },
-        "workflow_id": {
-          "description": "The ID of the workflow.",
-          "type": "integer",
-          "format": "int64",
-          "x-nullable": true
         },
         "name": {
           "description": "The name of the story.",
@@ -1072,15 +1131,7 @@
           "description": "An array of tasks to be populated by the template.",
           "type": "array",
           "items": {
-            "$ref": "#/definitions/EntityTemplateTask"
-          }
-        },
-        "label_ids": {
-          "description": "An array of label ids attached to the story.",
-          "type": "array",
-          "items": {
-            "type": "integer",
-            "format": "int64"
+            "$ref": "#/definitions/BaseTaskParams"
           }
         },
         "group_id": {
@@ -1090,9 +1141,10 @@
           "x-nullable": true
         },
         "workflow_state_id": {
-          "description": "The ID of the workflow state the story is currently in.",
+          "description": "The ID of the workflow state to be populated.",
           "type": "integer",
-          "format": "int64"
+          "format": "int64",
+          "x-nullable": true
         },
         "follower_ids": {
           "description": "An array of UUIDs for any Members listed as Followers.",
@@ -1116,13 +1168,6 @@
           "format": "int64",
           "x-nullable": true
         },
-        "files": {
-          "description": "An array of files attached to the story.",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/UploadedFile"
-          }
-        },
         "project_id": {
           "description": "The ID of the project the story belongs to.",
           "type": "integer",
@@ -1145,6 +1190,327 @@
         }
       },
       "additionalProperties": false
+    },
+    "CreateStoryFromTemplateParams": {
+      "description": "Request parameters for creating a story from a story template. These parameters are merged with the values derived from the template.",
+      "type": "object",
+      "properties": {
+        "description": {
+          "maxLength": 100000,
+          "description": "The description of the story.",
+          "type": "string"
+        },
+        "archived": {
+          "description": "Controls the story's archived state.",
+          "type": "boolean"
+        },
+        "story_links": {
+          "description": "An array of story links attached to the story.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CreateStoryLinkParams"
+          }
+        },
+        "labels": {
+          "description": "An array of labels attached to the story.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CreateLabelParams"
+          }
+        },
+        "external_links_add": {
+          "description": "An array of External Links associated with this story. These will be added to any links provided by the template. Cannot be used in conjunction with `external_links`.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "story_type": {
+          "description": "The type of story (feature, bug, chore).",
+          "type": "string",
+          "enum": [
+            "feature",
+            "chore",
+            "bug"
+          ]
+        },
+        "custom_fields": {
+          "description": "A map specifying a CustomField ID and CustomFieldEnumValue ID that represents an assertion of some value for a CustomField.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CustomFieldValueParams"
+          }
+        },
+        "move_to": {
+          "description": "One of \"first\" or \"last\". This can be used to move the given story to the first or last position in the workflow state.",
+          "type": "string",
+          "enum": [
+            "last",
+            "first"
+          ]
+        },
+        "file_ids": {
+          "description": "An array of IDs of files attached to the story.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "uniqueItems": true
+        },
+        "source_task_id": {
+          "description": "Given this story was converted from a task in another story, this is the original task ID that was converted to this story.",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
+        },
+        "completed_at_override": {
+          "description": "A manual override for the time/date the Story was completed.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "name": {
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "The name of the story. Must be provided if the template does not provide a name.",
+          "type": "string"
+        },
+        "file_ids_add": {
+          "description": "An array of IDs of files attached to the story in addition to files from the template. Cannot be used in conjunction with `file_ids`.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "uniqueItems": true
+        },
+        "file_ids_remove": {
+          "description": "An array of IDs of files removed from files from the template. Cannot be used in conjunction with `file_ids`.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "uniqueItems": true
+        },
+        "comments": {
+          "description": "An array of comments to add to the story.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CreateStoryCommentParams"
+          }
+        },
+        "follower_ids_add": {
+          "description": "The UUIDs of the new followers to be added in addition to followers from the template. Cannot be used in conjunction with `follower_ids.`",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "uniqueItems": true
+        },
+        "epic_id": {
+          "description": "The ID of the epic the story belongs to.",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
+        },
+        "story_template_id": {
+          "description": "The id of the story template used to create this story.",
+          "type": "string",
+          "format": "uuid"
+        },
+        "external_links": {
+          "description": "An array of External Links associated with this story.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "follower_ids_remove": {
+          "description": "The UUIDs of the new followers to be removed from followers from the template. Cannot be used in conjunction with `follower_ids`.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "uniqueItems": true
+        },
+        "linked_file_ids_remove": {
+          "description": "An array of IDs of linked files removed from files from the template. Cannot be used in conjunction with `linked_files.`",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "uniqueItems": true
+        },
+        "requested_by_id": {
+          "description": "The ID of the member that requested the story.",
+          "type": "string",
+          "format": "uuid"
+        },
+        "iteration_id": {
+          "description": "The ID of the iteration the story belongs to.",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
+        },
+        "custom_fields_remove": {
+          "description": "A map specifying a CustomField ID. These will be removed from any fields provided by the template. Cannot be used in conjunction with `custom_fields`.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RemoveCustomFieldParams"
+          },
+          "uniqueItems": true
+        },
+        "tasks": {
+          "description": "An array of tasks connected to the story.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CreateTaskParams"
+          }
+        },
+        "started_at_override": {
+          "description": "A manual override for the time/date the Story was started.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "labels_add": {
+          "description": "An array of labels attached to the story in addition to the labels provided by the template. Cannot be used in conjunction with `labels`.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CreateLabelParams"
+          },
+          "uniqueItems": true
+        },
+        "group_id": {
+          "description": "The id of the group to associate with this story.",
+          "type": "string",
+          "format": "uuid",
+          "x-nullable": true
+        },
+        "workflow_state_id": {
+          "description": "The ID of the workflow state the story will be in.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "updated_at": {
+          "description": "The time/date the Story was updated.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "follower_ids": {
+          "description": "An array of UUIDs of the followers of this story.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "uniqueItems": true
+        },
+        "owner_ids": {
+          "description": "An array of UUIDs of the owners of this story.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "uniqueItems": true
+        },
+        "external_id": {
+          "description": "This field can be set to another unique ID. In the case that the Story has been imported from another tool, the ID in the other tool can be indicated here.",
+          "type": "string"
+        },
+        "estimate": {
+          "description": "The numeric point estimate of the story. Can also be null, which means unestimated.",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
+        },
+        "owner_ids_remove": {
+          "description": "The UUIDs of the new owners to be removed from owners from the template. Cannot be used in conjunction with `owners`.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "uniqueItems": true
+        },
+        "custom_fields_add": {
+          "description": "A map specifying a CustomField ID and CustomFieldEnumValue ID that represents an assertion of some value for a CustomField. These will be added to any fields provided by the template. Cannot be used in conjunction with `custom_fields`.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CustomFieldValueParams"
+          },
+          "uniqueItems": true
+        },
+        "project_id": {
+          "description": "The ID of the project the story belongs to.",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
+        },
+        "linked_file_ids_add": {
+          "description": "An array of IDs of linked files attached to the story in addition to files from the template. Cannot be used in conjunction with `linked_files`.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "uniqueItems": true
+        },
+        "linked_file_ids": {
+          "description": "An array of IDs of linked files attached to the story.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "uniqueItems": true
+        },
+        "labels_remove": {
+          "description": "An array of labels to remove from the labels provided by the template. Cannot be used in conjunction with `labels`.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RemoveLabelParams"
+          },
+          "uniqueItems": true
+        },
+        "deadline": {
+          "description": "The due date of the story.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "owner_ids_add": {
+          "description": "The UUIDs of the new owners to be added in addition to owners from the template. Cannot be used in conjunction with `owners`.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "uniqueItems": true
+        },
+        "created_at": {
+          "description": "The time/date the Story was created.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "external_links_remove": {
+          "description": "An array of External Links associated with this story. These will be removed from any links provided by the template. Cannot be used in conjunction with `external_links`.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "story_template_id"
+      ]
     },
     "CreateStoryLink": {
       "x-doc-skip": true,
@@ -1265,6 +1631,12 @@
             "format": "int64"
           },
           "uniqueItems": true
+        },
+        "source_task_id": {
+          "description": "Given this story was converted from a task in another story, this is the original task ID that was converted to this story.",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
         },
         "completed_at_override": {
           "description": "A manual override for the time/date the Story was completed.",
@@ -1424,6 +1796,10 @@
             "format": "uuid"
           }
         },
+        "external_id": {
+          "description": "This field can be set to another unique ID. In the case that the Task has been imported from another tool, the ID in the other tool can be indicated here.",
+          "type": "string"
+        },
         "created_at": {
           "description": "Defaults to the time/date the Task is created but can be set to reflect another creation time/date.",
           "type": "string",
@@ -1433,10 +1809,6 @@
           "description": "Defaults to the time/date the Task is created in Shortcut but can be set to reflect another time/date.",
           "type": "string",
           "format": "date-time"
-        },
-        "external_id": {
-          "description": "This field can be set to another unique ID. In the case that the Task has been imported from another tool, the ID in the other tool can be indicated here.",
-          "type": "string"
         }
       },
       "additionalProperties": false,
@@ -1466,6 +1838,10 @@
             "format": "uuid"
           }
         },
+        "external_id": {
+          "description": "This field can be set to another unique ID. In the case that the Task has been imported from another tool, the ID in the other tool can be indicated here.",
+          "type": "string"
+        },
         "created_at": {
           "description": "Defaults to the time/date the Task is created but can be set to reflect another creation time/date.",
           "type": "string",
@@ -1475,10 +1851,6 @@
           "description": "Defaults to the time/date the Task is created in Shortcut but can be set to reflect another time/date.",
           "type": "string",
           "format": "date-time"
-        },
-        "external_id": {
-          "description": "This field can be set to another unique ID. In the case that the Task has been imported from another tool, the ID in the other tool can be indicated here.",
-          "type": "string"
         }
       },
       "additionalProperties": false,
@@ -1747,40 +2119,8 @@
         "story_contents"
       ]
     },
-    "EntityTemplateTask": {
-      "description": "Request parameters for specifying how to pre-populate a task through a template.",
-      "type": "object",
-      "properties": {
-        "description": {
-          "minLength": 1,
-          "maxLength": 2048,
-          "description": "The Task description.",
-          "type": "string"
-        },
-        "complete": {
-          "description": "True/false boolean indicating whether the Task is completed. Defaults to false.",
-          "type": "boolean"
-        },
-        "owner_ids": {
-          "description": "An array of UUIDs for any members you want to add as Owners on this new Task.",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "external_id": {
-          "description": "This field can be set to another unique ID. In the case that the Task has been imported from another tool, the ID in the other tool can be indicated here.",
-          "type": "string"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "description"
-      ]
-    },
     "Epic": {
-      "description": "An Epic is a collection of stories that together might make up a release, a milestone, or some other large initiative that you are working on.",
+      "description": "An Epic is a collection of stories that together might make up a release, a objective, or some other large initiative that you are working on.",
       "type": "object",
       "properties": {
         "app_url": {
@@ -1811,7 +2151,7 @@
           }
         },
         "mention_ids": {
-          "description": "Deprecated: use member_mention_ids.",
+          "description": "`Deprecated:` use `member_mention_ids`.",
           "type": "array",
           "items": {
             "type": "string",
@@ -1870,6 +2210,14 @@
           "format": "date-time",
           "x-nullable": true
         },
+        "objective_ids": {
+          "description": "An array of IDs for Objectives to which this epic is related.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
         "name": {
           "description": "The name of the Epic.",
           "type": "string"
@@ -1905,7 +2253,7 @@
           "type": "string"
         },
         "milestone_id": {
-          "description": "The ID of the Milestone this Epic is related to.",
+          "description": "`Deprecated` The ID of the Objective this Epic is related to. Use `objective_ids`.",
           "type": "integer",
           "format": "int64",
           "x-nullable": true
@@ -1935,6 +2283,7 @@
           "x-nullable": true
         },
         "group_id": {
+          "description": "`Deprecated` The ID of the group to associate with the epic. Use `group_ids`.",
           "type": "string",
           "format": "uuid",
           "x-nullable": true
@@ -1961,6 +2310,14 @@
         },
         "follower_ids": {
           "description": "An array of UUIDs for any Members you want to add as Followers on this Epic.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "group_ids": {
+          "description": "An array of UUIDS for Groups to which this Epic is related.",
           "type": "array",
           "items": {
             "type": "string",
@@ -2028,6 +2385,7 @@
         "productboard_plugin_id",
         "started_at",
         "completed_at",
+        "objective_ids",
         "name",
         "global_id",
         "completed",
@@ -2045,6 +2403,7 @@
         "group_mention_ids",
         "productboard_id",
         "follower_ids",
+        "group_ids",
         "owner_ids",
         "external_id",
         "id",
@@ -2107,7 +2466,7 @@
           }
         },
         "mention_ids": {
-          "description": "Deprecated: use member_mention_ids.",
+          "description": "`Deprecated:` use `member_mention_ids`.",
           "type": "array",
           "items": {
             "type": "string",
@@ -2166,6 +2525,14 @@
           "format": "date-time",
           "x-nullable": true
         },
+        "objective_ids": {
+          "description": "An array of IDs for Objectives to which this epic is related.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
         "name": {
           "description": "The name of the Epic.",
           "type": "string"
@@ -2201,7 +2568,7 @@
           "type": "string"
         },
         "milestone_id": {
-          "description": "The ID of the Milestone this Epic is related to.",
+          "description": "`Deprecated` The ID of the Objective this Epic is related to. Use `objective_ids`.",
           "type": "integer",
           "format": "int64",
           "x-nullable": true
@@ -2231,6 +2598,7 @@
           "x-nullable": true
         },
         "group_id": {
+          "description": "`Deprecated` The ID of the group to associate with the epic. Use `group_ids`.",
           "type": "string",
           "format": "uuid",
           "x-nullable": true
@@ -2257,6 +2625,14 @@
         },
         "follower_ids": {
           "description": "An array of UUIDs for any Members you want to add as Followers on this Epic.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "group_ids": {
+          "description": "An array of UUIDS for Groups to which this Epic is related.",
           "type": "array",
           "items": {
             "type": "string",
@@ -2323,6 +2699,7 @@
         "productboard_plugin_id",
         "started_at",
         "completed_at",
+        "objective_ids",
         "name",
         "global_id",
         "completed",
@@ -2339,6 +2716,7 @@
         "group_mention_ids",
         "productboard_id",
         "follower_ids",
+        "group_ids",
         "owner_ids",
         "external_id",
         "id",
@@ -2369,12 +2747,6 @@
           "description": "The URL path and query string for the next page of search results.",
           "type": "string",
           "x-nullable": true
-        },
-        "cursors": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
         }
       },
       "additionalProperties": false,
@@ -2416,7 +2788,7 @@
           }
         },
         "mention_ids": {
-          "description": "Deprecated: use member_mention_ids.",
+          "description": "`Deprecated:` use `member_mention_ids`.",
           "type": "array",
           "items": {
             "type": "string",
@@ -2475,6 +2847,14 @@
           "format": "date-time",
           "x-nullable": true
         },
+        "objective_ids": {
+          "description": "An array of IDs for Objectives to which this epic is related.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
         "name": {
           "description": "The name of the Epic.",
           "type": "string"
@@ -2503,7 +2883,7 @@
           "type": "string"
         },
         "milestone_id": {
-          "description": "The ID of the Milestone this Epic is related to.",
+          "description": "`Deprecated` The ID of the Objective this Epic is related to. Use `objective_ids`.",
           "type": "integer",
           "format": "int64",
           "x-nullable": true
@@ -2533,6 +2913,7 @@
           "x-nullable": true
         },
         "group_id": {
+          "description": "`Deprecated` The ID of the group to associate with the epic. Use `group_ids`.",
           "type": "string",
           "format": "uuid",
           "x-nullable": true
@@ -2559,6 +2940,14 @@
         },
         "follower_ids": {
           "description": "An array of UUIDs for any Members you want to add as Followers on this Epic.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "group_ids": {
+          "description": "An array of UUIDS for Groups to which this Epic is related.",
           "type": "array",
           "items": {
             "type": "string",
@@ -2625,6 +3014,7 @@
         "productboard_plugin_id",
         "started_at",
         "completed_at",
+        "objective_ids",
         "name",
         "global_id",
         "completed",
@@ -2641,6 +3031,7 @@
         "group_mention_ids",
         "productboard_id",
         "follower_ids",
+        "group_ids",
         "owner_ids",
         "external_id",
         "id",
@@ -2860,77 +3251,6 @@
         "epic_states"
       ]
     },
-    "GetEpicStories": {
-      "x-doc-skip": true,
-      "type": "object",
-      "properties": {
-        "includes_description": {
-          "description": "A true/false boolean indicating whether to return Stories with their descriptions.",
-          "type": "boolean"
-        }
-      },
-      "additionalProperties": false
-    },
-    "GetExternalLinkStoriesParams": {
-      "type": "object",
-      "properties": {
-        "external_link": {
-          "pattern": "^https?://.+$",
-          "maxLength": 2048,
-          "description": "The external link associated with one or more stories.",
-          "type": "string"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "external_link"
-      ]
-    },
-    "GetIterationStories": {
-      "type": "object",
-      "properties": {
-        "includes_description": {
-          "description": "A true/false boolean indicating whether to return Stories with their descriptions.",
-          "type": "boolean"
-        }
-      },
-      "additionalProperties": false
-    },
-    "GetLabelStories": {
-      "x-doc-skip": true,
-      "type": "object",
-      "properties": {
-        "includes_description": {
-          "description": "A true/false boolean indicating whether to return Stories with their descriptions.",
-          "type": "boolean"
-        }
-      },
-      "additionalProperties": false
-    },
-    "GetMember": {
-      "x-doc-skip": true,
-      "type": "object",
-      "properties": {
-        "org-public-id": {
-          "description": "The unique ID of the Organization to limit the lookup to.",
-          "x-doc-skip": true,
-          "type": "string",
-          "format": "uuid"
-        }
-      },
-      "additionalProperties": false
-    },
-    "GetProjectStories": {
-      "x-doc-skip": true,
-      "type": "object",
-      "properties": {
-        "includes_description": {
-          "description": "A true/false boolean indicating whether to return Stories with their descriptions.",
-          "type": "boolean"
-        }
-      },
-      "additionalProperties": false
-    },
     "Group": {
       "description": "A Group.",
       "type": "object",
@@ -3002,7 +3322,7 @@
           "x-nullable": true
         },
         "num_stories": {
-          "description": "The total number of stories assigned ot the group.",
+          "description": "The total number of stories assigned to the group.",
           "type": "integer",
           "format": "int64"
         },
@@ -3218,6 +3538,11 @@
           "description": "The ID of the webhook that handled the change.",
           "type": "string",
           "x-nullable": true
+        },
+        "automation_id": {
+          "description": "The ID of the automation that performed the change.",
+          "type": "string",
+          "format": "uuid"
         }
       },
       "additionalProperties": false,
@@ -4381,24 +4706,6 @@
       "description": "A reference to a CustomField value asserted on a Story.",
       "type": "object",
       "properties": {
-        "entity_type": {
-          "description": "The type of entity referenced.",
-          "type": "string"
-        },
-        "field_name": {
-          "description": "The name as it is displayed to the user of the parent custom-field of this enum value.",
-          "type": "string"
-        },
-        "integer_value": {
-          "description": "The custom-field enum value as a string.",
-          "type": "integer",
-          "format": "int64",
-          "x-nullable": true
-        },
-        "field_enabled": {
-          "description": "Whether or not the custom-field is enabled.",
-          "type": "boolean"
-        },
         "id": {
           "description": "The ID of the entity referenced.",
           "x-oneOf": [
@@ -4412,14 +4719,9 @@
             }
           ]
         },
-        "field_type": {
-          "description": "The type variety of the parent custom-field of this enum value.",
+        "entity_type": {
+          "description": "The type of entity referenced.",
           "type": "string"
-        },
-        "field_id": {
-          "description": "The public-id of the parent custom-field of this enum value.",
-          "type": "string",
-          "format": "uuid"
         },
         "string_value": {
           "description": "The custom-field enum value as a string.",
@@ -4430,19 +4732,35 @@
           "description": "Whether or not the custom-field enum value is enabled.",
           "type": "boolean",
           "x-nullable": true
+        },
+        "field_id": {
+          "description": "The public-id of the parent custom-field of this enum value.",
+          "type": "string",
+          "format": "uuid"
+        },
+        "field_type": {
+          "description": "The type variety of the parent custom-field of this enum value.",
+          "type": "string"
+        },
+        "field_name": {
+          "description": "The name as it is displayed to the user of the parent custom-field of this enum value.",
+          "type": "string"
+        },
+        "field_enabled": {
+          "description": "Whether or not the custom-field is enabled.",
+          "type": "boolean"
         }
       },
       "additionalProperties": false,
       "required": [
-        "entity_type",
-        "field_name",
-        "integer_value",
-        "field_enabled",
         "id",
-        "field_type",
-        "field_id",
+        "entity_type",
         "string_value",
-        "enum_value_enabled"
+        "enum_value_enabled",
+        "field_id",
+        "field_type",
+        "field_name",
+        "field_enabled"
       ]
     },
     "HistoryReferenceEpic": {
@@ -4768,10 +5086,11 @@
           "type": "string"
         },
         "type": {
-          "description": "Either \"unstarted\", \"started\", or \"done\".",
+          "description": "Either \"backlog\", \"unstarted\", \"started\", or \"done\".",
           "type": "string",
           "enum": [
             "started",
+            "backlog",
             "unstarted",
             "done"
           ]
@@ -4882,7 +5201,7 @@
           }
         },
         "mention_ids": {
-          "description": "Deprecated: use member_mention_ids.",
+          "description": "`Deprecated:` use `member_mention_ids`.",
           "type": "array",
           "items": {
             "type": "string",
@@ -4935,7 +5254,7 @@
           }
         },
         "end_date": {
-          "description": "The date this iteration begins.",
+          "description": "The date this iteration ends.",
           "type": "string",
           "format": "date-time"
         },
@@ -5042,12 +5361,6 @@
           "description": "The URL path and query string for the next page of search results.",
           "type": "string",
           "x-nullable": true
-        },
-        "cursors": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
         }
       },
       "additionalProperties": false,
@@ -5077,7 +5390,7 @@
           }
         },
         "mention_ids": {
-          "description": "Deprecated: use member_mention_ids.",
+          "description": "`Deprecated:` use `member_mention_ids`.",
           "type": "array",
           "items": {
             "type": "string",
@@ -5130,7 +5443,7 @@
           }
         },
         "end_date": {
-          "description": "The date this iteration begins.",
+          "description": "The date this iteration ends.",
           "type": "string",
           "format": "date-time"
         },
@@ -5280,6 +5593,74 @@
         "num_points",
         "num_stories_done"
       ]
+    },
+    "KeyResult": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "The ID of the Key Result.",
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "description": "The name of the Key Result.",
+          "type": "string"
+        },
+        "objective_id": {
+          "description": "The Objective to which this Key Result belongs.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "type": {
+          "description": "The type of the Key Result (numeric, percent, or boolean).",
+          "type": "string",
+          "enum": [
+            "percent",
+            "boolean",
+            "numeric"
+          ]
+        },
+        "initial_observed_value": {
+          "$ref": "#/definitions/KeyResultValue"
+        },
+        "current_observed_value": {
+          "$ref": "#/definitions/KeyResultValue"
+        },
+        "current_target_value": {
+          "$ref": "#/definitions/KeyResultValue"
+        },
+        "progress": {
+          "description": "The integer percentage of progress toward completion of the Key Result.",
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "objective_id",
+        "type",
+        "initial_observed_value",
+        "current_observed_value",
+        "current_target_value",
+        "progress"
+      ]
+    },
+    "KeyResultValue": {
+      "description": "The starting value of the Key Result.",
+      "type": "object",
+      "properties": {
+        "numeric_value": {
+          "description": "The numeric value, as a decimal string. No more than two decimal places are allowed.",
+          "type": "string"
+        },
+        "boolean_value": {
+          "description": "The boolean value.",
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
     },
     "Label": {
       "description": "A Label can be used to associate and filter Stories and Epics, and also create new Workspaces.",
@@ -5567,7 +5948,7 @@
           }
         },
         "mention_ids": {
-          "description": "Deprecated: use member_mention_ids.",
+          "description": "`Deprecated:` use `member_mention_ids`.",
           "type": "array",
           "items": {
             "type": "string",
@@ -5658,57 +6039,6 @@
         "url",
         "created_at"
       ]
-    },
-    "ListEpics": {
-      "x-doc-skip": true,
-      "type": "object",
-      "properties": {
-        "includes_description": {
-          "description": "A true/false boolean indicating whether to return Epics with their descriptions.",
-          "type": "boolean"
-        }
-      },
-      "additionalProperties": false
-    },
-    "ListGroupStories": {
-      "type": "object",
-      "properties": {
-        "limit": {
-          "description": "The maximum number of results to return. (Defaults to 1000, max 1000)",
-          "type": "integer",
-          "format": "int64"
-        },
-        "offset": {
-          "description": "The offset at which to begin returning results. (Defaults to 0)",
-          "type": "integer",
-          "format": "int64"
-        }
-      },
-      "additionalProperties": false
-    },
-    "ListLabels": {
-      "x-doc-skip": true,
-      "type": "object",
-      "properties": {
-        "slim": {
-          "description": "A true/false boolean indicating if the slim versions of the Label should be returned.",
-          "type": "boolean"
-        }
-      },
-      "additionalProperties": false
-    },
-    "ListMembers": {
-      "x-doc-skip": true,
-      "type": "object",
-      "properties": {
-        "org-public-id": {
-          "description": "The unique ID of the Organization to limit the list to.",
-          "x-doc-skip": true,
-          "type": "string",
-          "format": "uuid"
-        }
-      },
-      "additionalProperties": false
     },
     "MaxSearchResultsExceededError": {
       "description": "Error returned when total maximum supported results have been reached.",
@@ -5852,7 +6182,7 @@
       ]
     },
     "Milestone": {
-      "description": "A Milestone is a collection of Epics that represent a release or some other large initiative that you are working on.",
+      "description": "(Deprecated) A Milestone is a collection of Epics that represent a release or some other large initiative that you are working on. Milestones have become Objectives, so you should use Objective-related API resources instead of Milestone ones.",
       "type": "object",
       "properties": {
         "app_url": {
@@ -5932,6 +6262,14 @@
           "type": "integer",
           "format": "int64"
         },
+        "key_result_ids": {
+          "description": "The IDs of the Key Results associated with the Objective.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
         "position": {
           "description": "A number representing the position of the Milestone in relation to every other Milestone within the Workspace.",
           "type": "integer",
@@ -5964,12 +6302,165 @@
         "updated_at",
         "categories",
         "id",
+        "key_result_ids",
         "position",
         "stats",
         "created_at"
       ]
     },
-    "MilestoneSearchResult": {
+    "MilestoneStats": {
+      "description": "A group of calculated values for this Milestone.",
+      "type": "object",
+      "properties": {
+        "average_cycle_time": {
+          "description": "The average cycle time (in seconds) of completed stories in this Milestone.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "average_lead_time": {
+          "description": "The average lead time (in seconds) of completed stories in this Milestone.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "num_related_documents": {
+          "description": "The number of related documents to this Milestone.",
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "num_related_documents"
+      ]
+    },
+    "Objective": {
+      "description": "An Objective is a collection of Epics that represent a release or some other large initiative that you are working on.",
+      "type": "object",
+      "properties": {
+        "app_url": {
+          "description": "The Shortcut application url for the Objective.",
+          "type": "string"
+        },
+        "description": {
+          "description": "The Objective's description.",
+          "type": "string"
+        },
+        "archived": {
+          "description": "A boolean indicating whether the Objective has been archived or not.",
+          "type": "boolean"
+        },
+        "started": {
+          "description": "A true/false boolean indicating if the Objective has been started.",
+          "type": "boolean"
+        },
+        "entity_type": {
+          "description": "A string description of this resource.",
+          "type": "string"
+        },
+        "completed_at_override": {
+          "description": "A manual override for the time/date the Objective was completed.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "started_at": {
+          "description": "The time/date the Objective was started.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "completed_at": {
+          "description": "The time/date the Objective was completed.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "name": {
+          "description": "The name of the Objective.",
+          "type": "string"
+        },
+        "global_id": {
+          "x-doc-skip": true,
+          "type": "string"
+        },
+        "completed": {
+          "description": "A true/false boolean indicating if the Objectivehas been completed.",
+          "type": "boolean"
+        },
+        "state": {
+          "description": "The workflow state that the Objective is in.",
+          "type": "string"
+        },
+        "started_at_override": {
+          "description": "A manual override for the time/date the Objective was started.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "updated_at": {
+          "description": "The time/date the Objective was updated.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "categories": {
+          "description": "An array of Categories attached to the Objective.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Category"
+          }
+        },
+        "id": {
+          "description": "The unique ID of the Objective.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "key_result_ids": {
+          "description": "The IDs of the Key Results associated with the Objective.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "position": {
+          "description": "A number representing the position of the Objective in relation to every other Objective within the Workspace.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "stats": {
+          "$ref": "#/definitions/ObjectiveStats"
+        },
+        "created_at": {
+          "description": "The time/date the Objective was created.",
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "app_url",
+        "description",
+        "archived",
+        "started",
+        "entity_type",
+        "completed_at_override",
+        "started_at",
+        "completed_at",
+        "name",
+        "global_id",
+        "completed",
+        "state",
+        "started_at_override",
+        "updated_at",
+        "categories",
+        "id",
+        "key_result_ids",
+        "position",
+        "stats",
+        "created_at"
+      ]
+    },
+    "ObjectiveSearchResult": {
       "description": "A Milestone in search results. This is typed differently from Milestone because the details=slim search argument will omit some fields.",
       "type": "object",
       "properties": {
@@ -6050,6 +6541,14 @@
           "type": "integer",
           "format": "int64"
         },
+        "key_result_ids": {
+          "description": "The IDs of the Key Results associated with the Objective.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
         "position": {
           "description": "A number representing the position of the Milestone in relation to every other Milestone within the Workspace.",
           "type": "integer",
@@ -6081,13 +6580,14 @@
         "updated_at",
         "categories",
         "id",
+        "key_result_ids",
         "position",
         "stats",
         "created_at"
       ]
     },
-    "MilestoneSearchResults": {
-      "description": "The results of the Milestone search query.",
+    "ObjectiveSearchResults": {
+      "description": "The results of the Objective search query.",
       "type": "object",
       "properties": {
         "total": {
@@ -6099,19 +6599,13 @@
           "description": "A list of search results.",
           "type": "array",
           "items": {
-            "$ref": "#/definitions/MilestoneSearchResult"
+            "$ref": "#/definitions/ObjectiveSearchResult"
           }
         },
         "next": {
           "description": "The URL path and query string for the next page of search results.",
           "type": "string",
           "x-nullable": true
-        },
-        "cursors": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
         }
       },
       "additionalProperties": false,
@@ -6121,22 +6615,22 @@
         "next"
       ]
     },
-    "MilestoneStats": {
-      "description": "A group of calculated values for this Milestone.",
+    "ObjectiveStats": {
+      "description": "A group of calculated values for this Objective.",
       "type": "object",
       "properties": {
         "average_cycle_time": {
-          "description": "The average cycle time (in seconds) of completed stories in this Milestone.",
+          "description": "The average cycle time (in seconds) of completed stories in this Objective.",
           "type": "integer",
           "format": "int64"
         },
         "average_lead_time": {
-          "description": "The average lead time (in seconds) of completed stories in this Milestone.",
+          "description": "The average lead time (in seconds) of completed stories in this Objective.",
           "type": "integer",
           "format": "int64"
         },
         "num_related_documents": {
-          "description": "The number of related documents tp this Milestone.",
+          "description": "The number of related documents to this Objective.",
           "type": "integer",
           "format": "int64"
         }
@@ -6549,6 +7043,36 @@
         "name"
       ]
     },
+    "RemoveCustomFieldParams": {
+      "type": "object",
+      "properties": {
+        "field_id": {
+          "description": "The unique public ID for the CustomField.",
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "field_id"
+      ]
+    },
+    "RemoveLabelParams": {
+      "description": "Request parameters for removing a Label from a Shortcut Story.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "The name of the new Label to remove.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ]
+    },
     "Repository": {
       "description": "Repository refers to a VCS repository.",
       "type": "object",
@@ -6618,60 +7142,6 @@
         "created_at"
       ]
     },
-    "Search": {
-      "x-doc-skip": true,
-      "type": "object",
-      "properties": {
-        "query": {
-          "minLength": 1,
-          "description": "See our help center article on [search operators](https://help.shortcut.com/hc/en-us/articles/360000046646-Search-Operators)",
-          "type": "string"
-        },
-        "page_size": {
-          "description": "The number of search results to include in a page. Minimum of 1 and maximum of 25.",
-          "type": "integer",
-          "format": "int64"
-        },
-        "detail": {
-          "description": "The amount of detail included in each result item.\n   \"full\" will include all descriptions and comments and more fields on\n   related items such as pull requests, branches and tasks.\n   \"slim\" omits larger fulltext fields such as descriptions and comments\n   and only references related items by id.\n   The default is \"full\".",
-          "type": "string",
-          "enum": [
-            "full",
-            "slim"
-          ]
-        },
-        "next": {
-          "description": "The next page token.",
-          "x-doc-skip": true,
-          "type": "string"
-        },
-        "include": {
-          "x-doc-skip": true,
-          "type": "string",
-          "enum": [
-            "cursors"
-          ]
-        },
-        "entity_types": {
-          "description": "A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, milestone, story.",
-          "x-doc-skip": true,
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "story",
-              "milestone",
-              "epic",
-              "iteration"
-            ]
-          }
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "query"
-      ]
-    },
     "SearchResults": {
       "description": "The results of the multi-entity search query.",
       "type": "object",
@@ -6686,7 +7156,7 @@
           "$ref": "#/definitions/IterationSearchResults"
         },
         "milestones": {
-          "$ref": "#/definitions/MilestoneSearchResults"
+          "$ref": "#/definitions/ObjectiveSearchResults"
         }
       },
       "additionalProperties": false
@@ -6734,12 +7204,12 @@
           "uniqueItems": true
         },
         "updated_at_end": {
-          "description": "Stories should have been updated before this date.",
+          "description": "Stories should have been updated on or before this date.",
           "type": "string",
           "format": "date-time"
         },
         "completed_at_end": {
-          "description": "Stories should have been completed before this date.",
+          "description": "Stories should have been completed on or before this date.",
           "type": "string",
           "format": "date-time"
         },
@@ -6757,12 +7227,12 @@
           }
         },
         "deadline_end": {
-          "description": "Stories should have a deadline before this date.",
+          "description": "Stories should have a deadline on or before this date.",
           "type": "string",
           "format": "date-time"
         },
         "created_at_start": {
-          "description": "Stories should have been created after this date.",
+          "description": "Stories should have been created on or after this date.",
           "type": "string",
           "format": "date-time"
         },
@@ -6818,12 +7288,12 @@
           "uniqueItems": true
         },
         "created_at_end": {
-          "description": "Stories should have been created before this date.",
+          "description": "Stories should have been created on or before this date.",
           "type": "string",
           "format": "date-time"
         },
         "deadline_start": {
-          "description": "Stories should have a deadline after this date.",
+          "description": "Stories should have a deadline on or after this date.",
           "type": "string",
           "format": "date-time"
         },
@@ -6865,12 +7335,12 @@
           "x-nullable": true
         },
         "completed_at_start": {
-          "description": "Stories should have been completed after this date.",
+          "description": "Stories should have been completed on or after this date.",
           "type": "string",
           "format": "date-time"
         },
         "updated_at_start": {
-          "description": "Stories should have been updated after this date.",
+          "description": "Stories should have been updated on or after this date.",
           "type": "string",
           "format": "date-time"
         }
@@ -6916,7 +7386,7 @@
           }
         },
         "mention_ids": {
-          "description": "Deprecated: use member_mention_ids.",
+          "description": "`Deprecated:` use `member_mention_ids`.",
           "type": "array",
           "items": {
             "type": "string",
@@ -7271,7 +7741,7 @@
           "format": "int64"
         },
         "mention_ids": {
-          "description": "Deprecated: use member_mention_ids.",
+          "description": "`Deprecated:` use `member_mention_ids`.",
           "type": "array",
           "items": {
             "type": "string",
@@ -7294,6 +7764,10 @@
         },
         "blocker": {
           "description": "Marks the comment as a blocker that can be surfaced to permissions or teams mentioned in the comment. Can only be used on a top-level comment.",
+          "type": "boolean"
+        },
+        "linked_to_slack": {
+          "description": "Whether the Comment is currently the root of a thread that is linked to Slack.",
           "type": "boolean"
         },
         "updated_at": {
@@ -7363,6 +7837,7 @@
         "mention_ids",
         "author_id",
         "member_mention_ids",
+        "linked_to_slack",
         "updated_at",
         "group_mention_ids",
         "external_id",
@@ -7795,7 +8270,7 @@
           }
         },
         "mention_ids": {
-          "description": "Deprecated: use member_mention_ids.",
+          "description": "`Deprecated:` use `member_mention_ids`.",
           "type": "array",
           "items": {
             "type": "string",
@@ -8169,12 +8644,6 @@
           "description": "The URL path and query string for the next page of search results.",
           "type": "string",
           "x-nullable": true
-        },
-        "cursors": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
         }
       },
       "additionalProperties": false,
@@ -8231,7 +8700,7 @@
           }
         },
         "mention_ids": {
-          "description": "Deprecated: use member_mention_ids.",
+          "description": "`Deprecated:` use `member_mention_ids`.",
           "type": "array",
           "items": {
             "type": "string",
@@ -8595,7 +9064,7 @@
           "format": "int64"
         },
         "mention_ids": {
-          "description": "Deprecated: use member_mention_ids.",
+          "description": "`Deprecated:` use `member_mention_ids`.",
           "type": "array",
           "items": {
             "type": "string",
@@ -8698,7 +9167,7 @@
           "type": "boolean"
         },
         "mention_ids": {
-          "description": "Deprecated: use member_mention_ids.",
+          "description": "`Deprecated:` use `member_mention_ids`.",
           "type": "array",
           "items": {
             "type": "string",
@@ -9015,6 +9484,14 @@
           "format": "date-time",
           "x-nullable": true
         },
+        "objective_ids": {
+          "description": "An array of IDs for Objectives to which this Epic is related.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
         "name": {
           "minLength": 1,
           "maxLength": 256,
@@ -9037,7 +9514,7 @@
           ]
         },
         "milestone_id": {
-          "description": "The ID of the Milestone this Epic is related to.",
+          "description": "`Deprecated` The ID of the Milestone this Epic is related to. Use `objective_ids`.",
           "type": "integer",
           "format": "int64",
           "x-nullable": true
@@ -9059,13 +9536,21 @@
           "x-nullable": true
         },
         "group_id": {
-          "description": "The ID of the group to associate with the epic.",
+          "description": "`Deprecated` The ID of the group to associate with the epic. Use `group_ids`.",
           "type": "string",
           "format": "uuid",
           "x-nullable": true
         },
         "follower_ids": {
           "description": "An array of UUIDs for any Members you want to add as Followers on this Epic.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "group_ids": {
+          "description": "An array of UUIDS for Groups to which this Epic is related.",
           "type": "array",
           "items": {
             "type": "string",
@@ -9269,6 +9754,25 @@
       },
       "additionalProperties": false
     },
+    "UpdateKeyResult": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "The name of the Key Result.",
+          "type": "string"
+        },
+        "initial_observed_value": {
+          "$ref": "#/definitions/KeyResultValue"
+        },
+        "observed_value": {
+          "$ref": "#/definitions/KeyResultValue"
+        },
+        "target_value": {
+          "$ref": "#/definitions/KeyResultValue"
+        }
+      },
+      "additionalProperties": false
+    },
     "UpdateLabel": {
       "x-doc-skip": true,
       "type": "object",
@@ -9406,6 +9910,66 @@
         },
         "after_id": {
           "description": "The ID of the Milestone we want to move this Milestone after.",
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "additionalProperties": false
+    },
+    "UpdateObjective": {
+      "x-doc-skip": true,
+      "type": "object",
+      "properties": {
+        "description": {
+          "maxLength": 100000,
+          "description": "The Objective's description.",
+          "type": "string"
+        },
+        "archived": {
+          "description": "A boolean indicating whether the Objective is archived or not",
+          "type": "boolean"
+        },
+        "completed_at_override": {
+          "description": "A manual override for the time/date the Objective was completed.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "name": {
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "The name of the Objective.",
+          "type": "string"
+        },
+        "state": {
+          "description": "The workflow state that the Objective is in.",
+          "type": "string",
+          "enum": [
+            "in progress",
+            "to do",
+            "done"
+          ]
+        },
+        "started_at_override": {
+          "description": "A manual override for the time/date the Objective was started.",
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true
+        },
+        "categories": {
+          "description": "An array of IDs of Categories attached to the Objective.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CreateCategoryParams"
+          }
+        },
+        "before_id": {
+          "description": "The ID of the Objective we want to move this Objective before.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "after_id": {
+          "description": "The ID of the Objective we want to move this Objective after.",
           "type": "integer",
           "format": "int64"
         }
@@ -9848,10 +10412,6 @@
           "description": "The description of the story.",
           "type": "string"
         },
-        "entity_type": {
-          "description": "A string description of this resource.",
-          "type": "string"
-        },
         "labels": {
           "description": "An array of labels to be populated by the template.",
           "type": "array",
@@ -9868,13 +10428,6 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/CustomFieldValueParams"
-          }
-        },
-        "linked_files": {
-          "description": "An array of linked files attached to the story.",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/LinkedFile"
           }
         },
         "file_ids": {
@@ -9913,15 +10466,7 @@
           "description": "An array of tasks to be populated by the template.",
           "type": "array",
           "items": {
-            "$ref": "#/definitions/EntityTemplateTask"
-          }
-        },
-        "label_ids": {
-          "description": "An array of label ids attached to the story.",
-          "type": "array",
-          "items": {
-            "type": "integer",
-            "format": "int64"
+            "$ref": "#/definitions/BaseTaskParams"
           }
         },
         "group_id": {
@@ -9931,9 +10476,10 @@
           "x-nullable": true
         },
         "workflow_state_id": {
-          "description": "The ID of the workflow state the story is currently in.",
+          "description": "The ID of the workflow state to be populated.",
           "type": "integer",
-          "format": "int64"
+          "format": "int64",
+          "x-nullable": true
         },
         "follower_ids": {
           "description": "An array of UUIDs for any Members listed as Followers.",
@@ -9956,13 +10502,6 @@
           "type": "integer",
           "format": "int64",
           "x-nullable": true
-        },
-        "files": {
-          "description": "An array of files attached to the story.",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/UploadedFile"
-          }
         },
         "project_id": {
           "description": "The ID of the project the story belongs to.",
@@ -10071,7 +10610,7 @@
           }
         },
         "mention_ids": {
-          "description": "Deprecated: use member_mention_ids.",
+          "description": "`Deprecated:` use `member_mention_ids`.",
           "type": "array",
           "items": {
             "type": "string",
@@ -10539,6 +11078,43 @@
         "summary": "List Category Milestones"
       }
     },
+    "/api/v3/categories/{category-public-id}/objectives": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "category-public-id",
+            "description": "The unique ID of the Category.",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Milestone"
+              }
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "listCategoryObjectives",
+        "description": "Returns a list of all Objectives with the Category.",
+        "summary": "List Category Objectives"
+      }
+    },
     "/api/v3/custom-fields": {
       "get": {
         "responses": {
@@ -10704,7 +11280,7 @@
           {
             "in": "body",
             "name": "CreateEntityTemplate",
-            "description": "Request paramaters for creating an entirely new entity template.",
+            "description": "Request parameters for creating an entirely new entity template.",
             "required": true,
             "schema": {
               "$ref": "#/definitions/CreateEntityTemplate"
@@ -10906,13 +11482,11 @@
       "get": {
         "parameters": [
           {
-            "in": "body",
-            "name": "ListEpics",
-            "description": "",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/ListEpics"
-            }
+            "in": "query",
+            "name": "includes_description",
+            "description": "A true/false boolean indicating whether to return Epics with their descriptions.",
+            "required": false,
+            "type": "boolean"
           }
         ],
         "responses": {
@@ -11344,13 +11918,11 @@
             "format": "int64"
           },
           {
-            "in": "body",
-            "name": "GetEpicStories",
-            "description": "",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/GetEpicStories"
-            }
+            "in": "query",
+            "name": "includes_description",
+            "description": "A true/false boolean indicating whether to return Stories with their descriptions.",
+            "required": false,
+            "type": "boolean"
           }
         ],
         "responses": {
@@ -11413,13 +11985,13 @@
       "get": {
         "parameters": [
           {
-            "in": "body",
-            "name": "GetExternalLinkStoriesParams",
-            "description": "",
+            "in": "query",
+            "name": "external_link",
+            "description": "The external link associated with one or more stories.",
             "required": true,
-            "schema": {
-              "$ref": "#/definitions/GetExternalLinkStoriesParams"
-            }
+            "pattern": "^https?://.+$",
+            "maxLength": 2048,
+            "type": "string"
           }
         ],
         "responses": {
@@ -11842,13 +12414,20 @@
             "format": "uuid"
           },
           {
-            "in": "body",
-            "name": "ListGroupStories",
-            "description": "",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/ListGroupStories"
-            }
+            "in": "query",
+            "name": "limit",
+            "description": "The maximum number of results to return. (Defaults to 1000, max 1000)",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "The offset at which to begin returning results. (Defaults to 0)",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
           }
         ],
         "responses": {
@@ -12089,13 +12668,11 @@
             "format": "int64"
           },
           {
-            "in": "body",
-            "name": "GetIterationStories",
-            "description": "",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/GetIterationStories"
-            }
+            "in": "query",
+            "name": "includes_description",
+            "description": "A true/false boolean indicating whether to return Stories with their descriptions.",
+            "required": false,
+            "type": "boolean"
           }
         ],
         "responses": {
@@ -12123,17 +12700,90 @@
         "summary": "List Iteration Stories"
       }
     },
+    "/api/v3/key-results/{key-result-public-id}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key-result-public-id",
+            "description": "The ID of the Key Result.",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/KeyResult"
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "getKeyResult",
+        "description": "Get Key Result returns information about a chosen Key Result.",
+        "summary": "Get Key Result"
+      },
+      "put": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key-result-public-id",
+            "description": "The ID of the Key Result.",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "in": "body",
+            "name": "UpdateKeyResult",
+            "description": "",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UpdateKeyResult"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/KeyResult"
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "updateKeyResult",
+        "description": "Update Key Result allows updating a Key Result's name or initial, observed, or target values.",
+        "summary": "Update Key Result"
+      }
+    },
     "/api/v3/labels": {
       "get": {
         "parameters": [
           {
-            "in": "body",
-            "name": "ListLabels",
-            "description": "",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/ListLabels"
-            }
+            "in": "query",
+            "name": "slim",
+            "description": "A true/false boolean indicating if the slim versions of the Label should be returned.",
+            "required": false,
+            "type": "boolean"
           }
         ],
         "responses": {
@@ -12347,13 +12997,11 @@
             "format": "int64"
           },
           {
-            "in": "body",
-            "name": "GetLabelStories",
-            "description": "",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/GetLabelStories"
-            }
+            "in": "query",
+            "name": "includes_description",
+            "description": "A true/false boolean indicating whether to return Stories with their descriptions.",
+            "required": false,
+            "type": "boolean"
           }
         ],
         "responses": {
@@ -12573,13 +13221,13 @@
       "get": {
         "parameters": [
           {
-            "in": "body",
-            "name": "ListMembers",
-            "description": "",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/ListMembers"
-            }
+            "in": "query",
+            "name": "org-public-id",
+            "description": "The unique ID of the Organization to limit the list to.",
+            "required": false,
+            "x-doc-skip": true,
+            "type": "string",
+            "format": "uuid"
           }
         ],
         "responses": {
@@ -12619,13 +13267,13 @@
             "format": "uuid"
           },
           {
-            "in": "body",
-            "name": "GetMember",
-            "description": "",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/GetMember"
-            }
+            "in": "query",
+            "name": "org-public-id",
+            "description": "The unique ID of the Organization to limit the lookup to.",
+            "required": false,
+            "x-doc-skip": true,
+            "type": "string",
+            "format": "uuid"
           }
         ],
         "responses": {
@@ -12673,7 +13321,7 @@
           }
         },
         "operationId": "listMilestones",
-        "description": "List Milestones returns a list of all Milestones and their attributes.",
+        "description": "(Deprecated: Use 'List Objectives') List Milestones returns a list of all Milestones and their attributes.",
         "summary": "List Milestones"
       },
       "post": {
@@ -12712,7 +13360,7 @@
           }
         },
         "operationId": "createMilestone",
-        "description": "Create Milestone allows you to create a new Milestone in Shortcut.",
+        "description": "(Deprecated: Use 'Create Objective') Create Milestone allows you to create a new Milestone in Shortcut.",
         "summary": "Create Milestone"
       }
     },
@@ -12746,7 +13394,7 @@
           }
         },
         "operationId": "getMilestone",
-        "description": "Get Milestone returns information about a chosen Milestone.",
+        "description": "(Deprecated: Use 'Get Objective') Get Milestone returns information about a chosen Milestone.",
         "summary": "Get Milestone"
       },
       "put": {
@@ -12787,7 +13435,7 @@
           }
         },
         "operationId": "updateMilestone",
-        "description": "Update Milestone can be used to update Milestone properties.",
+        "description": "(Deprecated: Use 'Update Objective') Update Milestone can be used to update Milestone properties.",
         "summary": "Update Milestone"
       },
       "delete": {
@@ -12816,7 +13464,7 @@
           }
         },
         "operationId": "deleteMilestone",
-        "description": "Delete Milestone can be used to delete any Milestone.",
+        "description": "(Deprecated: Use 'Delete Objective') Delete Milestone can be used to delete any Milestone.",
         "summary": "Delete Milestone"
       }
     },
@@ -12853,8 +13501,215 @@
           }
         },
         "operationId": "listMilestoneEpics",
-        "description": "List all of the Epics within the Milestone.",
+        "description": "(Deprecated: Use 'List Objective Epics') List all of the Epics within the Milestone.",
         "summary": "List Milestone Epics"
+      }
+    },
+    "/api/v3/objectives": {
+      "get": {
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Objective"
+              }
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "listObjectives",
+        "description": "List Objectives returns a list of all Objectives and their attributes.",
+        "summary": "List Objectives"
+      },
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "CreateObjective",
+            "description": "",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateObjective"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "schema": {
+              "$ref": "#/definitions/Objective"
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "403": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/UnusableEntitlementError"
+            }
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "createObjective",
+        "description": "Create Objective allows you to create a new Objective in Shortcut.",
+        "summary": "Create Objective"
+      }
+    },
+    "/api/v3/objectives/{objective-public-id}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "objective-public-id",
+            "description": "The ID of the Objective.",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/Objective"
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "getObjective",
+        "description": "Get Objective returns information about a chosen Objective.",
+        "summary": "Get Objective"
+      },
+      "put": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "objective-public-id",
+            "description": "The ID of the Objective.",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "body",
+            "name": "UpdateObjective",
+            "description": "",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UpdateObjective"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/Objective"
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "updateObjective",
+        "description": "Update Objective can be used to update Objective properties.",
+        "summary": "Update Objective"
+      },
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "objective-public-id",
+            "description": "The ID of the Objective.",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "deleteObjective",
+        "description": "Delete Objective can be used to delete any Objective.",
+        "summary": "Delete Objective"
+      }
+    },
+    "/api/v3/objectives/{objective-public-id}/epics": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "objective-public-id",
+            "description": "The ID of the Objective.",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/EpicSlim"
+              }
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "listObjectiveEpics",
+        "description": "List all of the Epics within the Objective.",
+        "summary": "List Objective Epics"
       }
     },
     "/api/v3/projects": {
@@ -13033,13 +13888,11 @@
             "format": "int64"
           },
           {
-            "in": "body",
-            "name": "GetProjectStories",
-            "description": "",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/GetProjectStories"
-            }
+            "in": "query",
+            "name": "includes_description",
+            "description": "A true/false boolean indicating whether to return Stories with their descriptions.",
+            "required": false,
+            "type": "boolean"
           }
         ],
         "responses": {
@@ -13132,13 +13985,58 @@
       "get": {
         "parameters": [
           {
-            "in": "body",
-            "name": "Search",
-            "description": "",
+            "in": "query",
+            "name": "query",
+            "description": "See our help center article on [search operators](https://help.shortcut.com/hc/en-us/articles/360000046646-Search-Operators)",
             "required": true,
-            "schema": {
-              "$ref": "#/definitions/Search"
-            }
+            "minLength": 1,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "description": "The number of search results to include in a page. Minimum of 1 and maximum of 25.",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "detail",
+            "description": "The amount of detail included in each result item.\n   \"full\" will include all descriptions and comments and more fields on\n   related items such as pull requests, branches and tasks.\n   \"slim\" omits larger fulltext fields such as descriptions and comments\n   and only references related items by id.\n   The default is \"full\".",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "full",
+              "slim"
+            ]
+          },
+          {
+            "in": "query",
+            "name": "next",
+            "description": "The next page token.",
+            "required": false,
+            "x-doc-skip": true,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "entity_types",
+            "description": "A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, objective, story.",
+            "required": false,
+            "x-doc-skip": true,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "story",
+                "milestone",
+                "epic",
+                "iteration",
+                "objective"
+              ]
+            },
+            "collectionFormat": "multi"
           }
         ],
         "responses": {
@@ -13170,13 +14068,58 @@
       "get": {
         "parameters": [
           {
-            "in": "body",
-            "name": "Search",
-            "description": "",
+            "in": "query",
+            "name": "query",
+            "description": "See our help center article on [search operators](https://help.shortcut.com/hc/en-us/articles/360000046646-Search-Operators)",
             "required": true,
-            "schema": {
-              "$ref": "#/definitions/Search"
-            }
+            "minLength": 1,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "description": "The number of search results to include in a page. Minimum of 1 and maximum of 25.",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "detail",
+            "description": "The amount of detail included in each result item.\n   \"full\" will include all descriptions and comments and more fields on\n   related items such as pull requests, branches and tasks.\n   \"slim\" omits larger fulltext fields such as descriptions and comments\n   and only references related items by id.\n   The default is \"full\".",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "full",
+              "slim"
+            ]
+          },
+          {
+            "in": "query",
+            "name": "next",
+            "description": "The next page token.",
+            "required": false,
+            "x-doc-skip": true,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "entity_types",
+            "description": "A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, objective, story.",
+            "required": false,
+            "x-doc-skip": true,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "story",
+                "milestone",
+                "epic",
+                "iteration",
+                "objective"
+              ]
+            },
+            "collectionFormat": "multi"
           }
         ],
         "responses": {
@@ -13208,13 +14151,58 @@
       "get": {
         "parameters": [
           {
-            "in": "body",
-            "name": "Search",
-            "description": "",
+            "in": "query",
+            "name": "query",
+            "description": "See our help center article on [search operators](https://help.shortcut.com/hc/en-us/articles/360000046646-Search-Operators)",
             "required": true,
-            "schema": {
-              "$ref": "#/definitions/Search"
-            }
+            "minLength": 1,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "description": "The number of search results to include in a page. Minimum of 1 and maximum of 25.",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "detail",
+            "description": "The amount of detail included in each result item.\n   \"full\" will include all descriptions and comments and more fields on\n   related items such as pull requests, branches and tasks.\n   \"slim\" omits larger fulltext fields such as descriptions and comments\n   and only references related items by id.\n   The default is \"full\".",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "full",
+              "slim"
+            ]
+          },
+          {
+            "in": "query",
+            "name": "next",
+            "description": "The next page token.",
+            "required": false,
+            "x-doc-skip": true,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "entity_types",
+            "description": "A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, objective, story.",
+            "required": false,
+            "x-doc-skip": true,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "story",
+                "milestone",
+                "epic",
+                "iteration",
+                "objective"
+              ]
+            },
+            "collectionFormat": "multi"
           }
         ],
         "responses": {
@@ -13246,19 +14234,64 @@
       "get": {
         "parameters": [
           {
-            "in": "body",
-            "name": "Search",
-            "description": "",
+            "in": "query",
+            "name": "query",
+            "description": "See our help center article on [search operators](https://help.shortcut.com/hc/en-us/articles/360000046646-Search-Operators)",
             "required": true,
-            "schema": {
-              "$ref": "#/definitions/Search"
-            }
+            "minLength": 1,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "description": "The number of search results to include in a page. Minimum of 1 and maximum of 25.",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "detail",
+            "description": "The amount of detail included in each result item.\n   \"full\" will include all descriptions and comments and more fields on\n   related items such as pull requests, branches and tasks.\n   \"slim\" omits larger fulltext fields such as descriptions and comments\n   and only references related items by id.\n   The default is \"full\".",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "full",
+              "slim"
+            ]
+          },
+          {
+            "in": "query",
+            "name": "next",
+            "description": "The next page token.",
+            "required": false,
+            "x-doc-skip": true,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "entity_types",
+            "description": "A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, objective, story.",
+            "required": false,
+            "x-doc-skip": true,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "story",
+                "milestone",
+                "epic",
+                "iteration",
+                "objective"
+              ]
+            },
+            "collectionFormat": "multi"
           }
         ],
         "responses": {
           "200": {
             "schema": {
-              "$ref": "#/definitions/MilestoneSearchResults"
+              "$ref": "#/definitions/ObjectiveSearchResults"
             },
             "description": "Resource"
           },
@@ -13280,17 +14313,145 @@
         "summary": "Search Milestones"
       }
     },
+    "/api/v3/search/objectives": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "query",
+            "description": "See our help center article on [search operators](https://help.shortcut.com/hc/en-us/articles/360000046646-Search-Operators)",
+            "required": true,
+            "minLength": 1,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "description": "The number of search results to include in a page. Minimum of 1 and maximum of 25.",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "detail",
+            "description": "The amount of detail included in each result item.\n   \"full\" will include all descriptions and comments and more fields on\n   related items such as pull requests, branches and tasks.\n   \"slim\" omits larger fulltext fields such as descriptions and comments\n   and only references related items by id.\n   The default is \"full\".",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "full",
+              "slim"
+            ]
+          },
+          {
+            "in": "query",
+            "name": "next",
+            "description": "The next page token.",
+            "required": false,
+            "x-doc-skip": true,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "entity_types",
+            "description": "A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, objective, story.",
+            "required": false,
+            "x-doc-skip": true,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "story",
+                "milestone",
+                "epic",
+                "iteration",
+                "objective"
+              ]
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/ObjectiveSearchResults"
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "**Either:** (1) Schema mismatch **or** (2) Maximum of 1000 search results exceeded ",
+            "schema": {
+              "$ref": "#/definitions/MaxSearchResultsExceededError"
+            }
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "searchObjectives",
+        "description": "Search Objectives lets you search Objectives based on desired parameters. Since ordering of results can change over time (due to search ranking decay, new Objectives being created), the `next` value from the previous response can be used as the path and query string for the next page to ensure stable ordering.",
+        "summary": "Search Objectives"
+      }
+    },
     "/api/v3/search/stories": {
       "get": {
         "parameters": [
           {
-            "in": "body",
-            "name": "Search",
-            "description": "",
+            "in": "query",
+            "name": "query",
+            "description": "See our help center article on [search operators](https://help.shortcut.com/hc/en-us/articles/360000046646-Search-Operators)",
             "required": true,
-            "schema": {
-              "$ref": "#/definitions/Search"
-            }
+            "minLength": 1,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "description": "The number of search results to include in a page. Minimum of 1 and maximum of 25.",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "detail",
+            "description": "The amount of detail included in each result item.\n   \"full\" will include all descriptions and comments and more fields on\n   related items such as pull requests, branches and tasks.\n   \"slim\" omits larger fulltext fields such as descriptions and comments\n   and only references related items by id.\n   The default is \"full\".",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "full",
+              "slim"
+            ]
+          },
+          {
+            "in": "query",
+            "name": "next",
+            "description": "The next page token.",
+            "required": false,
+            "x-doc-skip": true,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "entity_types",
+            "description": "A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, objective, story.",
+            "required": false,
+            "x-doc-skip": true,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "story",
+                "milestone",
+                "epic",
+                "iteration",
+                "objective"
+              ]
+            },
+            "collectionFormat": "multi"
           }
         ],
         "responses": {
@@ -13349,7 +14510,7 @@
           }
         },
         "operationId": "createStory",
-        "description": "Create Story is used to add a new story to your Shortcut.",
+        "description": "Create Story is used to add a new story to your Shortcut Workspace.",
         "summary": "Create Story"
       }
     },
@@ -13455,6 +14616,41 @@
         "operationId": "deleteMultipleStories",
         "description": "Delete Multiple Stories allows you to delete multiple archived stories at once.",
         "summary": "Delete Multiple Stories"
+      }
+    },
+    "/api/v3/stories/from-template": {
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "CreateStoryFromTemplateParams",
+            "description": "Request parameters for creating a story from a story template. These parameters are merged with the values derived from the template.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateStoryFromTemplateParams"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "schema": {
+              "$ref": "#/definitions/Story"
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "createStoryFromTemplate",
+        "description": "Create Story From Template is used to add a new story derived from a template to your Shortcut Workspace.",
+        "summary": "Create Story From Template"
       }
     },
     "/api/v3/stories/search": {
@@ -13903,6 +15099,48 @@
         "operationId": "deleteStoryReaction",
         "description": "Delete a reaction from any story comment.",
         "summary": "Delete Story Reaction"
+      }
+    },
+    "/api/v3/stories/{story-public-id}/comments/{comment-public-id}/unlink-from-slack": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "story-public-id",
+            "description": "The ID of the Story to unlink.",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "path",
+            "name": "comment-public-id",
+            "description": "The ID of the Comment to unlink.",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "201": {
+            "schema": {
+              "$ref": "#/definitions/StoryComment"
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "unlinkCommentThreadFromSlack",
+        "description": "Unlinks a Comment from its linked Slack thread (Comment replies and Slack replies will no longer be synced)",
+        "summary": "Unlink Comment thread from Slack"
       }
     },
     "/api/v3/stories/{story-public-id}/history": {
