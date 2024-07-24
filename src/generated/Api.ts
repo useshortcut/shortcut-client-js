@@ -21,10 +21,12 @@ import {
   CreateLabelParams,
   CreateLinkedFile,
   CreateMilestone,
+  CreateObjective,
   CreateOrDeleteStoryReaction,
   CreateProject,
   CreateStories,
   CreateStoryComment,
+  CreateStoryFromTemplateParams,
   CreateStoryLink,
   CreateStoryParams,
   CreateTask,
@@ -36,31 +38,22 @@ import {
   EpicSearchResults,
   EpicSlim,
   EpicWorkflow,
-  GetEpicStories,
-  GetExternalLinkStoriesParams,
-  GetIterationStories,
-  GetLabelStories,
-  GetMember,
-  GetProjectStories,
   Group,
   History,
   Iteration,
   IterationSearchResults,
   IterationSlim,
+  KeyResult,
   Label,
   LinkedFile,
-  ListEpics,
-  ListGroupStories,
-  ListLabels,
-  ListMembers,
   MaxSearchResultsExceededError,
   Member,
   MemberInfo,
   Milestone,
-  MilestoneSearchResults,
+  Objective,
+  ObjectiveSearchResults,
   Project,
   Repository,
-  Search,
   SearchResults,
   SearchStories,
   Story,
@@ -80,9 +73,11 @@ import {
   UpdateFile,
   UpdateGroup,
   UpdateIteration,
+  UpdateKeyResult,
   UpdateLabel,
   UpdateLinkedFile,
   UpdateMilestone,
+  UpdateObjective,
   UpdateProject,
   UpdateStories,
   UpdateStory,
@@ -194,6 +189,22 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   listCategoryMilestones = (categoryPublicId: number, params: RequestParams = {}) =>
     this.request<Milestone[], void>({
       path: `/api/v3/categories/${categoryPublicId}/milestones`,
+      method: 'GET',
+      secure: true,
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description Returns a list of all Objectives with the Category.
+   *
+   * @name ListCategoryObjectives
+   * @summary List Category Objectives
+   * @request GET:/api/v3/categories/{category-public-id}/objectives
+   * @secure
+   */
+  listCategoryObjectives = (categoryPublicId: number, params: RequestParams = {}) =>
+    this.request<Milestone[], void>({
+      path: `/api/v3/categories/${categoryPublicId}/objectives`,
       method: 'GET',
       secure: true,
       format: 'json',
@@ -405,13 +416,18 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/epics
    * @secure
    */
-  listEpics = (ListEpics: ListEpics, params: RequestParams = {}) =>
+  listEpics = (
+    query?: {
+      /** A true/false boolean indicating whether to return Epics with their descriptions. */
+      includes_description?: boolean;
+    },
+    params: RequestParams = {},
+  ) =>
     this.request<EpicSlim[], void>({
       path: `/api/v3/epics`,
       method: 'GET',
-      body: ListEpics,
+      query: query,
       secure: true,
-      type: ContentType.Json,
       format: 'json',
       ...params,
     });
@@ -601,13 +617,19 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/epics/{epic-public-id}/stories
    * @secure
    */
-  listEpicStories = (epicPublicId: number, GetEpicStories: GetEpicStories, params: RequestParams = {}) =>
+  listEpicStories = (
+    epicPublicId: number,
+    query?: {
+      /** A true/false boolean indicating whether to return Stories with their descriptions. */
+      includes_description?: boolean;
+    },
+    params: RequestParams = {},
+  ) =>
     this.request<StorySlim[], void>({
       path: `/api/v3/epics/${epicPublicId}/stories`,
       method: 'GET',
-      body: GetEpicStories,
+      query: query,
       secure: true,
-      type: ContentType.Json,
       format: 'json',
       ...params,
     });
@@ -634,13 +656,22 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/external-link/stories
    * @secure
    */
-  getExternalLinkStories = (GetExternalLinkStoriesParams: GetExternalLinkStoriesParams, params: RequestParams = {}) =>
+  getExternalLinkStories = (
+    query: {
+      /**
+       * The external link associated with one or more stories.
+       * @maxLength 2048
+       * @pattern ^https?://.+$
+       */
+      external_link: string;
+    },
+    params: RequestParams = {},
+  ) =>
     this.request<StorySlim[], void>({
       path: `/api/v3/external-link/stories`,
       method: 'GET',
-      body: GetExternalLinkStoriesParams,
+      query: query,
       secure: true,
-      type: ContentType.Json,
       format: 'json',
       ...params,
     });
@@ -862,13 +893,27 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/groups/{group-public-id}/stories
    * @secure
    */
-  listGroupStories = (groupPublicId: string, ListGroupStories: ListGroupStories, params: RequestParams = {}) =>
+  listGroupStories = (
+    groupPublicId: string,
+    query?: {
+      /**
+       * The maximum number of results to return. (Defaults to 1000, max 1000)
+       * @format int64
+       */
+      limit?: number;
+      /**
+       * The offset at which to begin returning results. (Defaults to 0)
+       * @format int64
+       */
+      offset?: number;
+    },
+    params: RequestParams = {},
+  ) =>
     this.request<StorySlim[], void>({
       path: `/api/v3/groups/${groupPublicId}/stories`,
       method: 'GET',
-      body: ListGroupStories,
+      query: query,
       secure: true,
-      type: ContentType.Json,
       format: 'json',
       ...params,
     });
@@ -995,13 +1040,49 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    */
   listIterationStories = (
     iterationPublicId: number,
-    GetIterationStories: GetIterationStories,
+    query?: {
+      /** A true/false boolean indicating whether to return Stories with their descriptions. */
+      includes_description?: boolean;
+    },
     params: RequestParams = {},
   ) =>
     this.request<StorySlim[], void>({
       path: `/api/v3/iterations/${iterationPublicId}/stories`,
       method: 'GET',
-      body: GetIterationStories,
+      query: query,
+      secure: true,
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description Get Key Result returns information about a chosen Key Result.
+   *
+   * @name GetKeyResult
+   * @summary Get Key Result
+   * @request GET:/api/v3/key-results/{key-result-public-id}
+   * @secure
+   */
+  getKeyResult = (keyResultPublicId: string, params: RequestParams = {}) =>
+    this.request<KeyResult, void>({
+      path: `/api/v3/key-results/${keyResultPublicId}`,
+      method: 'GET',
+      secure: true,
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description Update Key Result allows updating a Key Result's name or initial, observed, or target values.
+   *
+   * @name UpdateKeyResult
+   * @summary Update Key Result
+   * @request PUT:/api/v3/key-results/{key-result-public-id}
+   * @secure
+   */
+  updateKeyResult = (keyResultPublicId: string, UpdateKeyResult: UpdateKeyResult, params: RequestParams = {}) =>
+    this.request<KeyResult, void>({
+      path: `/api/v3/key-results/${keyResultPublicId}`,
+      method: 'PUT',
+      body: UpdateKeyResult,
       secure: true,
       type: ContentType.Json,
       format: 'json',
@@ -1015,13 +1096,18 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/labels
    * @secure
    */
-  listLabels = (ListLabels: ListLabels, params: RequestParams = {}) =>
+  listLabels = (
+    query?: {
+      /** A true/false boolean indicating if the slim versions of the Label should be returned. */
+      slim?: boolean;
+    },
+    params: RequestParams = {},
+  ) =>
     this.request<Label[], void>({
       path: `/api/v3/labels`,
       method: 'GET',
-      body: ListLabels,
+      query: query,
       secure: true,
-      type: ContentType.Json,
       format: 'json',
       ...params,
     });
@@ -1116,13 +1202,19 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/labels/{label-public-id}/stories
    * @secure
    */
-  listLabelStories = (labelPublicId: number, GetLabelStories: GetLabelStories, params: RequestParams = {}) =>
+  listLabelStories = (
+    labelPublicId: number,
+    query?: {
+      /** A true/false boolean indicating whether to return Stories with their descriptions. */
+      includes_description?: boolean;
+    },
+    params: RequestParams = {},
+  ) =>
     this.request<StorySlim[], void>({
       path: `/api/v3/labels/${labelPublicId}/stories`,
       method: 'GET',
-      body: GetLabelStories,
+      query: query,
       secure: true,
-      type: ContentType.Json,
       format: 'json',
       ...params,
     });
@@ -1233,13 +1325,21 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/members
    * @secure
    */
-  listMembers = (ListMembers: ListMembers, params: RequestParams = {}) =>
+  listMembers = (
+    query?: {
+      /**
+       * The unique ID of the Organization to limit the list to.
+       * @format uuid
+       */
+      'org-public-id'?: string;
+    },
+    params: RequestParams = {},
+  ) =>
     this.request<Member[], void>({
       path: `/api/v3/members`,
       method: 'GET',
-      body: ListMembers,
+      query: query,
       secure: true,
-      type: ContentType.Json,
       format: 'json',
       ...params,
     });
@@ -1251,18 +1351,27 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/members/{member-public-id}
    * @secure
    */
-  getMember = (memberPublicId: string, GetMember: GetMember, params: RequestParams = {}) =>
+  getMember = (
+    memberPublicId: string,
+    query?: {
+      /**
+       * The unique ID of the Organization to limit the lookup to.
+       * @format uuid
+       */
+      'org-public-id'?: string;
+    },
+    params: RequestParams = {},
+  ) =>
     this.request<Member, void>({
       path: `/api/v3/members/${memberPublicId}`,
       method: 'GET',
-      body: GetMember,
+      query: query,
       secure: true,
-      type: ContentType.Json,
       format: 'json',
       ...params,
     });
   /**
-   * @description List Milestones returns a list of all Milestones and their attributes.
+   * @description (Deprecated: Use 'List Objectives') List Milestones returns a list of all Milestones and their attributes.
    *
    * @name ListMilestones
    * @summary List Milestones
@@ -1278,7 +1387,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description Create Milestone allows you to create a new Milestone in Shortcut.
+   * @description (Deprecated: Use 'Create Objective') Create Milestone allows you to create a new Milestone in Shortcut.
    *
    * @name CreateMilestone
    * @summary Create Milestone
@@ -1296,7 +1405,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description Get Milestone returns information about a chosen Milestone.
+   * @description (Deprecated: Use 'Get Objective') Get Milestone returns information about a chosen Milestone.
    *
    * @name GetMilestone
    * @summary Get Milestone
@@ -1312,7 +1421,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description Update Milestone can be used to update Milestone properties.
+   * @description (Deprecated: Use 'Update Objective') Update Milestone can be used to update Milestone properties.
    *
    * @name UpdateMilestone
    * @summary Update Milestone
@@ -1330,7 +1439,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description Delete Milestone can be used to delete any Milestone.
+   * @description (Deprecated: Use 'Delete Objective') Delete Milestone can be used to delete any Milestone.
    *
    * @name DeleteMilestone
    * @summary Delete Milestone
@@ -1345,7 +1454,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description List all of the Epics within the Milestone.
+   * @description (Deprecated: Use 'List Objective Epics') List all of the Epics within the Milestone.
    *
    * @name ListMilestoneEpics
    * @summary List Milestone Epics
@@ -1355,6 +1464,105 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   listMilestoneEpics = (milestonePublicId: number, params: RequestParams = {}) =>
     this.request<EpicSlim[], void>({
       path: `/api/v3/milestones/${milestonePublicId}/epics`,
+      method: 'GET',
+      secure: true,
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description List Objectives returns a list of all Objectives and their attributes.
+   *
+   * @name ListObjectives
+   * @summary List Objectives
+   * @request GET:/api/v3/objectives
+   * @secure
+   */
+  listObjectives = (params: RequestParams = {}) =>
+    this.request<Objective[], void>({
+      path: `/api/v3/objectives`,
+      method: 'GET',
+      secure: true,
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description Create Objective allows you to create a new Objective in Shortcut.
+   *
+   * @name CreateObjective
+   * @summary Create Objective
+   * @request POST:/api/v3/objectives
+   * @secure
+   */
+  createObjective = (CreateObjective: CreateObjective, params: RequestParams = {}) =>
+    this.request<Objective, void | UnusableEntitlementError>({
+      path: `/api/v3/objectives`,
+      method: 'POST',
+      body: CreateObjective,
+      secure: true,
+      type: ContentType.Json,
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description Get Objective returns information about a chosen Objective.
+   *
+   * @name GetObjective
+   * @summary Get Objective
+   * @request GET:/api/v3/objectives/{objective-public-id}
+   * @secure
+   */
+  getObjective = (objectivePublicId: number, params: RequestParams = {}) =>
+    this.request<Objective, void>({
+      path: `/api/v3/objectives/${objectivePublicId}`,
+      method: 'GET',
+      secure: true,
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description Update Objective can be used to update Objective properties.
+   *
+   * @name UpdateObjective
+   * @summary Update Objective
+   * @request PUT:/api/v3/objectives/{objective-public-id}
+   * @secure
+   */
+  updateObjective = (objectivePublicId: number, UpdateObjective: UpdateObjective, params: RequestParams = {}) =>
+    this.request<Objective, void>({
+      path: `/api/v3/objectives/${objectivePublicId}`,
+      method: 'PUT',
+      body: UpdateObjective,
+      secure: true,
+      type: ContentType.Json,
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description Delete Objective can be used to delete any Objective.
+   *
+   * @name DeleteObjective
+   * @summary Delete Objective
+   * @request DELETE:/api/v3/objectives/{objective-public-id}
+   * @secure
+   */
+  deleteObjective = (objectivePublicId: number, params: RequestParams = {}) =>
+    this.request<void, void>({
+      path: `/api/v3/objectives/${objectivePublicId}`,
+      method: 'DELETE',
+      secure: true,
+      ...params,
+    });
+  /**
+   * @description List all of the Epics within the Objective.
+   *
+   * @name ListObjectiveEpics
+   * @summary List Objective Epics
+   * @request GET:/api/v3/objectives/{objective-public-id}/epics
+   * @secure
+   */
+  listObjectiveEpics = (objectivePublicId: number, params: RequestParams = {}) =>
+    this.request<EpicSlim[], void>({
+      path: `/api/v3/objectives/${objectivePublicId}/epics`,
       method: 'GET',
       secure: true,
       format: 'json',
@@ -1451,13 +1659,19 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/projects/{project-public-id}/stories
    * @secure
    */
-  listStories = (projectPublicId: number, GetProjectStories: GetProjectStories, params: RequestParams = {}) =>
+  listStories = (
+    projectPublicId: number,
+    query?: {
+      /** A true/false boolean indicating whether to return Stories with their descriptions. */
+      includes_description?: boolean;
+    },
+    params: RequestParams = {},
+  ) =>
     this.request<StorySlim[], void>({
       path: `/api/v3/projects/${projectPublicId}/stories`,
       method: 'GET',
-      body: GetProjectStories,
+      query: query,
       secure: true,
-      type: ContentType.Json,
       format: 'json',
       ...params,
     });
@@ -1501,11 +1715,38 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/search
    * @secure
    */
-  search = (Search: Search, params: RequestParams = {}) =>
+  search = (
+    query: {
+      /**
+       * See our help center article on [search operators](https://help.shortcut.com/hc/en-us/articles/360000046646-Search-Operators)
+       * @minLength 1
+       */
+      query: string;
+      /**
+       * The number of search results to include in a page. Minimum of 1 and maximum of 25.
+       * @format int64
+       */
+      page_size?: number;
+      /**
+       * The amount of detail included in each result item.
+       *    "full" will include all descriptions and comments and more fields on
+       *    related items such as pull requests, branches and tasks.
+       *    "slim" omits larger fulltext fields such as descriptions and comments
+       *    and only references related items by id.
+       *    The default is "full".
+       */
+      detail?: 'full' | 'slim';
+      /** The next page token. */
+      next?: string;
+      /** A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, objective, story. */
+      entity_types?: ('story' | 'milestone' | 'epic' | 'iteration' | 'objective')[];
+    },
+    params: RequestParams = {},
+  ) =>
     this.request<SearchResults, MaxSearchResultsExceededError | void>({
       path: `/api/v3/search`,
       method: 'GET',
-      body: Search,
+      query: query,
       secure: true,
       format: 'json',
       ...params,
@@ -1518,11 +1759,38 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/search/epics
    * @secure
    */
-  searchEpics = (Search: Search, params: RequestParams = {}) =>
+  searchEpics = (
+    query: {
+      /**
+       * See our help center article on [search operators](https://help.shortcut.com/hc/en-us/articles/360000046646-Search-Operators)
+       * @minLength 1
+       */
+      query: string;
+      /**
+       * The number of search results to include in a page. Minimum of 1 and maximum of 25.
+       * @format int64
+       */
+      page_size?: number;
+      /**
+       * The amount of detail included in each result item.
+       *    "full" will include all descriptions and comments and more fields on
+       *    related items such as pull requests, branches and tasks.
+       *    "slim" omits larger fulltext fields such as descriptions and comments
+       *    and only references related items by id.
+       *    The default is "full".
+       */
+      detail?: 'full' | 'slim';
+      /** The next page token. */
+      next?: string;
+      /** A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, objective, story. */
+      entity_types?: ('story' | 'milestone' | 'epic' | 'iteration' | 'objective')[];
+    },
+    params: RequestParams = {},
+  ) =>
     this.request<EpicSearchResults, MaxSearchResultsExceededError | void>({
       path: `/api/v3/search/epics`,
       method: 'GET',
-      body: Search,
+      query: query,
       secure: true,
       format: 'json',
       ...params,
@@ -1535,11 +1803,38 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/search/iterations
    * @secure
    */
-  searchIterations = (Search: Search, params: RequestParams = {}) =>
+  searchIterations = (
+    query: {
+      /**
+       * See our help center article on [search operators](https://help.shortcut.com/hc/en-us/articles/360000046646-Search-Operators)
+       * @minLength 1
+       */
+      query: string;
+      /**
+       * The number of search results to include in a page. Minimum of 1 and maximum of 25.
+       * @format int64
+       */
+      page_size?: number;
+      /**
+       * The amount of detail included in each result item.
+       *    "full" will include all descriptions and comments and more fields on
+       *    related items such as pull requests, branches and tasks.
+       *    "slim" omits larger fulltext fields such as descriptions and comments
+       *    and only references related items by id.
+       *    The default is "full".
+       */
+      detail?: 'full' | 'slim';
+      /** The next page token. */
+      next?: string;
+      /** A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, objective, story. */
+      entity_types?: ('story' | 'milestone' | 'epic' | 'iteration' | 'objective')[];
+    },
+    params: RequestParams = {},
+  ) =>
     this.request<IterationSearchResults, MaxSearchResultsExceededError | void>({
       path: `/api/v3/search/iterations`,
       method: 'GET',
-      body: Search,
+      query: query,
       secure: true,
       format: 'json',
       ...params,
@@ -1552,11 +1847,82 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/search/milestones
    * @secure
    */
-  searchMilestones = (Search: Search, params: RequestParams = {}) =>
-    this.request<MilestoneSearchResults, MaxSearchResultsExceededError | void>({
+  searchMilestones = (
+    query: {
+      /**
+       * See our help center article on [search operators](https://help.shortcut.com/hc/en-us/articles/360000046646-Search-Operators)
+       * @minLength 1
+       */
+      query: string;
+      /**
+       * The number of search results to include in a page. Minimum of 1 and maximum of 25.
+       * @format int64
+       */
+      page_size?: number;
+      /**
+       * The amount of detail included in each result item.
+       *    "full" will include all descriptions and comments and more fields on
+       *    related items such as pull requests, branches and tasks.
+       *    "slim" omits larger fulltext fields such as descriptions and comments
+       *    and only references related items by id.
+       *    The default is "full".
+       */
+      detail?: 'full' | 'slim';
+      /** The next page token. */
+      next?: string;
+      /** A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, objective, story. */
+      entity_types?: ('story' | 'milestone' | 'epic' | 'iteration' | 'objective')[];
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<ObjectiveSearchResults, MaxSearchResultsExceededError | void>({
       path: `/api/v3/search/milestones`,
       method: 'GET',
-      body: Search,
+      query: query,
+      secure: true,
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description Search Objectives lets you search Objectives based on desired parameters. Since ordering of results can change over time (due to search ranking decay, new Objectives being created), the `next` value from the previous response can be used as the path and query string for the next page to ensure stable ordering.
+   *
+   * @name SearchObjectives
+   * @summary Search Objectives
+   * @request GET:/api/v3/search/objectives
+   * @secure
+   */
+  searchObjectives = (
+    query: {
+      /**
+       * See our help center article on [search operators](https://help.shortcut.com/hc/en-us/articles/360000046646-Search-Operators)
+       * @minLength 1
+       */
+      query: string;
+      /**
+       * The number of search results to include in a page. Minimum of 1 and maximum of 25.
+       * @format int64
+       */
+      page_size?: number;
+      /**
+       * The amount of detail included in each result item.
+       *    "full" will include all descriptions and comments and more fields on
+       *    related items such as pull requests, branches and tasks.
+       *    "slim" omits larger fulltext fields such as descriptions and comments
+       *    and only references related items by id.
+       *    The default is "full".
+       */
+      detail?: 'full' | 'slim';
+      /** The next page token. */
+      next?: string;
+      /** A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, objective, story. */
+      entity_types?: ('story' | 'milestone' | 'epic' | 'iteration' | 'objective')[];
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<ObjectiveSearchResults, MaxSearchResultsExceededError | void>({
+      path: `/api/v3/search/objectives`,
+      method: 'GET',
+      query: query,
       secure: true,
       format: 'json',
       ...params,
@@ -1569,17 +1935,44 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/search/stories
    * @secure
    */
-  searchStories = (Search: Search, params: RequestParams = {}) =>
+  searchStories = (
+    query: {
+      /**
+       * See our help center article on [search operators](https://help.shortcut.com/hc/en-us/articles/360000046646-Search-Operators)
+       * @minLength 1
+       */
+      query: string;
+      /**
+       * The number of search results to include in a page. Minimum of 1 and maximum of 25.
+       * @format int64
+       */
+      page_size?: number;
+      /**
+       * The amount of detail included in each result item.
+       *    "full" will include all descriptions and comments and more fields on
+       *    related items such as pull requests, branches and tasks.
+       *    "slim" omits larger fulltext fields such as descriptions and comments
+       *    and only references related items by id.
+       *    The default is "full".
+       */
+      detail?: 'full' | 'slim';
+      /** The next page token. */
+      next?: string;
+      /** A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, objective, story. */
+      entity_types?: ('story' | 'milestone' | 'epic' | 'iteration' | 'objective')[];
+    },
+    params: RequestParams = {},
+  ) =>
     this.request<StorySearchResults, MaxSearchResultsExceededError | void>({
       path: `/api/v3/search/stories`,
       method: 'GET',
-      body: Search,
+      query: query,
       secure: true,
       format: 'json',
       ...params,
     });
   /**
-   * @description Create Story is used to add a new story to your Shortcut.
+   * @description Create Story is used to add a new story to your Shortcut Workspace.
    *
    * @name CreateStory
    * @summary Create Story
@@ -1647,6 +2040,27 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       body: DeleteStories,
       secure: true,
       type: ContentType.Json,
+      ...params,
+    });
+  /**
+   * @description Create Story From Template is used to add a new story derived from a template to your Shortcut Workspace.
+   *
+   * @name CreateStoryFromTemplate
+   * @summary Create Story From Template
+   * @request POST:/api/v3/stories/from-template
+   * @secure
+   */
+  createStoryFromTemplate = (
+    CreateStoryFromTemplateParams: CreateStoryFromTemplateParams,
+    params: RequestParams = {},
+  ) =>
+    this.request<Story, void>({
+      path: `/api/v3/stories/from-template`,
+      method: 'POST',
+      body: CreateStoryFromTemplateParams,
+      secure: true,
+      type: ContentType.Json,
+      format: 'json',
       ...params,
     });
   /**
@@ -1845,6 +2259,22 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       method: 'DELETE',
       body: CreateOrDeleteStoryReaction,
       secure: true,
+      ...params,
+    });
+  /**
+   * @description Unlinks a Comment from its linked Slack thread (Comment replies and Slack replies will no longer be synced)
+   *
+   * @name UnlinkCommentThreadFromSlack
+   * @summary Unlink Comment thread from Slack
+   * @request POST:/api/v3/stories/{story-public-id}/comments/{comment-public-id}/unlink-from-slack
+   * @secure
+   */
+  unlinkCommentThreadFromSlack = (storyPublicId: number, commentPublicId: number, params: RequestParams = {}) =>
+    this.request<StoryComment, void>({
+      path: `/api/v3/stories/${storyPublicId}/comments/${commentPublicId}/unlink-from-slack`,
+      method: 'POST',
+      secure: true,
+      format: 'json',
       ...params,
     });
   /**
