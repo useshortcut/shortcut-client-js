@@ -9,6 +9,22 @@
  * ---------------------------------------------------------------
  */
 
+/** Request parameters for specifying how to pre-populate a task through a template. */
+export interface BaseTaskParams {
+  /**
+   * The Task description.
+   * @minLength 1
+   * @maxLength 2048
+   */
+  description: string;
+  /** True/false boolean indicating whether the Task is completed. Defaults to false. */
+  complete?: boolean;
+  /** An array of UUIDs for any members you want to add as Owners on this new Task. */
+  owner_ids?: string[];
+  /** This field can be set to another unique ID. In the case that the Task has been imported from another tool, the ID in the other tool can be indicated here. */
+  external_id?: string;
+}
+
 export interface BasicWorkspaceInfo {
   url_slug: string;
   estimate_scale: number[];
@@ -52,7 +68,7 @@ export interface Branch {
   created_at?: string | null;
 }
 
-/** A Category can be used to associate Milestones. */
+/** A Category can be used to associate Objectives. */
 export interface Category {
   /** A true/false boolean indicating if the Category has been archived. */
   archived: boolean;
@@ -69,7 +85,7 @@ export interface Category {
   name: string;
   /** The Global ID of the Category. */
   global_id: string;
-  /** The type of entity this Category is associated with; currently Milestone is the only type of Category. */
+  /** The type of entity this Category is associated with; currently Milestone or Objective is the only type of Category. */
   type: string;
   /**
    * The time/date that the Category was updated.
@@ -154,11 +170,11 @@ export interface CreateCategory {
    * @minLength 1
    */
   external_id?: string;
-  /** The type of entity this Category is associated with; currently Milestone is the only type of Category. */
-  type: 'milestone';
+  /** The type of entity this Category is associated with; currently Milestone or Objective is the only type of Category. */
+  type?: any;
 }
 
-/** Request parameters for creating a Category with a Milestone. */
+/** Request parameters for creating a Category with a Objective. */
 export interface CreateCategoryParams {
   /**
    * The name of the new Category.
@@ -205,7 +221,7 @@ export interface CreateCommentComment {
   external_id?: string;
 }
 
-/** Request paramaters for creating an entirely new entity template. */
+/** Request parameters for creating an entirely new entity template. */
 export interface CreateEntityTemplate {
   /**
    * The name of the new entity template
@@ -234,6 +250,8 @@ export interface CreateEpic {
    * @format date-time
    */
   completed_at_override?: string;
+  /** An array of IDs for Objectives to which this Epic is related. */
+  objective_ids?: number[];
   /**
    * The Epic's name.
    * @minLength 1
@@ -248,7 +266,7 @@ export interface CreateEpic {
   /** `Deprecated` The Epic's state (to do, in progress, or done); will be ignored when `epic_state_id` is set. */
   state?: 'in progress' | 'to do' | 'done';
   /**
-   * The ID of the Milestone this Epic is related to.
+   * `Deprecated` The ID of the Milestone this Epic is related to. Use `objective_ids`.
    * @format int64
    */
   milestone_id?: number | null;
@@ -268,7 +286,7 @@ export interface CreateEpic {
    */
   started_at_override?: string;
   /**
-   * The ID of the group to associate with the epic.
+   * `Deprecated` The ID of the group to associate with the epic. Use `group_ids`.
    * @format uuid
    */
   group_id?: string | null;
@@ -279,6 +297,8 @@ export interface CreateEpic {
   updated_at?: string;
   /** An array of UUIDs for any Members you want to add as Followers on this new Epic. */
   follower_ids?: string[];
+  /** An array of UUIDS for Groups to which this Epic is related. */
+  group_ids?: string[];
   /** An array of UUIDs for any members you want to add as Owners on this new Epic. */
   owner_ids?: string[];
   /** This field can be set to another unique ID. In the case that the Epic has been imported from another tool, the ID in the other tool can be indicated here. */
@@ -499,6 +519,34 @@ export interface CreateMilestone {
   categories?: CreateCategoryParams[];
 }
 
+export interface CreateObjective {
+  /**
+   * The name of the Objective.
+   * @minLength 1
+   * @maxLength 256
+   */
+  name: string;
+  /**
+   * The Objective's description.
+   * @maxLength 100000
+   */
+  description?: string;
+  /** The workflow state that the Objective is in. */
+  state?: 'in progress' | 'to do' | 'done';
+  /**
+   * A manual override for the time/date the Objective was started.
+   * @format date-time
+   */
+  started_at_override?: string;
+  /**
+   * A manual override for the time/date the Objective was completed.
+   * @format date-time
+   */
+  completed_at_override?: string;
+  /** An array of IDs of Categories attached to the Objective. */
+  categories?: CreateCategoryParams[];
+}
+
 export interface CreateOrDeleteStoryReaction {
   /** The emoji short-code to add / remove. E.g. `:thumbsup::skin-tone-4:`. */
   emoji: string;
@@ -563,12 +611,20 @@ export interface CreateStories {
 
 export interface CreateStoryComment {
   /**
+   * The comment text.
+   * @maxLength 100000
+   */
+  text: string;
+  /**
    * The Member ID of the Comment's author. Defaults to the user identified by the API token.
    * @format uuid
    */
   author_id?: string;
-  /** Marks the comment as a blocker that can be surfaced to permissions or teams mentioned in the comment. Can only be used on a top-level comment. */
-  blocker?: boolean;
+  /**
+   * Defaults to the time/date the comment is created, but can be set to reflect another date.
+   * @format date-time
+   */
+  created_at?: string;
   /**
    * Defaults to the time/date the comment is last updated, but can be set to reflect another date.
    * @format date-time
@@ -581,18 +637,6 @@ export interface CreateStoryComment {
    * @format int64
    */
   parent_id?: number | null;
-  /** Marks the comment as an unblocker to its  blocker parent. Can only be set on a threaded comment who has a parent with `blocker` set. */
-  unblocks_parent?: boolean;
-  /**
-   * Defaults to the time/date the comment is created, but can be set to reflect another date.
-   * @format date-time
-   */
-  created_at?: string;
-  /**
-   * The comment text.
-   * @maxLength 100000
-   */
-  text: string;
 }
 
 /** Request parameters for creating a Comment on a Shortcut Story. */
@@ -624,36 +668,23 @@ export interface CreateStoryCommentParams {
    * @format int64
    */
   parent_id?: number | null;
-  /** Marks the comment as a blocker that can be surfaced to permissions or teams mentioned in the comment. Can only be used on a top-level comment. */
-  blocker?: boolean;
-  /** Marks the comment as an unblocker to its  blocker parent. Can only be set on a threaded comment who has a parent with `blocker` set. */
-  unblocks_parent?: boolean;
 }
 
 /** A map of story attributes this template populates. */
 export interface CreateStoryContents {
   /** The description of the story. */
   description?: string;
-  /** A string description of this resource. */
-  entity_type?: string;
   /** An array of labels to be populated by the template. */
   labels?: CreateLabelParams[];
   /** The type of story (feature, bug, chore). */
   story_type?: string;
   /** An array of maps specifying a CustomField ID and CustomFieldEnumValue ID that represents an assertion of some value for a CustomField. */
   custom_fields?: CustomFieldValueParams[];
-  /** An array of linked files attached to the story. */
-  linked_files?: LinkedFile[];
   /**
    * An array of the attached file IDs to be populated.
    * @uniqueItems true
    */
   file_ids?: number[];
-  /**
-   * The ID of the workflow.
-   * @format int64
-   */
-  workflow_id?: number | null;
   /** The name of the story. */
   name?: string;
   /**
@@ -669,19 +700,17 @@ export interface CreateStoryContents {
    */
   iteration_id?: number | null;
   /** An array of tasks to be populated by the template. */
-  tasks?: EntityTemplateTask[];
-  /** An array of label ids attached to the story. */
-  label_ids?: number[];
+  tasks?: BaseTaskParams[];
   /**
    * The ID of the group to be populated.
    * @format uuid
    */
   group_id?: string | null;
   /**
-   * The ID of the workflow state the story is currently in.
+   * The ID of the workflow state to be populated.
    * @format int64
    */
-  workflow_state_id?: number;
+  workflow_state_id?: number | null;
   /** An array of UUIDs for any Members listed as Followers. */
   follower_ids?: string[];
   /** An array of UUIDs of the owners of this story. */
@@ -691,8 +720,6 @@ export interface CreateStoryContents {
    * @format int64
    */
   estimate?: number | null;
-  /** An array of files attached to the story. */
-  files?: UploadedFile[];
   /**
    * The ID of the project the story belongs to.
    * @format int64
@@ -708,6 +735,201 @@ export interface CreateStoryContents {
    * @format date-time
    */
   deadline?: string | null;
+}
+
+/** Request parameters for creating a story from a story template. These parameters are merged with the values derived from the template. */
+export interface CreateStoryFromTemplateParams {
+  /**
+   * The description of the story.
+   * @maxLength 100000
+   */
+  description?: string;
+  /** Controls the story's archived state. */
+  archived?: boolean;
+  /** An array of story links attached to the story. */
+  story_links?: CreateStoryLinkParams[];
+  /** An array of labels attached to the story. */
+  labels?: CreateLabelParams[];
+  /**
+   * An array of External Links associated with this story. These will be added to any links provided by the template. Cannot be used in conjunction with `external_links`.
+   * @uniqueItems true
+   */
+  external_links_add?: string[];
+  /** The type of story (feature, bug, chore). */
+  story_type?: 'feature' | 'chore' | 'bug';
+  /** A map specifying a CustomField ID and CustomFieldEnumValue ID that represents an assertion of some value for a CustomField. */
+  custom_fields?: CustomFieldValueParams[];
+  /** One of "first" or "last". This can be used to move the given story to the first or last position in the workflow state. */
+  move_to?: 'last' | 'first';
+  /**
+   * An array of IDs of files attached to the story.
+   * @uniqueItems true
+   */
+  file_ids?: number[];
+  /**
+   * Given this story was converted from a task in another story, this is the original task ID that was converted to this story.
+   * @format int64
+   */
+  source_task_id?: number | null;
+  /**
+   * A manual override for the time/date the Story was completed.
+   * @format date-time
+   */
+  completed_at_override?: string;
+  /**
+   * The name of the story. Must be provided if the template does not provide a name.
+   * @minLength 1
+   * @maxLength 512
+   */
+  name?: string;
+  /**
+   * An array of IDs of files attached to the story in addition to files from the template. Cannot be used in conjunction with `file_ids`.
+   * @uniqueItems true
+   */
+  file_ids_add?: number[];
+  /**
+   * An array of IDs of files removed from files from the template. Cannot be used in conjunction with `file_ids`.
+   * @uniqueItems true
+   */
+  file_ids_remove?: number[];
+  /** An array of comments to add to the story. */
+  comments?: CreateStoryCommentParams[];
+  /**
+   * The UUIDs of the new followers to be added in addition to followers from the template. Cannot be used in conjunction with `follower_ids.`
+   * @uniqueItems true
+   */
+  follower_ids_add?: string[];
+  /**
+   * The ID of the epic the story belongs to.
+   * @format int64
+   */
+  epic_id?: number | null;
+  /**
+   * The id of the story template used to create this story.
+   * @format uuid
+   */
+  story_template_id: string;
+  /** An array of External Links associated with this story. */
+  external_links?: string[];
+  /**
+   * The UUIDs of the new followers to be removed from followers from the template. Cannot be used in conjunction with `follower_ids`.
+   * @uniqueItems true
+   */
+  follower_ids_remove?: string[];
+  /**
+   * An array of IDs of linked files removed from files from the template. Cannot be used in conjunction with `linked_files.`
+   * @uniqueItems true
+   */
+  linked_file_ids_remove?: number[];
+  /**
+   * The ID of the member that requested the story.
+   * @format uuid
+   */
+  requested_by_id?: string;
+  /**
+   * The ID of the iteration the story belongs to.
+   * @format int64
+   */
+  iteration_id?: number | null;
+  /**
+   * A map specifying a CustomField ID. These will be removed from any fields provided by the template. Cannot be used in conjunction with `custom_fields`.
+   * @uniqueItems true
+   */
+  custom_fields_remove?: RemoveCustomFieldParams[];
+  /** An array of tasks connected to the story. */
+  tasks?: CreateTaskParams[];
+  /**
+   * A manual override for the time/date the Story was started.
+   * @format date-time
+   */
+  started_at_override?: string;
+  /**
+   * An array of labels attached to the story in addition to the labels provided by the template. Cannot be used in conjunction with `labels`.
+   * @uniqueItems true
+   */
+  labels_add?: CreateLabelParams[];
+  /**
+   * The id of the group to associate with this story.
+   * @format uuid
+   */
+  group_id?: string | null;
+  /**
+   * The ID of the workflow state the story will be in.
+   * @format int64
+   */
+  workflow_state_id?: number;
+  /**
+   * The time/date the Story was updated.
+   * @format date-time
+   */
+  updated_at?: string;
+  /**
+   * An array of UUIDs of the followers of this story.
+   * @uniqueItems true
+   */
+  follower_ids?: string[];
+  /**
+   * An array of UUIDs of the owners of this story.
+   * @uniqueItems true
+   */
+  owner_ids?: string[];
+  /** This field can be set to another unique ID. In the case that the Story has been imported from another tool, the ID in the other tool can be indicated here. */
+  external_id?: string;
+  /**
+   * The numeric point estimate of the story. Can also be null, which means unestimated.
+   * @format int64
+   */
+  estimate?: number | null;
+  /**
+   * The UUIDs of the new owners to be removed from owners from the template. Cannot be used in conjunction with `owners`.
+   * @uniqueItems true
+   */
+  owner_ids_remove?: string[];
+  /**
+   * A map specifying a CustomField ID and CustomFieldEnumValue ID that represents an assertion of some value for a CustomField. These will be added to any fields provided by the template. Cannot be used in conjunction with `custom_fields`.
+   * @uniqueItems true
+   */
+  custom_fields_add?: CustomFieldValueParams[];
+  /**
+   * The ID of the project the story belongs to.
+   * @format int64
+   */
+  project_id?: number | null;
+  /**
+   * An array of IDs of linked files attached to the story in addition to files from the template. Cannot be used in conjunction with `linked_files`.
+   * @uniqueItems true
+   */
+  linked_file_ids_add?: number[];
+  /**
+   * An array of IDs of linked files attached to the story.
+   * @uniqueItems true
+   */
+  linked_file_ids?: number[];
+  /**
+   * An array of labels to remove from the labels provided by the template. Cannot be used in conjunction with `labels`.
+   * @uniqueItems true
+   */
+  labels_remove?: RemoveLabelParams[];
+  /**
+   * The due date of the story.
+   * @format date-time
+   */
+  deadline?: string | null;
+  /**
+   * The UUIDs of the new owners to be added in addition to owners from the template. Cannot be used in conjunction with `owners`.
+   * @uniqueItems true
+   */
+  owner_ids_add?: string[];
+  /**
+   * The time/date the Story was created.
+   * @format date-time
+   */
+  created_at?: string;
+  /**
+   * An array of External Links associated with this story. These will be removed from any links provided by the template. Cannot be used in conjunction with `external_links`.
+   * @uniqueItems true
+   */
+  external_links_remove?: string[];
 }
 
 export interface CreateStoryLink {
@@ -765,6 +987,11 @@ export interface CreateStoryParams {
    * @uniqueItems true
    */
   file_ids?: number[];
+  /**
+   * Given this story was converted from a task in another story, this is the original task ID that was converted to this story.
+   * @format int64
+   */
+  source_task_id?: number | null;
   /**
    * A manual override for the time/date the Story was completed.
    * @format date-time
@@ -872,6 +1099,8 @@ export interface CreateTask {
   complete?: boolean;
   /** An array of UUIDs for any members you want to add as Owners on this new Task. */
   owner_ids?: string[];
+  /** This field can be set to another unique ID. In the case that the Task has been imported from another tool, the ID in the other tool can be indicated here. */
+  external_id?: string;
   /**
    * Defaults to the time/date the Task is created but can be set to reflect another creation time/date.
    * @format date-time
@@ -882,8 +1111,6 @@ export interface CreateTask {
    * @format date-time
    */
   updated_at?: string;
-  /** This field can be set to another unique ID. In the case that the Task has been imported from another tool, the ID in the other tool can be indicated here. */
-  external_id?: string;
 }
 
 /** Request parameters for creating a Task on a Story. */
@@ -898,6 +1125,8 @@ export interface CreateTaskParams {
   complete?: boolean;
   /** An array of UUIDs for any members you want to add as Owners on this new Task. */
   owner_ids?: string[];
+  /** This field can be set to another unique ID. In the case that the Task has been imported from another tool, the ID in the other tool can be indicated here. */
+  external_id?: string;
   /**
    * Defaults to the time/date the Task is created but can be set to reflect another creation time/date.
    * @format date-time
@@ -908,8 +1137,6 @@ export interface CreateTaskParams {
    * @format date-time
    */
   updated_at?: string;
-  /** This field can be set to another unique ID. In the case that the Task has been imported from another tool, the ID in the other tool can be indicated here. */
-  external_id?: string;
 }
 
 export interface CustomField {
@@ -1057,23 +1284,7 @@ export interface EntityTemplate {
   story_contents: StoryContents;
 }
 
-/** Request parameters for specifying how to pre-populate a task through a template. */
-export interface EntityTemplateTask {
-  /**
-   * The Task description.
-   * @minLength 1
-   * @maxLength 2048
-   */
-  description: string;
-  /** True/false boolean indicating whether the Task is completed. Defaults to false. */
-  complete?: boolean;
-  /** An array of UUIDs for any members you want to add as Owners on this new Task. */
-  owner_ids?: string[];
-  /** This field can be set to another unique ID. In the case that the Task has been imported from another tool, the ID in the other tool can be indicated here. */
-  external_id?: string;
-}
-
-/** An Epic is a collection of stories that together might make up a release, a milestone, or some other large initiative that you are working on. */
+/** An Epic is a collection of stories that together might make up a release, a objective, or some other large initiative that you are working on. */
 export interface Epic {
   /** The Shortcut application url for the Epic. */
   app_url: string;
@@ -1087,7 +1298,7 @@ export interface Epic {
   entity_type: string;
   /** An array of Labels attached to the Epic. */
   labels: LabelSlim[];
-  /** Deprecated: use member_mention_ids. */
+  /** `Deprecated:` use `member_mention_ids`. */
   mention_ids: string[];
   /** An array of Member IDs that have been mentioned in the Epic description. */
   member_mention_ids: string[];
@@ -1120,6 +1331,8 @@ export interface Epic {
    * @format date-time
    */
   completed_at?: string | null;
+  /** An array of IDs for Objectives to which this epic is related. */
+  objective_ids: number[];
   /** The name of the Epic. */
   name: string;
   global_id: string;
@@ -1137,7 +1350,7 @@ export interface Epic {
   /** `Deprecated` The workflow state that the Epic is in. */
   state: string;
   /**
-   * The ID of the Milestone this Epic is related to.
+   * `Deprecated` The ID of the Objective this Epic is related to. Use `objective_ids`.
    * @format int64
    */
   milestone_id?: number | null;
@@ -1158,7 +1371,10 @@ export interface Epic {
    * @format date-time
    */
   started_at_override?: string | null;
-  /** @format uuid */
+  /**
+   * `Deprecated` The ID of the group to associate with the epic. Use `group_ids`.
+   * @format uuid
+   */
   group_id?: string | null;
   /**
    * The time/date the Epic was updated.
@@ -1174,6 +1390,8 @@ export interface Epic {
   productboard_id?: string | null;
   /** An array of UUIDs for any Members you want to add as Followers on this Epic. */
   follower_ids: string[];
+  /** An array of UUIDS for Groups to which this Epic is related. */
+  group_ids: string[];
   /** An array of UUIDs for any members you want to add as Owners on this new Epic. */
   owner_ids: string[];
   /** This field can be set to another unique ID. In the case that the Epic has been imported from another tool, the ID in the other tool can be indicated here. */
@@ -1231,7 +1449,7 @@ export interface EpicSearchResult {
   entity_type: string;
   /** An array of Labels attached to the Epic. */
   labels: LabelSlim[];
-  /** Deprecated: use member_mention_ids. */
+  /** `Deprecated:` use `member_mention_ids`. */
   mention_ids: string[];
   /** An array of Member IDs that have been mentioned in the Epic description. */
   member_mention_ids: string[];
@@ -1264,6 +1482,8 @@ export interface EpicSearchResult {
    * @format date-time
    */
   completed_at?: string | null;
+  /** An array of IDs for Objectives to which this epic is related. */
+  objective_ids: number[];
   /** The name of the Epic. */
   name: string;
   global_id: string;
@@ -1281,7 +1501,7 @@ export interface EpicSearchResult {
   /** `Deprecated` The workflow state that the Epic is in. */
   state: string;
   /**
-   * The ID of the Milestone this Epic is related to.
+   * `Deprecated` The ID of the Objective this Epic is related to. Use `objective_ids`.
    * @format int64
    */
   milestone_id?: number | null;
@@ -1302,7 +1522,10 @@ export interface EpicSearchResult {
    * @format date-time
    */
   started_at_override?: string | null;
-  /** @format uuid */
+  /**
+   * `Deprecated` The ID of the group to associate with the epic. Use `group_ids`.
+   * @format uuid
+   */
   group_id?: string | null;
   /**
    * The time/date the Epic was updated.
@@ -1318,6 +1541,8 @@ export interface EpicSearchResult {
   productboard_id?: string | null;
   /** An array of UUIDs for any Members you want to add as Followers on this Epic. */
   follower_ids: string[];
+  /** An array of UUIDS for Groups to which this Epic is related. */
+  group_ids: string[];
   /** An array of UUIDs for any members you want to add as Owners on this new Epic. */
   owner_ids: string[];
   /** This field can be set to another unique ID. In the case that the Epic has been imported from another tool, the ID in the other tool can be indicated here. */
@@ -1359,7 +1584,6 @@ export interface EpicSearchResults {
   data: EpicSearchResult[];
   /** The URL path and query string for the next page of search results. */
   next?: string | null;
-  cursors?: string[];
 }
 
 /** EpicSlim represents the same resource as an Epic but is more light-weight, including all Epic fields except the comments array. The description string can be optionally included. Use the [Get Epic](#Get-Epic) endpoint to fetch the unabridged payload for an Epic. */
@@ -1376,7 +1600,7 @@ export interface EpicSlim {
   entity_type: string;
   /** An array of Labels attached to the Epic. */
   labels: LabelSlim[];
-  /** Deprecated: use member_mention_ids. */
+  /** `Deprecated:` use `member_mention_ids`. */
   mention_ids: string[];
   /** An array of Member IDs that have been mentioned in the Epic description. */
   member_mention_ids: string[];
@@ -1409,6 +1633,8 @@ export interface EpicSlim {
    * @format date-time
    */
   completed_at?: string | null;
+  /** An array of IDs for Objectives to which this epic is related. */
+  objective_ids: number[];
   /** The name of the Epic. */
   name: string;
   global_id: string;
@@ -1424,7 +1650,7 @@ export interface EpicSlim {
   /** `Deprecated` The workflow state that the Epic is in. */
   state: string;
   /**
-   * The ID of the Milestone this Epic is related to.
+   * `Deprecated` The ID of the Objective this Epic is related to. Use `objective_ids`.
    * @format int64
    */
   milestone_id?: number | null;
@@ -1445,7 +1671,10 @@ export interface EpicSlim {
    * @format date-time
    */
   started_at_override?: string | null;
-  /** @format uuid */
+  /**
+   * `Deprecated` The ID of the group to associate with the epic. Use `group_ids`.
+   * @format uuid
+   */
   group_id?: string | null;
   /**
    * The time/date the Epic was updated.
@@ -1461,6 +1690,8 @@ export interface EpicSlim {
   productboard_id?: string | null;
   /** An array of UUIDs for any Members you want to add as Followers on this Epic. */
   follower_ids: string[];
+  /** An array of UUIDS for Groups to which this Epic is related. */
+  group_ids: string[];
   /** An array of UUIDs for any members you want to add as Owners on this new Epic. */
   owner_ids: string[];
   /** This field can be set to another unique ID. In the case that the Epic has been imported from another tool, the ID in the other tool can be indicated here. */
@@ -1638,43 +1869,6 @@ export interface EpicWorkflow {
   epic_states: EpicState[];
 }
 
-export interface GetEpicStories {
-  /** A true/false boolean indicating whether to return Stories with their descriptions. */
-  includes_description?: boolean;
-}
-
-export interface GetExternalLinkStoriesParams {
-  /**
-   * The external link associated with one or more stories.
-   * @maxLength 2048
-   * @pattern ^https?://.+$
-   */
-  external_link: string;
-}
-
-export interface GetIterationStories {
-  /** A true/false boolean indicating whether to return Stories with their descriptions. */
-  includes_description?: boolean;
-}
-
-export interface GetLabelStories {
-  /** A true/false boolean indicating whether to return Stories with their descriptions. */
-  includes_description?: boolean;
-}
-
-export interface GetMember {
-  /**
-   * The unique ID of the Organization to limit the lookup to.
-   * @format uuid
-   */
-  'org-public-id'?: string;
-}
-
-export interface GetProjectStories {
-  /** A true/false boolean indicating whether to return Stories with their descriptions. */
-  includes_description?: boolean;
-}
-
 /** A Group. */
 export interface Group {
   /** The Shortcut application url for the Group. */
@@ -1726,7 +1920,7 @@ export interface Group {
     | 'turquoise'
     | null;
   /**
-   * The total number of stories assigned ot the group.
+   * The total number of stories assigned to the group.
    * @format int64
    */
   num_stories: number;
@@ -1812,6 +2006,11 @@ export interface History {
   version: 'v1';
   /** The ID of the webhook that handled the change. */
   webhook_id?: string | null;
+  /**
+   * The ID of the automation that performed the change.
+   * @format uuid
+   */
+  automation_id?: string;
 }
 
 /** An action representing a VCS Branch being created. */
@@ -2381,30 +2580,25 @@ export interface HistoryReferenceCommit {
 
 /** A reference to a CustomField value asserted on a Story. */
 export interface HistoryReferenceCustomFieldEnumValue {
-  /** The type of entity referenced. */
-  entity_type: string;
-  /** The name as it is displayed to the user of the parent custom-field of this enum value. */
-  field_name: string;
-  /**
-   * The custom-field enum value as a string.
-   * @format int64
-   */
-  integer_value?: number | null;
-  /** Whether or not the custom-field is enabled. */
-  field_enabled: boolean;
   /** The ID of the entity referenced. */
   id: number | string;
-  /** The type variety of the parent custom-field of this enum value. */
-  field_type: string;
+  /** The type of entity referenced. */
+  entity_type: string;
+  /** The custom-field enum value as a string. */
+  string_value?: string | null;
+  /** Whether or not the custom-field enum value is enabled. */
+  enum_value_enabled?: boolean | null;
   /**
    * The public-id of the parent custom-field of this enum value.
    * @format uuid
    */
   field_id: string;
-  /** The custom-field enum value as a string. */
-  string_value?: string | null;
-  /** Whether or not the custom-field enum value is enabled. */
-  enum_value_enabled?: boolean | null;
+  /** The type variety of the parent custom-field of this enum value. */
+  field_type: string;
+  /** The name as it is displayed to the user of the parent custom-field of this enum value. */
+  field_name: string;
+  /** Whether or not the custom-field is enabled. */
+  field_enabled: boolean;
 }
 
 /** A reference to an Epic. */
@@ -2528,8 +2722,8 @@ export interface HistoryReferenceWorkflowState {
   id: number | string;
   /** The type of entity referenced. */
   entity_type: string;
-  /** Either "unstarted", "started", or "done". */
-  type: 'started' | 'unstarted' | 'done';
+  /** Either "backlog", "unstarted", "started", or "done". */
+  type: 'started' | 'backlog' | 'unstarted' | 'done';
   /** The name of the entity referenced. */
   name: string;
 }
@@ -2577,7 +2771,7 @@ export interface Iteration {
   entity_type: string;
   /** An array of labels attached to the iteration. */
   labels: Label[];
-  /** Deprecated: use member_mention_ids. */
+  /** `Deprecated:` use `member_mention_ids`. */
   mention_ids: string[];
   /** An array of Member IDs that have been mentioned in the Story description. */
   member_mention_ids: string[];
@@ -2596,7 +2790,7 @@ export interface Iteration {
   /** An array of Group IDs that have been mentioned in the Story description. */
   group_mention_ids: string[];
   /**
-   * The date this iteration begins.
+   * The date this iteration ends.
    * @format date-time
    */
   end_date: string;
@@ -2649,7 +2843,6 @@ export interface IterationSearchResults {
   data: IterationSlim[];
   /** The URL path and query string for the next page of search results. */
   next?: string | null;
-  cursors?: string[];
 }
 
 /** IterationSlim represents the same resource as an Iteration, but is more light-weight. Use the [Get Iteration](#Get-Iteration) endpoint to fetch the unabridged payload for an Iteration.  */
@@ -2660,7 +2853,7 @@ export interface IterationSlim {
   entity_type: string;
   /** An array of labels attached to the iteration. */
   labels: Label[];
-  /** Deprecated: use member_mention_ids. */
+  /** `Deprecated:` use `member_mention_ids`. */
   mention_ids: string[];
   /** An array of Member IDs that have been mentioned in the Story description. */
   member_mention_ids: string[];
@@ -2679,7 +2872,7 @@ export interface IterationSlim {
   /** An array of Group IDs that have been mentioned in the Story description. */
   group_mention_ids: string[];
   /**
-   * The date this iteration begins.
+   * The date this iteration ends.
    * @format date-time
    */
   end_date: string;
@@ -2775,6 +2968,42 @@ export interface IterationStats {
    * @format int64
    */
   num_stories_done: number;
+}
+
+export interface KeyResult {
+  /**
+   * The ID of the Key Result.
+   * @format uuid
+   */
+  id: string;
+  /** The name of the Key Result. */
+  name: string;
+  /**
+   * The Objective to which this Key Result belongs.
+   * @format int64
+   */
+  objective_id: number;
+  /** The type of the Key Result (numeric, percent, or boolean). */
+  type: 'percent' | 'boolean' | 'numeric';
+  /** The starting value of the Key Result. */
+  initial_observed_value: KeyResultValue;
+  /** The starting value of the Key Result. */
+  current_observed_value: KeyResultValue;
+  /** The starting value of the Key Result. */
+  current_target_value: KeyResultValue;
+  /**
+   * The integer percentage of progress toward completion of the Key Result.
+   * @format int64
+   */
+  progress: number;
+}
+
+/** The starting value of the Key Result. */
+export interface KeyResultValue {
+  /** The numeric value, as a decimal string. No more than two decimal places are allowed. */
+  numeric_value?: string;
+  /** The boolean value. */
+  boolean_value?: boolean;
 }
 
 /** A Label can be used to associate and filter Stories and Epics, and also create new Workspaces. */
@@ -2954,7 +3183,7 @@ export interface LinkedFile {
   entity_type: string;
   /** The IDs of the stories this file is attached to. */
   story_ids: number[];
-  /** Deprecated: use member_mention_ids. */
+  /** `Deprecated:` use `member_mention_ids`. */
   mention_ids: string[];
   /** The members that are mentioned in the description of the file. */
   member_mention_ids: string[];
@@ -2995,37 +3224,6 @@ export interface LinkedFile {
    * @format date-time
    */
   created_at: string;
-}
-
-export interface ListEpics {
-  /** A true/false boolean indicating whether to return Epics with their descriptions. */
-  includes_description?: boolean;
-}
-
-export interface ListGroupStories {
-  /**
-   * The maximum number of results to return. (Defaults to 1000, max 1000)
-   * @format int64
-   */
-  limit?: number;
-  /**
-   * The offset at which to begin returning results. (Defaults to 0)
-   * @format int64
-   */
-  offset?: number;
-}
-
-export interface ListLabels {
-  /** A true/false boolean indicating if the slim versions of the Label should be returned. */
-  slim?: boolean;
-}
-
-export interface ListMembers {
-  /**
-   * The unique ID of the Organization to limit the list to.
-   * @format uuid
-   */
-  'org-public-id'?: string;
 }
 
 /** Error returned when total maximum supported results have been reached. */
@@ -3088,7 +3286,7 @@ export interface MemberInfo {
   workspace2: BasicWorkspaceInfo;
 }
 
-/** A Milestone is a collection of Epics that represent a release or some other large initiative that you are working on. */
+/** (Deprecated) A Milestone is a collection of Epics that represent a release or some other large initiative that you are working on. Milestones have become Objectives, so you should use Objective-related API resources instead of Milestone ones. */
 export interface Milestone {
   /** The Shortcut application url for the Milestone. */
   app_url: string;
@@ -3139,6 +3337,8 @@ export interface Milestone {
    * @format int64
    */
   id: number;
+  /** The IDs of the Key Results associated with the Objective. */
+  key_result_ids: string[];
   /**
    * A number representing the position of the Milestone in relation to every other Milestone within the Workspace.
    * @format int64
@@ -3153,8 +3353,94 @@ export interface Milestone {
   created_at: string;
 }
 
+/** A group of calculated values for this Milestone. */
+export interface MilestoneStats {
+  /**
+   * The average cycle time (in seconds) of completed stories in this Milestone.
+   * @format int64
+   */
+  average_cycle_time?: number;
+  /**
+   * The average lead time (in seconds) of completed stories in this Milestone.
+   * @format int64
+   */
+  average_lead_time?: number;
+  /**
+   * The number of related documents to this Milestone.
+   * @format int64
+   */
+  num_related_documents: number;
+}
+
+/** An Objective is a collection of Epics that represent a release or some other large initiative that you are working on. */
+export interface Objective {
+  /** The Shortcut application url for the Objective. */
+  app_url: string;
+  /** The Objective's description. */
+  description: string;
+  /** A boolean indicating whether the Objective has been archived or not. */
+  archived: boolean;
+  /** A true/false boolean indicating if the Objective has been started. */
+  started: boolean;
+  /** A string description of this resource. */
+  entity_type: string;
+  /**
+   * A manual override for the time/date the Objective was completed.
+   * @format date-time
+   */
+  completed_at_override?: string | null;
+  /**
+   * The time/date the Objective was started.
+   * @format date-time
+   */
+  started_at?: string | null;
+  /**
+   * The time/date the Objective was completed.
+   * @format date-time
+   */
+  completed_at?: string | null;
+  /** The name of the Objective. */
+  name: string;
+  global_id: string;
+  /** A true/false boolean indicating if the Objectivehas been completed. */
+  completed: boolean;
+  /** The workflow state that the Objective is in. */
+  state: string;
+  /**
+   * A manual override for the time/date the Objective was started.
+   * @format date-time
+   */
+  started_at_override?: string | null;
+  /**
+   * The time/date the Objective was updated.
+   * @format date-time
+   */
+  updated_at: string;
+  /** An array of Categories attached to the Objective. */
+  categories: Category[];
+  /**
+   * The unique ID of the Objective.
+   * @format int64
+   */
+  id: number;
+  /** The IDs of the Key Results associated with the Objective. */
+  key_result_ids: string[];
+  /**
+   * A number representing the position of the Objective in relation to every other Objective within the Workspace.
+   * @format int64
+   */
+  position: number;
+  /** A group of calculated values for this Objective. */
+  stats: ObjectiveStats;
+  /**
+   * The time/date the Objective was created.
+   * @format date-time
+   */
+  created_at: string;
+}
+
 /** A Milestone in search results. This is typed differently from Milestone because the details=slim search argument will omit some fields. */
-export interface MilestoneSearchResult {
+export interface ObjectiveSearchResult {
   /** The Shortcut application url for the Milestone. */
   app_url: string;
   /** The Milestone's description. */
@@ -3204,6 +3490,8 @@ export interface MilestoneSearchResult {
    * @format int64
    */
   id: number;
+  /** The IDs of the Key Results associated with the Objective. */
+  key_result_ids: string[];
   /**
    * A number representing the position of the Milestone in relation to every other Milestone within the Workspace.
    * @format int64
@@ -3218,34 +3506,33 @@ export interface MilestoneSearchResult {
   created_at: string;
 }
 
-/** The results of the Milestone search query. */
-export interface MilestoneSearchResults {
+/** The results of the Objective search query. */
+export interface ObjectiveSearchResults {
   /**
    * The total number of matches for the search query. The first 1000 matches can be paged through via the API.
    * @format int64
    */
   total: number;
   /** A list of search results. */
-  data: MilestoneSearchResult[];
+  data: ObjectiveSearchResult[];
   /** The URL path and query string for the next page of search results. */
   next?: string | null;
-  cursors?: string[];
 }
 
-/** A group of calculated values for this Milestone. */
-export interface MilestoneStats {
+/** A group of calculated values for this Objective. */
+export interface ObjectiveStats {
   /**
-   * The average cycle time (in seconds) of completed stories in this Milestone.
+   * The average cycle time (in seconds) of completed stories in this Objective.
    * @format int64
    */
   average_cycle_time?: number;
   /**
-   * The average lead time (in seconds) of completed stories in this Milestone.
+   * The average lead time (in seconds) of completed stories in this Objective.
    * @format int64
    */
   average_lead_time?: number;
   /**
-   * The number of related documents tp this Milestone.
+   * The number of related documents to this Objective.
    * @format int64
    */
   num_related_documents: number;
@@ -3477,6 +3764,24 @@ export interface PullRequestLabel {
   name: string;
 }
 
+export interface RemoveCustomFieldParams {
+  /**
+   * The unique public ID for the CustomField.
+   * @format uuid
+   */
+  field_id: string;
+}
+
+/** Request parameters for removing a Label from a Shortcut Story. */
+export interface RemoveLabelParams {
+  /**
+   * The name of the new Label to remove.
+   * @minLength 1
+   * @maxLength 128
+   */
+  name: string;
+}
+
 /** Repository refers to a VCS repository. */
 export interface Repository {
   /** A string description of this resource. */
@@ -3508,33 +3813,6 @@ export interface Repository {
   created_at?: string | null;
 }
 
-export interface Search {
-  /**
-   * See our help center article on [search operators](https://help.shortcut.com/hc/en-us/articles/360000046646-Search-Operators)
-   * @minLength 1
-   */
-  query: string;
-  /**
-   * The number of search results to include in a page. Minimum of 1 and maximum of 25.
-   * @format int64
-   */
-  page_size?: number;
-  /**
-   * The amount of detail included in each result item.
-   *    "full" will include all descriptions and comments and more fields on
-   *    related items such as pull requests, branches and tasks.
-   *    "slim" omits larger fulltext fields such as descriptions and comments
-   *    and only references related items by id.
-   *    The default is "full".
-   */
-  detail?: 'full' | 'slim';
-  /** The next page token. */
-  next?: string;
-  include?: 'cursors';
-  /** A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, milestone, story. */
-  entity_types?: ('story' | 'milestone' | 'epic' | 'iteration')[];
-}
-
 /** The results of the multi-entity search query. */
 export interface SearchResults {
   /** The results of the Epic search query. */
@@ -3543,8 +3821,8 @@ export interface SearchResults {
   stories?: StorySearchResults;
   /** The results of the Iteration search query. */
   iterations?: IterationSearchResults;
-  /** The results of the Milestone search query. */
-  milestones?: MilestoneSearchResults;
+  /** The results of the Objective search query. */
+  milestones?: ObjectiveSearchResults;
 }
 
 export interface SearchStories {
@@ -3568,24 +3846,24 @@ export interface SearchStories {
    */
   project_ids?: (number | null)[];
   /**
-   * Stories should have been updated before this date.
+   * Stories should have been updated on or before this date.
    * @format date-time
    */
   updated_at_end?: string;
   /**
-   * Stories should have been completed before this date.
+   * Stories should have been completed on or before this date.
    * @format date-time
    */
   completed_at_end?: string;
   /** The type of Workflow State the Stories may be in. */
   workflow_state_types?: ('started' | 'backlog' | 'unstarted' | 'done')[];
   /**
-   * Stories should have a deadline before this date.
+   * Stories should have a deadline on or before this date.
    * @format date-time
    */
   deadline_end?: string;
   /**
-   * Stories should have been created after this date.
+   * Stories should have been created on or after this date.
    * @format date-time
    */
   created_at_start?: string;
@@ -3630,12 +3908,12 @@ export interface SearchStories {
    */
   iteration_ids?: number[];
   /**
-   * Stories should have been created before this date.
+   * Stories should have been created on or before this date.
    * @format date-time
    */
   created_at_end?: string;
   /**
-   * Stories should have a deadline after this date.
+   * Stories should have a deadline on or after this date.
    * @format date-time
    */
   deadline_start?: string;
@@ -3664,12 +3942,12 @@ export interface SearchStories {
    */
   project_id?: number | null;
   /**
-   * Stories should have been completed after this date.
+   * Stories should have been completed on or after this date.
    * @format date-time
    */
   completed_at_start?: string;
   /**
-   * Stories should have been updated after this date.
+   * Stories should have been updated on or after this date.
    * @format date-time
    */
   updated_at_start?: string;
@@ -3691,7 +3969,7 @@ export interface Story {
   entity_type: string;
   /** An array of labels attached to the story. */
   labels: LabelSlim[];
-  /** Deprecated: use member_mention_ids. */
+  /** `Deprecated:` use `member_mention_ids`. */
   mention_ids: string[];
   /** The synced item for the story. */
   synced_item?: SyncedItem;
@@ -3862,7 +4140,7 @@ export interface StoryComment {
    * @format int64
    */
   story_id: number;
-  /** Deprecated: use member_mention_ids. */
+  /** `Deprecated:` use `member_mention_ids`. */
   mention_ids: string[];
   /**
    * The unique ID of the Member who is the Comment's author.
@@ -3873,6 +4151,8 @@ export interface StoryComment {
   member_mention_ids: string[];
   /** Marks the comment as a blocker that can be surfaced to permissions or teams mentioned in the comment. Can only be used on a top-level comment. */
   blocker?: boolean;
+  /** Whether the Comment is currently the root of a thread that is linked to Slack. */
+  linked_to_slack: boolean;
   /**
    * The time/date when the Comment was updated.
    * @format date-time
@@ -4130,7 +4410,7 @@ export interface StorySearchResult {
   labels: LabelSlim[];
   /** An array of IDs of Tasks attached to the story. */
   task_ids?: number[];
-  /** Deprecated: use member_mention_ids. */
+  /** `Deprecated:` use `member_mention_ids`. */
   mention_ids: string[];
   /** The synced item for the story. */
   synced_item?: SyncedItem;
@@ -4310,7 +4590,6 @@ export interface StorySearchResults {
   data: StorySearchResult[];
   /** The URL path and query string for the next page of search results. */
   next?: string | null;
-  cursors?: string[];
 }
 
 /** StorySlim represents the same resource as a Story, but is more light-weight. For certain fields it provides ids rather than full resources (e.g., `comment_ids` and `file_ids`) and it also excludes certain aggregate values (e.g., `cycle_time`). The `description` field can be optionally included. Use the [Get Story](#Get-Story) endpoint to fetch the unabridged payload for a Story. */
@@ -4331,7 +4610,7 @@ export interface StorySlim {
   labels: LabelSlim[];
   /** An array of IDs of Tasks attached to the story. */
   task_ids: number[];
-  /** Deprecated: use member_mention_ids. */
+  /** `Deprecated:` use `member_mention_ids`. */
   mention_ids: string[];
   /** The synced item for the story. */
   synced_item?: SyncedItem;
@@ -4514,7 +4793,7 @@ export interface Task {
    * @format int64
    */
   story_id: number;
-  /** Deprecated: use member_mention_ids. */
+  /** `Deprecated:` use `member_mention_ids`. */
   mention_ids: string[];
   /** An array of UUIDs of Members mentioned in this Task. */
   member_mention_ids: string[];
@@ -4561,7 +4840,7 @@ export interface ThreadedComment {
   entity_type: string;
   /** True/false boolean indicating whether the Comment is deleted. */
   deleted: boolean;
-  /** Deprecated: use member_mention_ids. */
+  /** `Deprecated:` use `member_mention_ids`. */
   mention_ids: string[];
   /**
    * The unique ID of the Member that authored the Comment.
@@ -4752,6 +5031,8 @@ export interface UpdateEpic {
    * @format date-time
    */
   completed_at_override?: string | null;
+  /** An array of IDs for Objectives to which this Epic is related. */
+  objective_ids?: number[];
   /**
    * The Epic's name.
    * @minLength 1
@@ -4766,7 +5047,7 @@ export interface UpdateEpic {
   /** `Deprecated` The Epic's state (to do, in progress, or done); will be ignored when `epic_state_id` is set. */
   state?: 'in progress' | 'to do' | 'done';
   /**
-   * The ID of the Milestone this Epic is related to.
+   * `Deprecated` The ID of the Milestone this Epic is related to. Use `objective_ids`.
    * @format int64
    */
   milestone_id?: number | null;
@@ -4786,12 +5067,14 @@ export interface UpdateEpic {
    */
   started_at_override?: string | null;
   /**
-   * The ID of the group to associate with the epic.
+   * `Deprecated` The ID of the group to associate with the epic. Use `group_ids`.
    * @format uuid
    */
   group_id?: string | null;
   /** An array of UUIDs for any Members you want to add as Followers on this Epic. */
   follower_ids?: string[];
+  /** An array of UUIDS for Groups to which this Epic is related. */
+  group_ids?: string[];
   /** An array of UUIDs for any members you want to add as Owners on this Epic. */
   owner_ids?: string[];
   /** This field can be set to another unique ID. In the case that the Epic has been imported from another tool, the ID in the other tool can be indicated here. */
@@ -4927,6 +5210,17 @@ export interface UpdateIteration {
   end_date?: string;
 }
 
+export interface UpdateKeyResult {
+  /** The name of the Key Result. */
+  name?: string;
+  /** The starting value of the Key Result. */
+  initial_observed_value?: KeyResultValue;
+  /** The starting value of the Key Result. */
+  observed_value?: KeyResultValue;
+  /** The starting value of the Key Result. */
+  target_value?: KeyResultValue;
+}
+
 export interface UpdateLabel {
   /**
    * The new name of the label.
@@ -5021,6 +5315,46 @@ export interface UpdateMilestone {
   before_id?: number;
   /**
    * The ID of the Milestone we want to move this Milestone after.
+   * @format int64
+   */
+  after_id?: number;
+}
+
+export interface UpdateObjective {
+  /**
+   * The Objective's description.
+   * @maxLength 100000
+   */
+  description?: string;
+  /** A boolean indicating whether the Objective is archived or not */
+  archived?: boolean;
+  /**
+   * A manual override for the time/date the Objective was completed.
+   * @format date-time
+   */
+  completed_at_override?: string | null;
+  /**
+   * The name of the Objective.
+   * @minLength 1
+   * @maxLength 256
+   */
+  name?: string;
+  /** The workflow state that the Objective is in. */
+  state?: 'in progress' | 'to do' | 'done';
+  /**
+   * A manual override for the time/date the Objective was started.
+   * @format date-time
+   */
+  started_at_override?: string | null;
+  /** An array of IDs of Categories attached to the Objective. */
+  categories?: CreateCategoryParams[];
+  /**
+   * The ID of the Objective we want to move this Objective before.
+   * @format int64
+   */
+  before_id?: number;
+  /**
+   * The ID of the Objective we want to move this Objective after.
    * @format int64
    */
   after_id?: number;
@@ -5292,16 +5626,12 @@ export interface UpdateStoryComment {
 export interface UpdateStoryContents {
   /** The description of the story. */
   description?: string;
-  /** A string description of this resource. */
-  entity_type?: string;
   /** An array of labels to be populated by the template. */
   labels?: CreateLabelParams[];
   /** The type of story (feature, bug, chore). */
   story_type?: string;
   /** An array of maps specifying a CustomField ID and CustomFieldEnumValue ID that represents an assertion of some value for a CustomField. */
   custom_fields?: CustomFieldValueParams[];
-  /** An array of linked files attached to the story. */
-  linked_files?: LinkedFile[];
   /**
    * An array of the attached file IDs to be populated.
    * @uniqueItems true
@@ -5322,19 +5652,17 @@ export interface UpdateStoryContents {
    */
   iteration_id?: number | null;
   /** An array of tasks to be populated by the template. */
-  tasks?: EntityTemplateTask[];
-  /** An array of label ids attached to the story. */
-  label_ids?: number[];
+  tasks?: BaseTaskParams[];
   /**
    * The ID of the group to be populated.
    * @format uuid
    */
   group_id?: string | null;
   /**
-   * The ID of the workflow state the story is currently in.
+   * The ID of the workflow state to be populated.
    * @format int64
    */
-  workflow_state_id?: number;
+  workflow_state_id?: number | null;
   /** An array of UUIDs for any Members listed as Followers. */
   follower_ids?: string[];
   /** An array of UUIDs of the owners of this story. */
@@ -5344,8 +5672,6 @@ export interface UpdateStoryContents {
    * @format int64
    */
   estimate?: number | null;
-  /** An array of files attached to the story. */
-  files?: UploadedFile[];
   /**
    * The ID of the project the story belongs to.
    * @format int64
@@ -5409,7 +5735,7 @@ export interface UploadedFile {
   entity_type: string;
   /** The unique IDs of the Stories associated with this file. */
   story_ids: number[];
-  /** Deprecated: use member_mention_ids. */
+  /** `Deprecated:` use `member_mention_ids`. */
   mention_ids: string[];
   /** The unique IDs of the Members who are mentioned in the file description. */
   member_mention_ids: string[];
