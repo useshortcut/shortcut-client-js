@@ -1,4 +1,4 @@
-import { ShortcutClient, DateRanges } from '@shortcut/client';
+import { ShortcutClient, DateRanges } from '../src';
 
 if (!process.env.SHORTCUT_API_TOKEN) {
   console.error('Please set SHORTCUT_API_TOKEN environment variable');
