@@ -138,12 +138,12 @@ async function compareSearchMethods() {
     console.log('\n✅ New way - typed parameters (type-safe):');
     const typedResult = await shortcut.searchStoriesTyped({
       story_type: 'bug',
-      state: 'done', // This would cause a TypeScript error if you used invalid value
+      workflow_state_types: ['done'], // Filter by workflow state type
       archived: false,
     }, {
       page_size: 3
     });
-    console.log('Parameters: { story_type: "bug", state: "done", archived: false }');
+    console.log('Parameters: { story_type: "bug", workflow_state_types: ["done"], archived: false }');
     console.log(`Results: ${typedResult.total} stories found`);
 
     console.log('\n🎯 Benefits of typed search:');
