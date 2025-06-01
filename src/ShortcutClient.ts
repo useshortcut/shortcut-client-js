@@ -8,6 +8,107 @@ import type {
   ObjectiveSearchResults,
 } from './generated/data-contracts';
 
+// Date type utilities for better type safety
+/**
+ * Represents a date in YYYY-MM-DD format or ISO 8601 date-time string.
+ * Can also be a Date object which will be converted to ISO string.
+ */
+export type DateInput = string | Date;
+
+/**
+ * Date range for filtering
+ */
+export interface DateRange {
+  /** Start date (inclusive) */
+  start?: DateInput;
+  /** End date (inclusive) */
+  end?: DateInput;
+}
+
+/**
+ * Helper function to convert DateInput to ISO string format expected by API
+ */
+function toISODateString(date: DateInput): string {
+  if (date instanceof Date) {
+    return date.toISOString().split('T')[0]; // Convert to YYYY-MM-DD
+  }
+  return date;
+}
+
+/**
+ * Helper function to create date ranges for common use cases
+ */
+export const DateRanges = {
+  /** Today only */
+  today: (): DateRange => ({
+    start: new Date().toISOString().split('T')[0],
+    end: new Date().toISOString().split('T')[0],
+  }),
+
+  /** Yesterday only */
+  yesterday: (): DateRange => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const dateStr = yesterday.toISOString().split('T')[0];
+    return { start: dateStr, end: dateStr };
+  },
+
+  /** Current week (Monday to Sunday) */
+  thisWeek: (): DateRange => {
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
+    return {
+      start: monday.toISOString().split('T')[0],
+      end: sunday.toISOString().split('T')[0],
+    };
+  },
+
+  /** Current month */
+  thisMonth: (): DateRange => {
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    return {
+      start: firstDay.toISOString().split('T')[0],
+      end: lastDay.toISOString().split('T')[0],
+    };
+  },
+
+  /** Last N days (including today) */
+  lastDays: (days: number): DateRange => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - days + 1);
+
+    return {
+      start: start.toISOString().split('T')[0],
+      end: end.toISOString().split('T')[0],
+    };
+  },
+
+  /** From a specific date to now */
+  since: (date: DateInput): DateRange => ({
+    start: date,
+  }),
+
+  /** Up to a specific date */
+  until: (date: DateInput): DateRange => ({
+    end: date,
+  }),
+
+  /** Between two specific dates */
+  between: (start: DateInput, end: DateInput): DateRange => ({
+    start,
+    end,
+  }),
+};
+
 // Extended search parameter interfaces for typed search queries
 export interface SearchEpicsParams {
   /** Search for epics with this name (partial match) */
@@ -26,18 +127,35 @@ export interface SearchEpicsParams {
   team_ids?: string[];
   /** Filter by label names */
   label_names?: string[];
-  /** Date range for creation */
-  created_at_start?: string;
-  created_at_end?: string;
-  /** Date range for updates */
-  updated_at_start?: string;
-  updated_at_end?: string;
-  /** Date range for completion */
-  completed_at_start?: string;
-  completed_at_end?: string;
-  /** Date range for deadline */
-  deadline_start?: string;
-  deadline_end?: string;
+
+  // Date filtering - can use individual fields or DateRange objects
+  /** Date range for creation (alternative to created_at_start/end) */
+  created_at?: DateRange;
+  /** Start date for creation filter */
+  created_at_start?: DateInput;
+  /** End date for creation filter */
+  created_at_end?: DateInput;
+
+  /** Date range for updates (alternative to updated_at_start/end) */
+  updated_at?: DateRange;
+  /** Start date for update filter */
+  updated_at_start?: DateInput;
+  /** End date for update filter */
+  updated_at_end?: DateInput;
+
+  /** Date range for completion (alternative to completed_at_start/end) */
+  completed_at?: DateRange;
+  /** Start date for completion filter */
+  completed_at_start?: DateInput;
+  /** End date for completion filter */
+  completed_at_end?: DateInput;
+
+  /** Date range for deadline (alternative to deadline_start/end) */
+  deadline?: DateRange;
+  /** Start date for deadline filter */
+  deadline_start?: DateInput;
+  /** End date for deadline filter */
+  deadline_end?: DateInput;
 }
 
 export interface SearchIterationsParams {
@@ -49,18 +167,35 @@ export interface SearchIterationsParams {
   state?: 'unstarted' | 'started' | 'done';
   /** Filter by team IDs */
   team_ids?: string[];
-  /** Date range for creation */
-  created_at_start?: string;
-  created_at_end?: string;
-  /** Date range for updates */
-  updated_at_start?: string;
-  updated_at_end?: string;
-  /** Date range for start date */
-  start_date_start?: string;
-  start_date_end?: string;
-  /** Date range for end date */
-  end_date_start?: string;
-  end_date_end?: string;
+
+  // Date filtering - can use individual fields or DateRange objects
+  /** Date range for creation (alternative to created_at_start/end) */
+  created_at?: DateRange;
+  /** Start date for creation filter */
+  created_at_start?: DateInput;
+  /** End date for creation filter */
+  created_at_end?: DateInput;
+
+  /** Date range for updates (alternative to updated_at_start/end) */
+  updated_at?: DateRange;
+  /** Start date for update filter */
+  updated_at_start?: DateInput;
+  /** End date for update filter */
+  updated_at_end?: DateInput;
+
+  /** Date range for iteration start date (alternative to start_date_start/end) */
+  start_date?: DateRange;
+  /** Start date for iteration start filter */
+  start_date_start?: DateInput;
+  /** End date for iteration start filter */
+  start_date_end?: DateInput;
+
+  /** Date range for iteration end date (alternative to end_date_start/end) */
+  end_date?: DateRange;
+  /** Start date for iteration end filter */
+  end_date_start?: DateInput;
+  /** End date for iteration end filter */
+  end_date_end?: DateInput;
 }
 
 export interface SearchObjectivesParams {
@@ -76,21 +211,50 @@ export interface SearchObjectivesParams {
   owner_ids?: string[];
   /** Filter by team IDs */
   team_ids?: string[];
-  /** Date range for creation */
-  created_at_start?: string;
-  created_at_end?: string;
-  /** Date range for updates */
-  updated_at_start?: string;
-  updated_at_end?: string;
-  /** Date range for completion */
-  completed_at_start?: string;
-  completed_at_end?: string;
-  /** Date range for deadline */
-  deadline_start?: string;
-  deadline_end?: string;
+
+  // Date filtering - can use individual fields or DateRange objects
+  /** Date range for creation (alternative to created_at_start/end) */
+  created_at?: DateRange;
+  /** Start date for creation filter */
+  created_at_start?: DateInput;
+  /** End date for creation filter */
+  created_at_end?: DateInput;
+
+  /** Date range for updates (alternative to updated_at_start/end) */
+  updated_at?: DateRange;
+  /** Start date for update filter */
+  updated_at_start?: DateInput;
+  /** End date for update filter */
+  updated_at_end?: DateInput;
+
+  /** Date range for completion (alternative to completed_at_start/end) */
+  completed_at?: DateRange;
+  /** Start date for completion filter */
+  completed_at_start?: DateInput;
+  /** End date for completion filter */
+  completed_at_end?: DateInput;
+
+  /** Date range for deadline (alternative to deadline_start/end) */
+  deadline?: DateRange;
+  /** Start date for deadline filter */
+  deadline_start?: DateInput;
+  /** End date for deadline filter */
+  deadline_end?: DateInput;
 }
 
-export interface SearchStoriesParams extends Omit<SearchStories, 'owner_id'> {
+export interface SearchStoriesParams
+  extends Omit<
+    SearchStories,
+    | 'owner_id'
+    | 'created_at_start'
+    | 'created_at_end'
+    | 'updated_at_start'
+    | 'updated_at_end'
+    | 'completed_at_start'
+    | 'completed_at_end'
+    | 'deadline_start'
+    | 'deadline_end'
+  > {
   /** Search for stories with this name (partial match) */
   name?: string;
   /** Search for stories with this description content */
@@ -99,6 +263,35 @@ export interface SearchStoriesParams extends Omit<SearchStories, 'owner_id'> {
   team_ids?: string[];
   /** Filter by label names */
   label_names?: string[];
+
+  // Enhanced date filtering - can use individual fields or DateRange objects
+  /** Date range for creation (alternative to created_at_start/end) */
+  created_at?: DateRange;
+  /** Start date for creation filter */
+  created_at_start?: DateInput;
+  /** End date for creation filter */
+  created_at_end?: DateInput;
+
+  /** Date range for updates (alternative to updated_at_start/end) */
+  updated_at?: DateRange;
+  /** Start date for update filter */
+  updated_at_start?: DateInput;
+  /** End date for update filter */
+  updated_at_end?: DateInput;
+
+  /** Date range for completion (alternative to completed_at_start/end) */
+  completed_at?: DateRange;
+  /** Start date for completion filter */
+  completed_at_start?: DateInput;
+  /** End date for completion filter */
+  completed_at_end?: DateInput;
+
+  /** Date range for deadline (alternative to deadline_start/end) */
+  deadline?: DateRange;
+  /** Start date for deadline filter */
+  deadline_start?: DateInput;
+  /** End date for deadline filter */
+  deadline_end?: DateInput;
 }
 
 // Common search options that apply to all search methods
@@ -133,14 +326,41 @@ export class ShortcutClient<
   private static buildSearchQuery(params: Record<string, any>): string {
     const queryParts: string[] = [];
 
-    // Helper to add date range queries
-    const addDateRange = (field: string, start?: string, end?: string) => {
-      if (start && end) {
-        queryParts.push(`${field}:${start}..${end}`);
-      } else if (start) {
-        queryParts.push(`${field}:${start}..*`);
-      } else if (end) {
-        queryParts.push(`${field}:*..${end}`);
+    // Helper to add date range queries with DateInput support
+    const addDateRange = (
+      field: string,
+      start?: DateInput,
+      end?: DateInput,
+    ) => {
+      const startStr = start ? toISODateString(start) : undefined;
+      const endStr = end ? toISODateString(end) : undefined;
+
+      if (startStr && endStr) {
+        queryParts.push(`${field}:${startStr}..${endStr}`);
+      } else if (startStr) {
+        queryParts.push(`${field}:${startStr}..*`);
+      } else if (endStr) {
+        queryParts.push(`${field}:*..${endStr}`);
+      }
+    };
+
+    // Helper to process DateRange objects and individual date fields
+    const processDateFilter = (
+      paramFieldName: string,
+      queryFieldName: string,
+    ) => {
+      const rangeField = `${paramFieldName}` as keyof typeof params;
+      const startField = `${paramFieldName}_start` as keyof typeof params;
+      const endField = `${paramFieldName}_end` as keyof typeof params;
+
+      // If DateRange object is provided, use it (takes precedence)
+      if (params[rangeField]) {
+        const range = params[rangeField] as DateRange;
+        addDateRange(queryFieldName, range.start, range.end);
+      }
+      // Otherwise, use individual start/end fields
+      else if (params[startField] || params[endField]) {
+        addDateRange(queryFieldName, params[startField], params[endField]);
       }
     };
 
@@ -211,17 +431,14 @@ export class ShortcutClient<
       });
     }
 
-    // Date ranges
-    addDateRange('created', params.created_at_start, params.created_at_end);
-    addDateRange('updated', params.updated_at_start, params.updated_at_end);
-    addDateRange(
-      'completed',
-      params.completed_at_start,
-      params.completed_at_end,
-    );
-    addDateRange('deadline', params.deadline_start, params.deadline_end);
-    addDateRange('start', params.start_date_start, params.start_date_end);
-    addDateRange('end', params.end_date_start, params.end_date_end);
+    // Process date filters (supports both DateRange objects and individual start/end fields)
+    // Map parameter field names to search query field names
+    processDateFilter('created_at', 'created');
+    processDateFilter('updated_at', 'updated');
+    processDateFilter('completed_at', 'completed');
+    processDateFilter('deadline', 'deadline');
+    processDateFilter('start_date', 'start');
+    processDateFilter('end_date', 'end');
 
     return queryParts.join(' ');
   }

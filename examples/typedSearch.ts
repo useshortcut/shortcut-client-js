@@ -1,4 +1,4 @@
-import { ShortcutClient } from '@shortcut/client';
+import { ShortcutClient, DateRanges } from '@shortcut/client';
 
 if (!process.env.SHORTCUT_API_TOKEN) {
   console.error('Please set SHORTCUT_API_TOKEN environment variable');
@@ -40,11 +40,14 @@ async function demonstrateTypedSearch() {
       console.log(`  - ${epic.name} (${epic.state})`);
     });
 
-    // Example 3: Search for iterations by date range
+    // Example 3: Search for iterations by date range (demonstrating new DateRange support)
     console.log('\n3. Searching for recent iterations...');
     const recentIterations = await shortcut.searchIterationsTyped({
-      created_at_start: '2024-01-01',
-      // created_at_end: '2024-12-31', // Optional end date
+      // Option 1: Using DateRange object
+      created_at: DateRanges.lastDays(30),
+      // Option 2: Using individual date fields (alternative approach)
+      // created_at_start: '2024-01-01',
+      // created_at_end: '2024-12-31',
     }, {
       page_size: 3,
       detail: 'slim'
@@ -85,6 +88,32 @@ async function demonstrateTypedSearch() {
       console.log(`  - ${story.name} (${story.story_type}) - ${story.description?.substring(0, 100)}...`);
     });
 
+    // Example 6: Demonstrating enhanced date handling
+    console.log('\n6. Enhanced date handling examples...');
+    
+    // Using DateRange helpers
+    const thisWeekStories = await shortcut.searchStoriesTyped({
+      created_at: DateRanges.thisWeek(),
+      story_type: 'feature',
+    }, { page_size: 3, detail: 'slim' });
+    console.log(`Stories created this week: ${thisWeekStories.total}`);
+    
+    // Using Date objects directly
+    const last7Days = await shortcut.searchStoriesTyped({
+      created_at: {
+        start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+        end: new Date(), // today
+      },
+    }, { page_size: 3, detail: 'slim' });
+    console.log(`Stories created in last 7 days: ${last7Days.total}`);
+    
+    // Using convenience methods
+    const recentlyCompletedStories = await shortcut.searchStoriesTyped({
+      completed_at: DateRanges.since('2024-01-01'),
+      story_type: 'bug',
+    }, { page_size: 3, detail: 'slim' });
+    console.log(`Bugs completed since 2024: ${recentlyCompletedStories.total}`);
+
   } catch (error) {
     console.error('Error during search:', error);
   }
@@ -123,6 +152,9 @@ async function compareSearchMethods() {
     console.log('  ✓ No more "title" vs "name" confusion!');
     console.log('  ✓ Prevents typos in field names');
     console.log('  ✓ Better documentation with inline types');
+    console.log('  ✓ Enhanced date handling with DateInput and DateRange');
+    console.log('  ✓ Date helpers for common ranges (thisWeek, lastDays, etc.)');
+    console.log('  ✓ Support for both Date objects and string dates');
 
   } catch (error) {
     console.error('Error during comparison:', error);

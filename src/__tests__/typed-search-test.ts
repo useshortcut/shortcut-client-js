@@ -1,4 +1,4 @@
-import { ShortcutClient } from '../ShortcutClient';
+import { ShortcutClient, DateRanges } from '../ShortcutClient';
 
 // Mock the generated API
 jest.mock('../generated/Api', () => ({
@@ -173,6 +173,152 @@ describe('ShortcutClient Typed Search', () => {
       const result = await client.searchEpicsTyped({ name: 'test' });
 
       expect(result).toEqual(mockData);
+    });
+  });
+
+  describe('Enhanced date handling', () => {
+    test('handles DateRange objects', async () => {
+      const mockResponse = {
+        data: { total: 0, data: [] as any[], next: null as string | null },
+      };
+      (client.searchStories as jest.Mock).mockResolvedValue(mockResponse);
+
+      await client.searchStoriesTyped({
+        created_at: {
+          start: '2024-01-01',
+          end: '2024-12-31',
+        },
+      });
+
+      expect(client.searchStories).toHaveBeenCalledWith({
+        query: 'created:2024-01-01..2024-12-31',
+      });
+    });
+
+    test('handles Date objects', async () => {
+      const mockResponse = {
+        data: { total: 0, data: [] as any[], next: null as string | null },
+      };
+      (client.searchStories as jest.Mock).mockResolvedValue(mockResponse);
+
+      const startDate = new Date('2024-01-01T00:00:00Z');
+      const endDate = new Date('2024-12-31T23:59:59Z');
+
+      await client.searchStoriesTyped({
+        created_at: {
+          start: startDate,
+          end: endDate,
+        },
+      });
+
+      expect(client.searchStories).toHaveBeenCalledWith({
+        query: 'created:2024-01-01..2024-12-31',
+      });
+    });
+
+    test('DateRange takes precedence over individual start/end fields', async () => {
+      const mockResponse = {
+        data: { total: 0, data: [] as any[], next: null as string | null },
+      };
+      (client.searchStories as jest.Mock).mockResolvedValue(mockResponse);
+
+      await client.searchStoriesTyped({
+        created_at: { start: '2024-01-01', end: '2024-12-31' },
+        created_at_start: '2023-01-01', // This should be ignored
+        created_at_end: '2023-12-31', // This should be ignored
+      });
+
+      expect(client.searchStories).toHaveBeenCalledWith({
+        query: 'created:2024-01-01..2024-12-31',
+      });
+    });
+
+    test('handles open-ended date ranges', async () => {
+      const mockResponse = {
+        data: { total: 0, data: [] as any[], next: null as string | null },
+      };
+      (client.searchStories as jest.Mock).mockResolvedValue(mockResponse);
+
+      await client.searchStoriesTyped({
+        created_at: { start: '2024-01-01' }, // No end date
+        updated_at: { end: '2024-12-31' }, // No start date
+      });
+
+      expect(client.searchStories).toHaveBeenCalledWith({
+        query: 'created:2024-01-01..* updated:*..2024-12-31',
+      });
+    });
+
+    test('works with DateRanges helpers', async () => {
+      const mockResponse = {
+        data: { total: 0, data: [] as any[], next: null as string | null },
+      };
+      (client.searchStories as jest.Mock).mockResolvedValue(mockResponse);
+
+      // Use fake timers for consistent testing
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date('2024-06-15T12:00:00Z'));
+
+      await client.searchStoriesTyped({
+        created_at: DateRanges.today(),
+      });
+
+      expect(client.searchStories).toHaveBeenCalledWith({
+        query: 'created:2024-06-15..2024-06-15',
+      });
+
+      // Restore real timers
+      jest.useRealTimers();
+    });
+  });
+
+  describe('DateRanges helpers', () => {
+    beforeEach(() => {
+      // Mock a consistent date for testing
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date('2024-06-15T12:00:00Z'));
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    test('today() returns current date range', () => {
+      const range = DateRanges.today();
+      expect(range).toEqual({
+        start: '2024-06-15',
+        end: '2024-06-15',
+      });
+    });
+
+    test('lastDays() returns correct range', () => {
+      const range = DateRanges.lastDays(7);
+      expect(range).toEqual({
+        start: '2024-06-09', // 7 days ago including today
+        end: '2024-06-15',
+      });
+    });
+
+    test('since() returns open-ended start range', () => {
+      const range = DateRanges.since('2024-01-01');
+      expect(range).toEqual({
+        start: '2024-01-01',
+      });
+    });
+
+    test('until() returns open-ended end range', () => {
+      const range = DateRanges.until('2024-12-31');
+      expect(range).toEqual({
+        end: '2024-12-31',
+      });
+    });
+
+    test('between() returns closed range', () => {
+      const range = DateRanges.between('2024-01-01', '2024-12-31');
+      expect(range).toEqual({
+        start: '2024-01-01',
+        end: '2024-12-31',
+      });
     });
   });
 });
