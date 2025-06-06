@@ -2,39 +2,58 @@
   "name": "@shortcut/client",
   "version": "1.1.0",
   "description": "A Promise based library to the Shortcut REST API",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
-  "files": [
-    "lib"
-  ],
+  "homepage": "https://github.com/useshortcut/shortcut-client-js",
   "bugs": {
     "url": "https://github.com/useshortcut/shortcut-client-js/issues"
   },
-  "homepage": "https://github.com/useshortcut/shortcut-client-js",
-  "readme": "https://github.com/useshortcut/shortcut-client-js#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/useshortcut/shortcut-client-js.git"
   },
   "license": "MIT",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "require": "./lib/index.js",
+      "import": "./lib/index.mjs",
+      "types": "./lib/index.d.ts"
+    }
+  },
+  "main": "lib/index.js",
+  "module": "lib/index.mjs",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
   "scripts": {
-    "build": "yarn build:client && yarn build:add-typedoc-comments && tsc",
-    "build:client": "swagger-typescript-api generate --path ./schema/shortcut.swagger.json --output ./src/generated --clean-output --axios --modular --templates ./templates",
+    "build": "yarn build:client && yarn build:add-typedoc-comments && tsup",
     "build:add-typedoc-comments": "npx jscodeshift -t scripts/add-typedoc-comments.ts --extensions=ts --parser=ts src/generated/**",
+    "build:client": "swagger-typescript-api generate --path ./schema/shortcut.swagger.json --output ./src/generated --clean-output --axios --modular --templates ./templates",
     "build:docs": "typedoc ./src --exclude 'src/__tests__/**'",
-    "validate:examples": "npx tsc examples/*.ts --noEmit",
+    "check-exports": "attw --pack .",
+    "format": "prettier --write -l *.{json,md,prettierrc} '{src,scripts}/**/*.ts'",
+    "format:check": "prettier --check *.{json,md,prettierrc} '{src,scripts}/**/*.ts'",
+    "lint": "eslint 'src/**/*.{js,ts}'",
     "prepublishOnly": "yarn build",
     "sync:schema": "curl --silent https://developer.shortcut.com/api/rest/v3/shortcut.swagger.json --output ./schema/shortcut.swagger.json && yarn validate:schema",
-    "validate:schema": "swagger-cli validate ./schema/shortcut.swagger.json",
-    "lint": "eslint 'src/**/*.{js,ts}'",
     "test": "jest",
-    "format": "prettier --write -l *.{json,md,prettierrc} '{src,scripts}/**/*.ts'",
-    "format:check": "prettier --check *.{json,md,prettierrc} '{src,scripts}/**/*.ts'"
+    "validate:examples": "npx tsc examples/*.ts --noEmit",
+    "validate:schema": "swagger-cli validate ./schema/shortcut.swagger.json"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "<rootDir>/lib/",
+      "<rootDir>/node_modules/"
+    ]
   },
   "dependencies": {
     "axios": "^1.9.0"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.1",
+    "@total-typescript/tsconfig": "^1.0.4",
     "@types/jest": "^29.5.14",
     "@types/jscodeshift": "17.3.0",
     "@types/node": "^22.15.30",
@@ -53,16 +72,10 @@
     "swagger-cli": "^4.0.4",
     "swagger-typescript-api": "^13.2.0",
     "ts-jest": "^29.3.4",
+    "tsup": "^8.5.0",
     "typedoc": "0.28.5",
     "typedoc-plugin-merge-modules": "7.0.0",
     "typescript": "^5.8.3"
   },
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "node",
-    "testPathIgnorePatterns": [
-      "<rootDir>/lib/",
-      "<rootDir>/node_modules/"
-    ]
-  }
+  "readme": "https://github.com/useshortcut/shortcut-client-js#readme"
 }
