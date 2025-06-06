@@ -14,9 +14,9 @@
   "sideEffects": false,
   "exports": {
     ".": {
+      "types": "./lib/index.d.ts",
       "require": "./lib/index.js",
-      "import": "./lib/index.mjs",
-      "types": "./lib/index.d.ts"
+      "import": "./lib/index.mjs"
     }
   },
   "main": "lib/index.js",
@@ -54,7 +54,9 @@
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.1",
     "@total-typescript/tsconfig": "^1.0.4",
+    "@types/glob": "^8.1.0",
     "@types/jest": "^29.5.14",
+    "glob": "^11.0.0",
     "@types/jscodeshift": "17.3.0",
     "@types/node": "^22.15.30",
     "@typescript-eslint/eslint-plugin": "^8.33.1",

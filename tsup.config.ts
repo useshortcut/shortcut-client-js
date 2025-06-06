@@ -1,5 +1,7 @@
 import { defineConfig } from 'tsup';
-import { glob } from 'glob';
+import pkg from 'glob';
+
+const { glob } = pkg;
 
 export default defineConfig({
   // Find all TypeScript files (excluding tests and type definitions)
