@@ -1,5 +1,6 @@
 /* eslint-disable */
 /* tslint:disable */
+// @ts-nocheck
 /*
  * ---------------------------------------------------------------
  * ## THIS FILE WAS GENERATED VIA SWAGGER-TYPESCRIPT-API        ##
@@ -86,15 +87,17 @@ import {
   UpdateTask,
   UploadedFile,
   Workflow,
-} from './data-contracts';
-import { ContentType, HttpClient, RequestParams } from './http-client';
+} from "./data-contracts";
+import { ContentType, HttpClient, RequestParams } from "./http-client";
 
 /** 
  * Please don't use this class directly, instead use the `ShortcutClient` class we provided which is extending this class to add headers for authorization. * @internal
  * @private
  */
 
-export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType> {
+export class Api<
+  SecurityDataType = unknown,
+> extends HttpClient<SecurityDataType> {
   /**
    * @description List Categories returns a list of all Categories and their attributes.
    *
@@ -106,9 +109,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   listCategories = (params: RequestParams = {}) =>
     this.request<Category[], void>({
       path: `/api/v3/categories`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -119,14 +122,17 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/categories
    * @secure
    */
-  createCategory = (CreateCategory: CreateCategory, params: RequestParams = {}) =>
+  createCategory = (
+    CreateCategory: CreateCategory,
+    params: RequestParams = {},
+  ) =>
     this.request<Category, void>({
       path: `/api/v3/categories`,
-      method: 'POST',
+      method: "POST",
       body: CreateCategory,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -140,9 +146,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   getCategory = (categoryPublicId: number, params: RequestParams = {}) =>
     this.request<Category, void>({
       path: `/api/v3/categories/${categoryPublicId}`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -153,14 +159,18 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/categories/{category-public-id}
    * @secure
    */
-  updateCategory = (categoryPublicId: number, UpdateCategory: UpdateCategory, params: RequestParams = {}) =>
+  updateCategory = (
+    categoryPublicId: number,
+    UpdateCategory: UpdateCategory,
+    params: RequestParams = {},
+  ) =>
     this.request<Category, void>({
       path: `/api/v3/categories/${categoryPublicId}`,
-      method: 'PUT',
+      method: "PUT",
       body: UpdateCategory,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -174,7 +184,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   deleteCategory = (categoryPublicId: number, params: RequestParams = {}) =>
     this.request<void, void>({
       path: `/api/v3/categories/${categoryPublicId}`,
-      method: 'DELETE',
+      method: "DELETE",
       secure: true,
       ...params,
     });
@@ -186,12 +196,15 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/categories/{category-public-id}/milestones
    * @secure
    */
-  listCategoryMilestones = (categoryPublicId: number, params: RequestParams = {}) =>
+  listCategoryMilestones = (
+    categoryPublicId: number,
+    params: RequestParams = {},
+  ) =>
     this.request<Milestone[], void>({
       path: `/api/v3/categories/${categoryPublicId}/milestones`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -202,12 +215,15 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/categories/{category-public-id}/objectives
    * @secure
    */
-  listCategoryObjectives = (categoryPublicId: number, params: RequestParams = {}) =>
+  listCategoryObjectives = (
+    categoryPublicId: number,
+    params: RequestParams = {},
+  ) =>
     this.request<Milestone[], void>({
       path: `/api/v3/categories/${categoryPublicId}/objectives`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -221,9 +237,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   listCustomFields = (params: RequestParams = {}) =>
     this.request<CustomField[], void>({
       path: `/api/v3/custom-fields`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -237,9 +253,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   getCustomField = (customFieldPublicId: string, params: RequestParams = {}) =>
     this.request<CustomField, void>({
       path: `/api/v3/custom-fields/${customFieldPublicId}`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -250,14 +266,18 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/custom-fields/{custom-field-public-id}
    * @secure
    */
-  updateCustomField = (customFieldPublicId: string, UpdateCustomField: UpdateCustomField, params: RequestParams = {}) =>
+  updateCustomField = (
+    customFieldPublicId: string,
+    UpdateCustomField: UpdateCustomField,
+    params: RequestParams = {},
+  ) =>
     this.request<CustomField, void | DataConflictError>({
       path: `/api/v3/custom-fields/${customFieldPublicId}`,
-      method: 'PUT',
+      method: "PUT",
       body: UpdateCustomField,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -268,10 +288,13 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request DELETE:/api/v3/custom-fields/{custom-field-public-id}
    * @secure
    */
-  deleteCustomField = (customFieldPublicId: string, params: RequestParams = {}) =>
+  deleteCustomField = (
+    customFieldPublicId: string,
+    params: RequestParams = {},
+  ) =>
     this.request<void, void>({
       path: `/api/v3/custom-fields/${customFieldPublicId}`,
-      method: 'DELETE',
+      method: "DELETE",
       secure: true,
       ...params,
     });
@@ -286,9 +309,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   listEntityTemplates = (params: RequestParams = {}) =>
     this.request<EntityTemplate[], void>({
       path: `/api/v3/entity-templates`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -299,14 +322,17 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/entity-templates
    * @secure
    */
-  createEntityTemplate = (CreateEntityTemplate: CreateEntityTemplate, params: RequestParams = {}) =>
+  createEntityTemplate = (
+    CreateEntityTemplate: CreateEntityTemplate,
+    params: RequestParams = {},
+  ) =>
     this.request<EntityTemplate, void>({
       path: `/api/v3/entity-templates`,
-      method: 'POST',
+      method: "POST",
       body: CreateEntityTemplate,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -320,7 +346,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   disableStoryTemplates = (params: RequestParams = {}) =>
     this.request<void, void>({
       path: `/api/v3/entity-templates/disable`,
-      method: 'PUT',
+      method: "PUT",
       secure: true,
       ...params,
     });
@@ -335,7 +361,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   enableStoryTemplates = (params: RequestParams = {}) =>
     this.request<void, void>({
       path: `/api/v3/entity-templates/enable`,
-      method: 'PUT',
+      method: "PUT",
       secure: true,
       ...params,
     });
@@ -347,12 +373,15 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/entity-templates/{entity-template-public-id}
    * @secure
    */
-  getEntityTemplate = (entityTemplatePublicId: string, params: RequestParams = {}) =>
+  getEntityTemplate = (
+    entityTemplatePublicId: string,
+    params: RequestParams = {},
+  ) =>
     this.request<EntityTemplate, void>({
       path: `/api/v3/entity-templates/${entityTemplatePublicId}`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -370,11 +399,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   ) =>
     this.request<EntityTemplate, void>({
       path: `/api/v3/entity-templates/${entityTemplatePublicId}`,
-      method: 'PUT',
+      method: "PUT",
       body: UpdateEntityTemplate,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -385,10 +414,13 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request DELETE:/api/v3/entity-templates/{entity-template-public-id}
    * @secure
    */
-  deleteEntityTemplate = (entityTemplatePublicId: string, params: RequestParams = {}) =>
+  deleteEntityTemplate = (
+    entityTemplatePublicId: string,
+    params: RequestParams = {},
+  ) =>
     this.request<void, void>({
       path: `/api/v3/entity-templates/${entityTemplatePublicId}`,
-      method: 'DELETE',
+      method: "DELETE",
       secure: true,
       ...params,
     });
@@ -403,9 +435,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   getEpicWorkflow = (params: RequestParams = {}) =>
     this.request<EpicWorkflow, void>({
       path: `/api/v3/epic-workflow`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -425,10 +457,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   ) =>
     this.request<EpicSlim[], void>({
       path: `/api/v3/epics`,
-      method: 'GET',
+      method: "GET",
       query: query,
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -442,11 +474,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   createEpic = (CreateEpic: CreateEpic, params: RequestParams = {}) =>
     this.request<Epic, void>({
       path: `/api/v3/epics`,
-      method: 'POST',
+      method: "POST",
       body: CreateEpic,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -460,9 +492,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   getEpic = (epicPublicId: number, params: RequestParams = {}) =>
     this.request<Epic, void>({
       path: `/api/v3/epics/${epicPublicId}`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -473,14 +505,18 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/epics/{epic-public-id}
    * @secure
    */
-  updateEpic = (epicPublicId: number, UpdateEpic: UpdateEpic, params: RequestParams = {}) =>
+  updateEpic = (
+    epicPublicId: number,
+    UpdateEpic: UpdateEpic,
+    params: RequestParams = {},
+  ) =>
     this.request<Epic, void>({
       path: `/api/v3/epics/${epicPublicId}`,
-      method: 'PUT',
+      method: "PUT",
       body: UpdateEpic,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -494,7 +530,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   deleteEpic = (epicPublicId: number, params: RequestParams = {}) =>
     this.request<void, void>({
       path: `/api/v3/epics/${epicPublicId}`,
-      method: 'DELETE',
+      method: "DELETE",
       secure: true,
       ...params,
     });
@@ -509,9 +545,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   listEpicComments = (epicPublicId: number, params: RequestParams = {}) =>
     this.request<ThreadedComment[], void>({
       path: `/api/v3/epics/${epicPublicId}/comments`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -522,14 +558,18 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/epics/{epic-public-id}/comments
    * @secure
    */
-  createEpicComment = (epicPublicId: number, CreateEpicComment: CreateEpicComment, params: RequestParams = {}) =>
+  createEpicComment = (
+    epicPublicId: number,
+    CreateEpicComment: CreateEpicComment,
+    params: RequestParams = {},
+  ) =>
     this.request<ThreadedComment, void>({
       path: `/api/v3/epics/${epicPublicId}/comments`,
-      method: 'POST',
+      method: "POST",
       body: CreateEpicComment,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -548,11 +588,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   ) =>
     this.request<ThreadedComment, void>({
       path: `/api/v3/epics/${epicPublicId}/comments/${commentPublicId}`,
-      method: 'POST',
+      method: "POST",
       body: CreateCommentComment,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -563,12 +603,16 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/epics/{epic-public-id}/comments/{comment-public-id}
    * @secure
    */
-  getEpicComment = (epicPublicId: number, commentPublicId: number, params: RequestParams = {}) =>
+  getEpicComment = (
+    epicPublicId: number,
+    commentPublicId: number,
+    params: RequestParams = {},
+  ) =>
     this.request<ThreadedComment, void>({
       path: `/api/v3/epics/${epicPublicId}/comments/${commentPublicId}`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -587,11 +631,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   ) =>
     this.request<ThreadedComment, void>({
       path: `/api/v3/epics/${epicPublicId}/comments/${commentPublicId}`,
-      method: 'PUT',
+      method: "PUT",
       body: UpdateComment,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -602,10 +646,14 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request DELETE:/api/v3/epics/{epic-public-id}/comments/{comment-public-id}
    * @secure
    */
-  deleteEpicComment = (epicPublicId: number, commentPublicId: number, params: RequestParams = {}) =>
+  deleteEpicComment = (
+    epicPublicId: number,
+    commentPublicId: number,
+    params: RequestParams = {},
+  ) =>
     this.request<void, void>({
       path: `/api/v3/epics/${epicPublicId}/comments/${commentPublicId}`,
-      method: 'DELETE',
+      method: "DELETE",
       secure: true,
       ...params,
     });
@@ -627,10 +675,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   ) =>
     this.request<StorySlim[], void>({
       path: `/api/v3/epics/${epicPublicId}/stories`,
-      method: 'GET',
+      method: "GET",
       query: query,
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -641,10 +689,13 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/epics/{epic-public-id}/unlink-productboard
    * @secure
    */
-  unlinkProductboardFromEpic = (epicPublicId: number, params: RequestParams = {}) =>
+  unlinkProductboardFromEpic = (
+    epicPublicId: number,
+    params: RequestParams = {},
+  ) =>
     this.request<void, void>({
       path: `/api/v3/epics/${epicPublicId}/unlink-productboard`,
-      method: 'POST',
+      method: "POST",
       secure: true,
       ...params,
     });
@@ -669,10 +720,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   ) =>
     this.request<StorySlim[], void>({
       path: `/api/v3/external-link/stories`,
-      method: 'GET',
+      method: "GET",
       query: query,
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -686,9 +737,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   listFiles = (params: RequestParams = {}) =>
     this.request<UploadedFile[], void>({
       path: `/api/v3/files`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -731,11 +782,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   ) =>
     this.request<UploadedFile[], void>({
       path: `/api/v3/files`,
-      method: 'POST',
+      method: "POST",
       body: data,
       secure: true,
       type: ContentType.FormData,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -749,9 +800,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   getFile = (filePublicId: number, params: RequestParams = {}) =>
     this.request<UploadedFile, void>({
       path: `/api/v3/files/${filePublicId}`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -762,14 +813,18 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/files/{file-public-id}
    * @secure
    */
-  updateFile = (filePublicId: number, UpdateFile: UpdateFile, params: RequestParams = {}) =>
+  updateFile = (
+    filePublicId: number,
+    UpdateFile: UpdateFile,
+    params: RequestParams = {},
+  ) =>
     this.request<UploadedFile, void>({
       path: `/api/v3/files/${filePublicId}`,
-      method: 'PUT',
+      method: "PUT",
       body: UpdateFile,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -783,7 +838,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   deleteFile = (filePublicId: number, params: RequestParams = {}) =>
     this.request<void, void>({
       path: `/api/v3/files/${filePublicId}`,
-      method: 'DELETE',
+      method: "DELETE",
       secure: true,
       ...params,
     });
@@ -798,9 +853,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   listGroups = (params: RequestParams = {}) =>
     this.request<Group[], void>({
       path: `/api/v3/groups`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -814,11 +869,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   createGroup = (CreateGroup: CreateGroup, params: RequestParams = {}) =>
     this.request<Group, void | UnusableEntitlementError>({
       path: `/api/v3/groups`,
-      method: 'POST',
+      method: "POST",
       body: CreateGroup,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -832,7 +887,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   disableGroups = (params: RequestParams = {}) =>
     this.request<void, void>({
       path: `/api/v3/groups/disable`,
-      method: 'PUT',
+      method: "PUT",
       secure: true,
       ...params,
     });
@@ -847,7 +902,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   enableGroups = (params: RequestParams = {}) =>
     this.request<void, void>({
       path: `/api/v3/groups/enable`,
-      method: 'PUT',
+      method: "PUT",
       secure: true,
       ...params,
     });
@@ -862,9 +917,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   getGroup = (groupPublicId: string, params: RequestParams = {}) =>
     this.request<Group, void>({
       path: `/api/v3/groups/${groupPublicId}`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -875,14 +930,18 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/groups/{group-public-id}
    * @secure
    */
-  updateGroup = (groupPublicId: string, UpdateGroup: UpdateGroup, params: RequestParams = {}) =>
+  updateGroup = (
+    groupPublicId: string,
+    UpdateGroup: UpdateGroup,
+    params: RequestParams = {},
+  ) =>
     this.request<Group, void | UnusableEntitlementError>({
       path: `/api/v3/groups/${groupPublicId}`,
-      method: 'PUT',
+      method: "PUT",
       body: UpdateGroup,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -911,10 +970,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   ) =>
     this.request<StorySlim[], void>({
       path: `/api/v3/groups/${groupPublicId}/stories`,
-      method: 'GET',
+      method: "GET",
       query: query,
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -928,9 +987,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   listIterations = (params: RequestParams = {}) =>
     this.request<IterationSlim[], void>({
       path: `/api/v3/iterations`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -941,14 +1000,17 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/iterations
    * @secure
    */
-  createIteration = (CreateIteration: CreateIteration, params: RequestParams = {}) =>
+  createIteration = (
+    CreateIteration: CreateIteration,
+    params: RequestParams = {},
+  ) =>
     this.request<Iteration, void>({
       path: `/api/v3/iterations`,
-      method: 'POST',
+      method: "POST",
       body: CreateIteration,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -962,7 +1024,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   disableIterations = (params: RequestParams = {}) =>
     this.request<void, void>({
       path: `/api/v3/iterations/disable`,
-      method: 'PUT',
+      method: "PUT",
       secure: true,
       ...params,
     });
@@ -977,7 +1039,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   enableIterations = (params: RequestParams = {}) =>
     this.request<void, void>({
       path: `/api/v3/iterations/enable`,
-      method: 'PUT',
+      method: "PUT",
       secure: true,
       ...params,
     });
@@ -992,9 +1054,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   getIteration = (iterationPublicId: number, params: RequestParams = {}) =>
     this.request<Iteration, void>({
       path: `/api/v3/iterations/${iterationPublicId}`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1005,14 +1067,18 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/iterations/{iteration-public-id}
    * @secure
    */
-  updateIteration = (iterationPublicId: number, UpdateIteration: UpdateIteration, params: RequestParams = {}) =>
+  updateIteration = (
+    iterationPublicId: number,
+    UpdateIteration: UpdateIteration,
+    params: RequestParams = {},
+  ) =>
     this.request<Iteration, void>({
       path: `/api/v3/iterations/${iterationPublicId}`,
-      method: 'PUT',
+      method: "PUT",
       body: UpdateIteration,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1026,7 +1092,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   deleteIteration = (iterationPublicId: number, params: RequestParams = {}) =>
     this.request<void, void>({
       path: `/api/v3/iterations/${iterationPublicId}`,
-      method: 'DELETE',
+      method: "DELETE",
       secure: true,
       ...params,
     });
@@ -1048,10 +1114,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   ) =>
     this.request<StorySlim[], void>({
       path: `/api/v3/iterations/${iterationPublicId}/stories`,
-      method: 'GET',
+      method: "GET",
       query: query,
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1065,9 +1131,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   getKeyResult = (keyResultPublicId: string, params: RequestParams = {}) =>
     this.request<KeyResult, void>({
       path: `/api/v3/key-results/${keyResultPublicId}`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1078,14 +1144,18 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/key-results/{key-result-public-id}
    * @secure
    */
-  updateKeyResult = (keyResultPublicId: string, UpdateKeyResult: UpdateKeyResult, params: RequestParams = {}) =>
+  updateKeyResult = (
+    keyResultPublicId: string,
+    UpdateKeyResult: UpdateKeyResult,
+    params: RequestParams = {},
+  ) =>
     this.request<KeyResult, void>({
       path: `/api/v3/key-results/${keyResultPublicId}`,
-      method: 'PUT',
+      method: "PUT",
       body: UpdateKeyResult,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1105,10 +1175,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   ) =>
     this.request<Label[], void>({
       path: `/api/v3/labels`,
-      method: 'GET',
+      method: "GET",
       query: query,
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1119,14 +1189,17 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/labels
    * @secure
    */
-  createLabel = (CreateLabelParams: CreateLabelParams, params: RequestParams = {}) =>
+  createLabel = (
+    CreateLabelParams: CreateLabelParams,
+    params: RequestParams = {},
+  ) =>
     this.request<Label, void>({
       path: `/api/v3/labels`,
-      method: 'POST',
+      method: "POST",
       body: CreateLabelParams,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1140,9 +1213,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   getLabel = (labelPublicId: number, params: RequestParams = {}) =>
     this.request<Label, void>({
       path: `/api/v3/labels/${labelPublicId}`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1153,14 +1226,18 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/labels/{label-public-id}
    * @secure
    */
-  updateLabel = (labelPublicId: number, UpdateLabel: UpdateLabel, params: RequestParams = {}) =>
+  updateLabel = (
+    labelPublicId: number,
+    UpdateLabel: UpdateLabel,
+    params: RequestParams = {},
+  ) =>
     this.request<Label, void>({
       path: `/api/v3/labels/${labelPublicId}`,
-      method: 'PUT',
+      method: "PUT",
       body: UpdateLabel,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1174,7 +1251,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   deleteLabel = (labelPublicId: number, params: RequestParams = {}) =>
     this.request<void, void>({
       path: `/api/v3/labels/${labelPublicId}`,
-      method: 'DELETE',
+      method: "DELETE",
       secure: true,
       ...params,
     });
@@ -1189,9 +1266,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   listLabelEpics = (labelPublicId: number, params: RequestParams = {}) =>
     this.request<EpicSlim[], void>({
       path: `/api/v3/labels/${labelPublicId}/epics`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1212,10 +1289,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   ) =>
     this.request<StorySlim[], void>({
       path: `/api/v3/labels/${labelPublicId}/stories`,
-      method: 'GET',
+      method: "GET",
       query: query,
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1229,9 +1306,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   listLinkedFiles = (params: RequestParams = {}) =>
     this.request<LinkedFile[], void>({
       path: `/api/v3/linked-files`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1242,14 +1319,17 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/linked-files
    * @secure
    */
-  createLinkedFile = (CreateLinkedFile: CreateLinkedFile, params: RequestParams = {}) =>
+  createLinkedFile = (
+    CreateLinkedFile: CreateLinkedFile,
+    params: RequestParams = {},
+  ) =>
     this.request<LinkedFile, void>({
       path: `/api/v3/linked-files`,
-      method: 'POST',
+      method: "POST",
       body: CreateLinkedFile,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1263,9 +1343,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   getLinkedFile = (linkedFilePublicId: number, params: RequestParams = {}) =>
     this.request<LinkedFile, void>({
       path: `/api/v3/linked-files/${linkedFilePublicId}`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1276,14 +1356,18 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/linked-files/{linked-file-public-id}
    * @secure
    */
-  updateLinkedFile = (linkedFilePublicId: number, UpdateLinkedFile: UpdateLinkedFile, params: RequestParams = {}) =>
+  updateLinkedFile = (
+    linkedFilePublicId: number,
+    UpdateLinkedFile: UpdateLinkedFile,
+    params: RequestParams = {},
+  ) =>
     this.request<LinkedFile, void>({
       path: `/api/v3/linked-files/${linkedFilePublicId}`,
-      method: 'PUT',
+      method: "PUT",
       body: UpdateLinkedFile,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1297,7 +1381,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   deleteLinkedFile = (linkedFilePublicId: number, params: RequestParams = {}) =>
     this.request<void, void>({
       path: `/api/v3/linked-files/${linkedFilePublicId}`,
-      method: 'DELETE',
+      method: "DELETE",
       secure: true,
       ...params,
     });
@@ -1312,9 +1396,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   getCurrentMemberInfo = (params: RequestParams = {}) =>
     this.request<MemberInfo, void>({
       path: `/api/v3/member`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1331,16 +1415,16 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
        * The unique ID of the Organization to limit the list to.
        * @format uuid
        */
-      'org-public-id'?: string;
+      "org-public-id"?: string;
     },
     params: RequestParams = {},
   ) =>
     this.request<Member[], void>({
       path: `/api/v3/members`,
-      method: 'GET',
+      method: "GET",
       query: query,
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1358,16 +1442,16 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
        * The unique ID of the Organization to limit the lookup to.
        * @format uuid
        */
-      'org-public-id'?: string;
+      "org-public-id"?: string;
     },
     params: RequestParams = {},
   ) =>
     this.request<Member, void>({
       path: `/api/v3/members/${memberPublicId}`,
-      method: 'GET',
+      method: "GET",
       query: query,
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1381,9 +1465,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   listMilestones = (params: RequestParams = {}) =>
     this.request<Milestone[], void>({
       path: `/api/v3/milestones`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1394,14 +1478,17 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/milestones
    * @secure
    */
-  createMilestone = (CreateMilestone: CreateMilestone, params: RequestParams = {}) =>
+  createMilestone = (
+    CreateMilestone: CreateMilestone,
+    params: RequestParams = {},
+  ) =>
     this.request<Milestone, void | UnusableEntitlementError>({
       path: `/api/v3/milestones`,
-      method: 'POST',
+      method: "POST",
       body: CreateMilestone,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1415,9 +1502,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   getMilestone = (milestonePublicId: number, params: RequestParams = {}) =>
     this.request<Milestone, void>({
       path: `/api/v3/milestones/${milestonePublicId}`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1428,14 +1515,18 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/milestones/{milestone-public-id}
    * @secure
    */
-  updateMilestone = (milestonePublicId: number, UpdateMilestone: UpdateMilestone, params: RequestParams = {}) =>
+  updateMilestone = (
+    milestonePublicId: number,
+    UpdateMilestone: UpdateMilestone,
+    params: RequestParams = {},
+  ) =>
     this.request<Milestone, void>({
       path: `/api/v3/milestones/${milestonePublicId}`,
-      method: 'PUT',
+      method: "PUT",
       body: UpdateMilestone,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1449,7 +1540,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   deleteMilestone = (milestonePublicId: number, params: RequestParams = {}) =>
     this.request<void, void>({
       path: `/api/v3/milestones/${milestonePublicId}`,
-      method: 'DELETE',
+      method: "DELETE",
       secure: true,
       ...params,
     });
@@ -1461,12 +1552,15 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/milestones/{milestone-public-id}/epics
    * @secure
    */
-  listMilestoneEpics = (milestonePublicId: number, params: RequestParams = {}) =>
+  listMilestoneEpics = (
+    milestonePublicId: number,
+    params: RequestParams = {},
+  ) =>
     this.request<EpicSlim[], void>({
       path: `/api/v3/milestones/${milestonePublicId}/epics`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1480,9 +1574,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   listObjectives = (params: RequestParams = {}) =>
     this.request<Objective[], void>({
       path: `/api/v3/objectives`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1493,14 +1587,17 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/objectives
    * @secure
    */
-  createObjective = (CreateObjective: CreateObjective, params: RequestParams = {}) =>
+  createObjective = (
+    CreateObjective: CreateObjective,
+    params: RequestParams = {},
+  ) =>
     this.request<Objective, void | UnusableEntitlementError>({
       path: `/api/v3/objectives`,
-      method: 'POST',
+      method: "POST",
       body: CreateObjective,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1514,9 +1611,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   getObjective = (objectivePublicId: number, params: RequestParams = {}) =>
     this.request<Objective, void>({
       path: `/api/v3/objectives/${objectivePublicId}`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1527,14 +1624,18 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/objectives/{objective-public-id}
    * @secure
    */
-  updateObjective = (objectivePublicId: number, UpdateObjective: UpdateObjective, params: RequestParams = {}) =>
+  updateObjective = (
+    objectivePublicId: number,
+    UpdateObjective: UpdateObjective,
+    params: RequestParams = {},
+  ) =>
     this.request<Objective, void>({
       path: `/api/v3/objectives/${objectivePublicId}`,
-      method: 'PUT',
+      method: "PUT",
       body: UpdateObjective,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1548,7 +1649,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   deleteObjective = (objectivePublicId: number, params: RequestParams = {}) =>
     this.request<void, void>({
       path: `/api/v3/objectives/${objectivePublicId}`,
-      method: 'DELETE',
+      method: "DELETE",
       secure: true,
       ...params,
     });
@@ -1560,12 +1661,15 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/objectives/{objective-public-id}/epics
    * @secure
    */
-  listObjectiveEpics = (objectivePublicId: number, params: RequestParams = {}) =>
+  listObjectiveEpics = (
+    objectivePublicId: number,
+    params: RequestParams = {},
+  ) =>
     this.request<EpicSlim[], void>({
       path: `/api/v3/objectives/${objectivePublicId}/epics`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1579,9 +1683,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   listProjects = (params: RequestParams = {}) =>
     this.request<Project[], void>({
       path: `/api/v3/projects`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1595,11 +1699,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   createProject = (CreateProject: CreateProject, params: RequestParams = {}) =>
     this.request<Project, void>({
       path: `/api/v3/projects`,
-      method: 'POST',
+      method: "POST",
       body: CreateProject,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1613,9 +1717,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   getProject = (projectPublicId: number, params: RequestParams = {}) =>
     this.request<Project, void>({
       path: `/api/v3/projects/${projectPublicId}`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1626,14 +1730,18 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/projects/{project-public-id}
    * @secure
    */
-  updateProject = (projectPublicId: number, UpdateProject: UpdateProject, params: RequestParams = {}) =>
+  updateProject = (
+    projectPublicId: number,
+    UpdateProject: UpdateProject,
+    params: RequestParams = {},
+  ) =>
     this.request<Project, void>({
       path: `/api/v3/projects/${projectPublicId}`,
-      method: 'PUT',
+      method: "PUT",
       body: UpdateProject,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1647,7 +1755,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   deleteProject = (projectPublicId: number, params: RequestParams = {}) =>
     this.request<void, void>({
       path: `/api/v3/projects/${projectPublicId}`,
-      method: 'DELETE',
+      method: "DELETE",
       secure: true,
       ...params,
     });
@@ -1669,10 +1777,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   ) =>
     this.request<StorySlim[], void>({
       path: `/api/v3/projects/${projectPublicId}/stories`,
-      method: 'GET',
+      method: "GET",
       query: query,
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1686,9 +1794,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   listRepositories = (params: RequestParams = {}) =>
     this.request<Repository[], void>({
       path: `/api/v3/repositories`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1702,9 +1810,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   getRepository = (repoPublicId: number, params: RequestParams = {}) =>
     this.request<Repository, void>({
       path: `/api/v3/repositories/${repoPublicId}`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1735,20 +1843,26 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
        *    and only references related items by id.
        *    The default is "full".
        */
-      detail?: 'full' | 'slim';
+      detail?: "full" | "slim";
       /** The next page token. */
       next?: string;
       /** A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, objective, story. */
-      entity_types?: ('story' | 'milestone' | 'epic' | 'iteration' | 'objective')[];
+      entity_types?: (
+        | "story"
+        | "milestone"
+        | "epic"
+        | "iteration"
+        | "objective"
+      )[];
     },
     params: RequestParams = {},
   ) =>
     this.request<SearchResults, MaxSearchResultsExceededError | void>({
       path: `/api/v3/search`,
-      method: 'GET',
+      method: "GET",
       query: query,
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1779,20 +1893,26 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
        *    and only references related items by id.
        *    The default is "full".
        */
-      detail?: 'full' | 'slim';
+      detail?: "full" | "slim";
       /** The next page token. */
       next?: string;
       /** A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, objective, story. */
-      entity_types?: ('story' | 'milestone' | 'epic' | 'iteration' | 'objective')[];
+      entity_types?: (
+        | "story"
+        | "milestone"
+        | "epic"
+        | "iteration"
+        | "objective"
+      )[];
     },
     params: RequestParams = {},
   ) =>
     this.request<EpicSearchResults, MaxSearchResultsExceededError | void>({
       path: `/api/v3/search/epics`,
-      method: 'GET',
+      method: "GET",
       query: query,
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1823,20 +1943,26 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
        *    and only references related items by id.
        *    The default is "full".
        */
-      detail?: 'full' | 'slim';
+      detail?: "full" | "slim";
       /** The next page token. */
       next?: string;
       /** A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, objective, story. */
-      entity_types?: ('story' | 'milestone' | 'epic' | 'iteration' | 'objective')[];
+      entity_types?: (
+        | "story"
+        | "milestone"
+        | "epic"
+        | "iteration"
+        | "objective"
+      )[];
     },
     params: RequestParams = {},
   ) =>
     this.request<IterationSearchResults, MaxSearchResultsExceededError | void>({
       path: `/api/v3/search/iterations`,
-      method: 'GET',
+      method: "GET",
       query: query,
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1867,20 +1993,26 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
        *    and only references related items by id.
        *    The default is "full".
        */
-      detail?: 'full' | 'slim';
+      detail?: "full" | "slim";
       /** The next page token. */
       next?: string;
       /** A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, objective, story. */
-      entity_types?: ('story' | 'milestone' | 'epic' | 'iteration' | 'objective')[];
+      entity_types?: (
+        | "story"
+        | "milestone"
+        | "epic"
+        | "iteration"
+        | "objective"
+      )[];
     },
     params: RequestParams = {},
   ) =>
     this.request<ObjectiveSearchResults, MaxSearchResultsExceededError | void>({
       path: `/api/v3/search/milestones`,
-      method: 'GET',
+      method: "GET",
       query: query,
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1911,20 +2043,26 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
        *    and only references related items by id.
        *    The default is "full".
        */
-      detail?: 'full' | 'slim';
+      detail?: "full" | "slim";
       /** The next page token. */
       next?: string;
       /** A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, objective, story. */
-      entity_types?: ('story' | 'milestone' | 'epic' | 'iteration' | 'objective')[];
+      entity_types?: (
+        | "story"
+        | "milestone"
+        | "epic"
+        | "iteration"
+        | "objective"
+      )[];
     },
     params: RequestParams = {},
   ) =>
     this.request<ObjectiveSearchResults, MaxSearchResultsExceededError | void>({
       path: `/api/v3/search/objectives`,
-      method: 'GET',
+      method: "GET",
       query: query,
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1955,20 +2093,26 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
        *    and only references related items by id.
        *    The default is "full".
        */
-      detail?: 'full' | 'slim';
+      detail?: "full" | "slim";
       /** The next page token. */
       next?: string;
       /** A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, objective, story. */
-      entity_types?: ('story' | 'milestone' | 'epic' | 'iteration' | 'objective')[];
+      entity_types?: (
+        | "story"
+        | "milestone"
+        | "epic"
+        | "iteration"
+        | "objective"
+      )[];
     },
     params: RequestParams = {},
   ) =>
     this.request<StorySearchResults, MaxSearchResultsExceededError | void>({
       path: `/api/v3/search/stories`,
-      method: 'GET',
+      method: "GET",
       query: query,
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1979,14 +2123,17 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/stories
    * @secure
    */
-  createStory = (CreateStoryParams: CreateStoryParams, params: RequestParams = {}) =>
+  createStory = (
+    CreateStoryParams: CreateStoryParams,
+    params: RequestParams = {},
+  ) =>
     this.request<Story, void>({
       path: `/api/v3/stories`,
-      method: 'POST',
+      method: "POST",
       body: CreateStoryParams,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -1997,14 +2144,17 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/stories/bulk
    * @secure
    */
-  createMultipleStories = (CreateStories: CreateStories, params: RequestParams = {}) =>
+  createMultipleStories = (
+    CreateStories: CreateStories,
+    params: RequestParams = {},
+  ) =>
     this.request<StorySlim[], void>({
       path: `/api/v3/stories/bulk`,
-      method: 'POST',
+      method: "POST",
       body: CreateStories,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -2015,14 +2165,17 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/stories/bulk
    * @secure
    */
-  updateMultipleStories = (UpdateStories: UpdateStories, params: RequestParams = {}) =>
+  updateMultipleStories = (
+    UpdateStories: UpdateStories,
+    params: RequestParams = {},
+  ) =>
     this.request<StorySlim[], void>({
       path: `/api/v3/stories/bulk`,
-      method: 'PUT',
+      method: "PUT",
       body: UpdateStories,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -2033,10 +2186,13 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request DELETE:/api/v3/stories/bulk
    * @secure
    */
-  deleteMultipleStories = (DeleteStories: DeleteStories, params: RequestParams = {}) =>
+  deleteMultipleStories = (
+    DeleteStories: DeleteStories,
+    params: RequestParams = {},
+  ) =>
     this.request<void, void>({
       path: `/api/v3/stories/bulk`,
-      method: 'DELETE',
+      method: "DELETE",
       body: DeleteStories,
       secure: true,
       type: ContentType.Json,
@@ -2056,11 +2212,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   ) =>
     this.request<Story, void>({
       path: `/api/v3/stories/from-template`,
-      method: 'POST',
+      method: "POST",
       body: CreateStoryFromTemplateParams,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -2071,14 +2227,17 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/stories/search
    * @secure
    */
-  searchStoriesOld = (SearchStories: SearchStories, params: RequestParams = {}) =>
+  searchStoriesOld = (
+    SearchStories: SearchStories,
+    params: RequestParams = {},
+  ) =>
     this.request<StorySlim[], void>({
       path: `/api/v3/stories/search`,
-      method: 'POST',
+      method: "POST",
       body: SearchStories,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -2092,9 +2251,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   getStory = (storyPublicId: number, params: RequestParams = {}) =>
     this.request<Story, void>({
       path: `/api/v3/stories/${storyPublicId}`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -2105,14 +2264,18 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/stories/{story-public-id}
    * @secure
    */
-  updateStory = (storyPublicId: number, UpdateStory: UpdateStory, params: RequestParams = {}) =>
+  updateStory = (
+    storyPublicId: number,
+    UpdateStory: UpdateStory,
+    params: RequestParams = {},
+  ) =>
     this.request<Story, void>({
       path: `/api/v3/stories/${storyPublicId}`,
-      method: 'PUT',
+      method: "PUT",
       body: UpdateStory,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -2126,7 +2289,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   deleteStory = (storyPublicId: number, params: RequestParams = {}) =>
     this.request<void, void>({
       path: `/api/v3/stories/${storyPublicId}`,
-      method: 'DELETE',
+      method: "DELETE",
       secure: true,
       ...params,
     });
@@ -2141,9 +2304,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   listStoryComment = (storyPublicId: number, params: RequestParams = {}) =>
     this.request<StoryComment[], void>({
       path: `/api/v3/stories/${storyPublicId}/comments`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -2154,14 +2317,18 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/stories/{story-public-id}/comments
    * @secure
    */
-  createStoryComment = (storyPublicId: number, CreateStoryComment: CreateStoryComment, params: RequestParams = {}) =>
+  createStoryComment = (
+    storyPublicId: number,
+    CreateStoryComment: CreateStoryComment,
+    params: RequestParams = {},
+  ) =>
     this.request<StoryComment, void>({
       path: `/api/v3/stories/${storyPublicId}/comments`,
-      method: 'POST',
+      method: "POST",
       body: CreateStoryComment,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -2172,12 +2339,16 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/stories/{story-public-id}/comments/{comment-public-id}
    * @secure
    */
-  getStoryComment = (storyPublicId: number, commentPublicId: number, params: RequestParams = {}) =>
+  getStoryComment = (
+    storyPublicId: number,
+    commentPublicId: number,
+    params: RequestParams = {},
+  ) =>
     this.request<StoryComment, void>({
       path: `/api/v3/stories/${storyPublicId}/comments/${commentPublicId}`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -2196,11 +2367,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   ) =>
     this.request<StoryComment, void>({
       path: `/api/v3/stories/${storyPublicId}/comments/${commentPublicId}`,
-      method: 'PUT',
+      method: "PUT",
       body: UpdateStoryComment,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -2211,10 +2382,14 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request DELETE:/api/v3/stories/{story-public-id}/comments/{comment-public-id}
    * @secure
    */
-  deleteStoryComment = (storyPublicId: number, commentPublicId: number, params: RequestParams = {}) =>
+  deleteStoryComment = (
+    storyPublicId: number,
+    commentPublicId: number,
+    params: RequestParams = {},
+  ) =>
     this.request<void, void>({
       path: `/api/v3/stories/${storyPublicId}/comments/${commentPublicId}`,
-      method: 'DELETE',
+      method: "DELETE",
       secure: true,
       ...params,
     });
@@ -2234,10 +2409,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   ) =>
     this.request<StoryReaction[], void>({
       path: `/api/v3/stories/${storyPublicId}/comments/${commentPublicId}/reactions`,
-      method: 'POST',
+      method: "POST",
       body: CreateOrDeleteStoryReaction,
       secure: true,
-      format: 'json',
+      type: ContentType.Json,
+      format: "json",
       ...params,
     });
   /**
@@ -2256,9 +2432,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   ) =>
     this.request<void, void>({
       path: `/api/v3/stories/${storyPublicId}/comments/${commentPublicId}/reactions`,
-      method: 'DELETE',
+      method: "DELETE",
       body: CreateOrDeleteStoryReaction,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -2269,12 +2446,16 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/stories/{story-public-id}/comments/{comment-public-id}/unlink-from-slack
    * @secure
    */
-  unlinkCommentThreadFromSlack = (storyPublicId: number, commentPublicId: number, params: RequestParams = {}) =>
+  unlinkCommentThreadFromSlack = (
+    storyPublicId: number,
+    commentPublicId: number,
+    params: RequestParams = {},
+  ) =>
     this.request<StoryComment, void>({
       path: `/api/v3/stories/${storyPublicId}/comments/${commentPublicId}/unlink-from-slack`,
-      method: 'POST',
+      method: "POST",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -2288,9 +2469,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   storyHistory = (storyPublicId: number, params: RequestParams = {}) =>
     this.request<History[], void>({
       path: `/api/v3/stories/${storyPublicId}/history`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -2301,14 +2482,18 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/stories/{story-public-id}/tasks
    * @secure
    */
-  createTask = (storyPublicId: number, CreateTask: CreateTask, params: RequestParams = {}) =>
+  createTask = (
+    storyPublicId: number,
+    CreateTask: CreateTask,
+    params: RequestParams = {},
+  ) =>
     this.request<Task, void>({
       path: `/api/v3/stories/${storyPublicId}/tasks`,
-      method: 'POST',
+      method: "POST",
       body: CreateTask,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -2319,12 +2504,16 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v3/stories/{story-public-id}/tasks/{task-public-id}
    * @secure
    */
-  getTask = (storyPublicId: number, taskPublicId: number, params: RequestParams = {}) =>
+  getTask = (
+    storyPublicId: number,
+    taskPublicId: number,
+    params: RequestParams = {},
+  ) =>
     this.request<Task, void>({
       path: `/api/v3/stories/${storyPublicId}/tasks/${taskPublicId}`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -2335,14 +2524,19 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/stories/{story-public-id}/tasks/{task-public-id}
    * @secure
    */
-  updateTask = (storyPublicId: number, taskPublicId: number, UpdateTask: UpdateTask, params: RequestParams = {}) =>
+  updateTask = (
+    storyPublicId: number,
+    taskPublicId: number,
+    UpdateTask: UpdateTask,
+    params: RequestParams = {},
+  ) =>
     this.request<Task, void>({
       path: `/api/v3/stories/${storyPublicId}/tasks/${taskPublicId}`,
-      method: 'PUT',
+      method: "PUT",
       body: UpdateTask,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -2353,10 +2547,14 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request DELETE:/api/v3/stories/{story-public-id}/tasks/{task-public-id}
    * @secure
    */
-  deleteTask = (storyPublicId: number, taskPublicId: number, params: RequestParams = {}) =>
+  deleteTask = (
+    storyPublicId: number,
+    taskPublicId: number,
+    params: RequestParams = {},
+  ) =>
     this.request<void, void>({
       path: `/api/v3/stories/${storyPublicId}/tasks/${taskPublicId}`,
-      method: 'DELETE',
+      method: "DELETE",
       secure: true,
       ...params,
     });
@@ -2368,14 +2566,17 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v3/story-links
    * @secure
    */
-  createStoryLink = (CreateStoryLink: CreateStoryLink, params: RequestParams = {}) =>
+  createStoryLink = (
+    CreateStoryLink: CreateStoryLink,
+    params: RequestParams = {},
+  ) =>
     this.request<StoryLink, void>({
       path: `/api/v3/story-links`,
-      method: 'POST',
+      method: "POST",
       body: CreateStoryLink,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -2389,9 +2590,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   getStoryLink = (storyLinkPublicId: number, params: RequestParams = {}) =>
     this.request<StoryLink, void>({
       path: `/api/v3/story-links/${storyLinkPublicId}`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -2402,14 +2603,18 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v3/story-links/{story-link-public-id}
    * @secure
    */
-  updateStoryLink = (storyLinkPublicId: number, UpdateStoryLink: UpdateStoryLink, params: RequestParams = {}) =>
+  updateStoryLink = (
+    storyLinkPublicId: number,
+    UpdateStoryLink: UpdateStoryLink,
+    params: RequestParams = {},
+  ) =>
     this.request<StoryLink, void>({
       path: `/api/v3/story-links/${storyLinkPublicId}`,
-      method: 'PUT',
+      method: "PUT",
       body: UpdateStoryLink,
       secure: true,
       type: ContentType.Json,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -2423,7 +2628,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   deleteStoryLink = (storyLinkPublicId: number, params: RequestParams = {}) =>
     this.request<void, void>({
       path: `/api/v3/story-links/${storyLinkPublicId}`,
-      method: 'DELETE',
+      method: "DELETE",
       secure: true,
       ...params,
     });
@@ -2438,9 +2643,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   listWorkflows = (params: RequestParams = {}) =>
     this.request<Workflow[], void>({
       path: `/api/v3/workflows`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
   /**
@@ -2454,9 +2659,9 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
   getWorkflow = (workflowPublicId: number, params: RequestParams = {}) =>
     this.request<Workflow, void>({
       path: `/api/v3/workflows/${workflowPublicId}`,
-      method: 'GET',
+      method: "GET",
       secure: true,
-      format: 'json',
+      format: "json",
       ...params,
     });
 }

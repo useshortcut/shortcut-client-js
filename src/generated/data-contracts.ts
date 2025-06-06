@@ -1,5 +1,6 @@
 /* eslint-disable */
 /* tslint:disable */
+// @ts-nocheck
 /*
  * ---------------------------------------------------------------
  * ## THIS FILE WAS GENERATED VIA SWAGGER-TYPESCRIPT-API        ##
@@ -264,7 +265,7 @@ export interface CreateEpic {
    */
   planned_start_date?: string | null;
   /** `Deprecated` The Epic's state (to do, in progress, or done); will be ignored when `epic_state_id` is set. */
-  state?: 'in progress' | 'to do' | 'done';
+  state?: "in progress" | "to do" | "done";
   /**
    * `Deprecated` The ID of the Milestone this Epic is related to. Use `objective_ids`.
    * @format int64
@@ -372,22 +373,22 @@ export interface CreateGroup {
   color?: string;
   /** The color key you wish to use for the Group in the system. */
   color_key?:
-    | 'blue'
-    | 'purple'
-    | 'midnight-blue'
-    | 'orange'
-    | 'yellow-green'
-    | 'brass'
-    | 'gray'
-    | 'fuchsia'
-    | 'yellow'
-    | 'pink'
-    | 'sky-blue'
-    | 'green'
-    | 'red'
-    | 'black'
-    | 'slate'
-    | 'turquoise';
+    | "blue"
+    | "purple"
+    | "midnight-blue"
+    | "orange"
+    | "yellow-green"
+    | "brass"
+    | "gray"
+    | "fuchsia"
+    | "yellow"
+    | "pink"
+    | "sky-blue"
+    | "green"
+    | "red"
+    | "black"
+    | "slate"
+    | "turquoise";
   /**
    * The Icon id for the avatar of this Group.
    * @format uuid
@@ -470,7 +471,7 @@ export interface CreateLinkedFile {
    */
   thumbnail_url?: string;
   /** The integration type of the file (e.g. google, dropbox, box). */
-  type: 'google' | 'url' | 'dropbox' | 'box' | 'onedrive';
+  type: "google" | "url" | "dropbox" | "box" | "onedrive";
   /**
    * The filesize, if the integration provided it.
    * @format int64
@@ -504,7 +505,7 @@ export interface CreateMilestone {
    */
   description?: string;
   /** The workflow state that the Milestone is in. */
-  state?: 'in progress' | 'to do' | 'done';
+  state?: "in progress" | "to do" | "done";
   /**
    * A manual override for the time/date the Milestone was started.
    * @format date-time
@@ -532,7 +533,7 @@ export interface CreateObjective {
    */
   description?: string;
   /** The workflow state that the Objective is in. */
-  state?: 'in progress' | 'to do' | 'done';
+  state?: "in progress" | "to do" | "done";
   /**
    * A manual override for the time/date the Objective was started.
    * @format date-time
@@ -756,11 +757,11 @@ export interface CreateStoryFromTemplateParams {
    */
   external_links_add?: string[];
   /** The type of story (feature, bug, chore). */
-  story_type?: 'feature' | 'chore' | 'bug';
+  story_type?: "feature" | "chore" | "bug";
   /** A map specifying a CustomField ID and CustomFieldEnumValue ID that represents an assertion of some value for a CustomField. */
   custom_fields?: CustomFieldValueParams[];
   /** One of "first" or "last". This can be used to move the given story to the first or last position in the workflow state. */
-  move_to?: 'last' | 'first';
+  move_to?: "last" | "first";
   /**
    * An array of IDs of files attached to the story.
    * @uniqueItems true
@@ -934,7 +935,7 @@ export interface CreateStoryFromTemplateParams {
 
 export interface CreateStoryLink {
   /** The type of link. */
-  verb: 'blocks' | 'duplicates' | 'relates to';
+  verb: "blocks" | "duplicates" | "relates to";
   /**
    * The ID of the subject Story.
    * @format int64
@@ -955,7 +956,7 @@ export interface CreateStoryLinkParams {
    */
   subject_id?: number;
   /** How the subject Story acts on the object Story. This can be "blocks", "duplicates", or "relates to". */
-  verb: 'blocks' | 'duplicates' | 'relates to';
+  verb: "blocks" | "duplicates" | "relates to";
   /**
    * The unique ID of the Story defined as object.
    * @format int64
@@ -977,11 +978,11 @@ export interface CreateStoryParams {
   /** An array of labels attached to the story. */
   labels?: CreateLabelParams[];
   /** The type of story (feature, bug, chore). */
-  story_type?: 'feature' | 'chore' | 'bug';
+  story_type?: "feature" | "chore" | "bug";
   /** A map specifying a CustomField ID and CustomFieldEnumValue ID that represents an assertion of some value for a CustomField. */
   custom_fields?: CustomFieldValueParams[];
   /** One of "first" or "last". This can be used to move the given story to the first or last position in the workflow state. */
-  move_to?: 'last' | 'first';
+  move_to?: "last" | "first";
   /**
    * An array of IDs of files attached to the story.
    * @uniqueItems true
@@ -1153,7 +1154,7 @@ export interface CustomField {
    */
   icon_set_identifier?: string;
   /** A string description of this resource. */
-  entity_type: 'custom-field';
+  entity_type: "custom-field";
   /** The types of stories this CustomField is scoped to. */
   story_types?: string[];
   /**
@@ -1177,7 +1178,7 @@ export interface CustomField {
   /** A collection of legal values for a CustomField. */
   values?: CustomFieldEnumValue[];
   /** The type of Custom Field, eg. 'enum'. */
-  field_type: 'enum';
+  field_type: "enum";
   /**
    * An integer indicating the position of this Custom Field with respect to the other CustomField
    * @format int64
@@ -1214,7 +1215,7 @@ export interface CustomFieldEnumValue {
   /** A color key associated with this CustomFieldEnumValue. */
   color_key?: string | null;
   /** A string description of this resource. */
-  entity_type: 'custom-field-enum-value';
+  entity_type: "custom-field-enum-value";
   /** When true, the CustomFieldEnumValue can be selected for the CustomField. */
   enabled: boolean;
 }
@@ -1236,7 +1237,7 @@ export interface CustomFieldValueParams {
 
 /** Error returned when Datomic tx fails due to Datomc :db.error/cas-failed error */
 export interface DataConflictError {
-  error: 'data-conflict-error';
+  error: "data-conflict-error";
   /** An explanatory message: "The update failed due to a data conflict. Please refresh and try again." */
   message: string;
 }
@@ -1902,22 +1903,22 @@ export interface Group {
   global_id: string;
   /** The color key to be displayed with the Group. */
   color_key?:
-    | 'blue'
-    | 'purple'
-    | 'midnight-blue'
-    | 'orange'
-    | 'yellow-green'
-    | 'brass'
-    | 'gray'
-    | 'fuchsia'
-    | 'yellow'
-    | 'pink'
-    | 'sky-blue'
-    | 'green'
-    | 'red'
-    | 'black'
-    | 'slate'
-    | 'turquoise'
+    | "blue"
+    | "purple"
+    | "midnight-blue"
+    | "orange"
+    | "yellow-green"
+    | "brass"
+    | "gray"
+    | "fuchsia"
+    | "yellow"
+    | "pink"
+    | "sky-blue"
+    | "green"
+    | "red"
+    | "black"
+    | "slate"
+    | "turquoise"
     | null;
   /**
    * The total number of stories assigned to the group.
@@ -2003,7 +2004,7 @@ export interface History {
    */
   id: string;
   /** The version of the change format. */
-  version: 'v1';
+  version: "v1";
   /** The ID of the webhook that handled the change. */
   webhook_id?: string | null;
   /**
@@ -2027,7 +2028,7 @@ export interface HistoryActionBranchCreate {
   /** The URL from the provider of the VCS Branch that was pushed */
   url: string;
   /** The action of the entity referenced. */
-  action: 'create';
+  action: "create";
 }
 
 /** An action representing a VCS Branch being merged. */
@@ -2044,7 +2045,7 @@ export interface HistoryActionBranchMerge {
   /** The URL from the provider of the VCS Branch that was pushed */
   url: string;
   /** The action of the entity referenced. */
-  action: 'merge';
+  action: "merge";
 }
 
 /** An action representing a VCS Branch being pushed. */
@@ -2061,7 +2062,7 @@ export interface HistoryActionBranchPush {
   /** The URL from the provider of the VCS Branch that was pushed */
   url: string;
   /** The action of the entity referenced. */
-  action: 'push';
+  action: "push";
 }
 
 /** An action representing a Label being created. */
@@ -2074,7 +2075,7 @@ export interface HistoryActionLabelCreate {
   /** The type of entity referenced. */
   entity_type: string;
   /** The action of the entity referenced. */
-  action: 'create';
+  action: "create";
   /**
    * The application URL of the Label.
    * @maxLength 2048
@@ -2095,7 +2096,7 @@ export interface HistoryActionLabelDelete {
   /** The type of entity referenced. */
   entity_type: string;
   /** The action of the entity referenced. */
-  action: 'delete';
+  action: "delete";
   /** The name of the Label. */
   name: string;
 }
@@ -2110,7 +2111,7 @@ export interface HistoryActionLabelUpdate {
   /** The type of entity referenced. */
   entity_type: string;
   /** The action of the entity referenced. */
-  action: 'update';
+  action: "update";
 }
 
 /** An action representing a Project being updated. */
@@ -2123,7 +2124,7 @@ export interface HistoryActionProjectUpdate {
   /** The type of entity referenced. */
   entity_type: string;
   /** The action of the entity referenced. */
-  action: 'update';
+  action: "update";
   /**
    * The application URL of the Project.
    * @maxLength 2048
@@ -2144,7 +2145,7 @@ export interface HistoryActionPullRequest {
   /** The type of entity referenced. */
   entity_type: string;
   /** The action of the entity referenced. */
-  action: 'open' | 'update' | 'reopen' | 'close' | 'sync' | 'comment';
+  action: "open" | "update" | "reopen" | "close" | "sync" | "comment";
   /**
    * The VCS Repository-specific ID for the Pull Request.
    * @format int64
@@ -2170,7 +2171,7 @@ export interface HistoryActionStoryCommentCreate {
   /** The type of entity referenced. */
   entity_type: string;
   /** The action of the entity referenced. */
-  action: 'create';
+  action: "create";
   /**
    * The application URL of the Story Comment.
    * @maxLength 2048
@@ -2203,7 +2204,7 @@ export interface HistoryActionStoryCreate {
   /** An array of Task IDs on this Story. */
   task_ids?: number[];
   /** The type of Story; either feature, bug, or chore. */
-  story_type: 'feature' | 'chore' | 'bug';
+  story_type: "feature" | "chore" | "bug";
   /** The name of the Story. */
   name: string;
   /** Whether or not the Story is completed. */
@@ -2258,7 +2259,7 @@ export interface HistoryActionStoryCreate {
   /** An array of Story IDs that are the subject of a Story Link relationship. */
   subject_story_link_ids?: number[];
   /** The action of the entity referenced. */
-  action: 'create';
+  action: "create";
   /** Whether or not the Story is blocked by another Story. */
   blocked?: boolean;
   /**
@@ -2280,11 +2281,11 @@ export interface HistoryActionStoryDelete {
   /** The type of entity referenced. */
   entity_type: string;
   /** The action of the entity referenced. */
-  action: 'delete';
+  action: "delete";
   /** The name of the Story. */
   name: string;
   /** The type of Story; either feature, bug, or chore. */
-  story_type: 'feature' | 'chore' | 'bug';
+  story_type: "feature" | "chore" | "bug";
 }
 
 /** An action representing a Story Link being created. */
@@ -2297,9 +2298,9 @@ export interface HistoryActionStoryLinkCreate {
   /** The type of entity referenced. */
   entity_type: string;
   /** The action of the entity referenced. */
-  action: 'create';
+  action: "create";
   /** The verb describing the link's relationship. */
-  verb: 'blocks' | 'duplicates' | 'relates to';
+  verb: "blocks" | "duplicates" | "relates to";
   /**
    * The Story ID of the subject Story.
    * @format int64
@@ -2322,9 +2323,9 @@ export interface HistoryActionStoryLinkDelete {
   /** The type of entity referenced. */
   entity_type: string;
   /** The action of the entity referenced. */
-  action: 'delete';
+  action: "delete";
   /** The verb describing the link's relationship. */
-  verb: 'blocks' | 'duplicates' | 'relates to';
+  verb: "blocks" | "duplicates" | "relates to";
   /**
    * The Story ID of the subject Story.
    * @format int64
@@ -2347,9 +2348,9 @@ export interface HistoryActionStoryLinkUpdate {
   /** The type of entity referenced. */
   entity_type: string;
   /** The action of the entity referenced. */
-  action: 'update';
+  action: "update";
   /** The verb describing the link's relationship. */
-  verb: 'blocks' | 'duplicates' | 'relates to';
+  verb: "blocks" | "duplicates" | "relates to";
   /**
    * The Story ID of the subject Story.
    * @format int64
@@ -2374,7 +2375,7 @@ export interface HistoryActionStoryUpdate {
   /** The type of entity referenced. */
   entity_type: string;
   /** The action of the entity referenced. */
-  action: 'update';
+  action: "update";
   /**
    * The application URL of the Story.
    * @maxLength 2048
@@ -2386,7 +2387,7 @@ export interface HistoryActionStoryUpdate {
   /** The name of the Story. */
   name: string;
   /** The type of Story; either feature, bug, or chore. */
-  story_type: 'feature' | 'chore' | 'bug';
+  story_type: "feature" | "chore" | "bug";
 }
 
 /** An action representing a Task being created. */
@@ -2407,7 +2408,7 @@ export interface HistoryActionTaskCreate {
    */
   id: number;
   /** The action of the entity referenced. */
-  action: 'create';
+  action: "create";
   /** Whether or not the Task is complete. */
   complete: boolean;
   /** A timestamp that represent's the Task's deadline. */
@@ -2424,7 +2425,7 @@ export interface HistoryActionTaskDelete {
   /** The type of entity referenced. */
   entity_type: string;
   /** The action of the entity referenced. */
-  action: 'delete';
+  action: "delete";
   /** The description of the Task being deleted. */
   description: string;
 }
@@ -2439,7 +2440,7 @@ export interface HistoryActionTaskUpdate {
   /** The type of entity referenced. */
   entity_type: string;
   /** The action of the entity referenced. */
-  action: 'update';
+  action: "update";
   /** The changes that have occurred as a result of the action. */
   changes: HistoryChangesTask;
   /** Whether or not the Task is complete. */
@@ -2463,7 +2464,7 @@ export interface HistoryActionWorkspace2BulkUpdate {
   /** The type of entity referenced. */
   entity_type: string;
   /** The action of the entity referenced. */
-  action: 'bulk-update';
+  action: "bulk-update";
   /** The name of the workspace2 in which the BulkUpdate occurred. */
   name: string;
 }
@@ -2703,7 +2704,7 @@ export interface HistoryReferenceStory {
   /** The name of the entity referenced. */
   name: string;
   /** If the referenced entity is a Story, either "bug", "chore", or "feature". */
-  story_type: 'feature' | 'chore' | 'bug';
+  story_type: "feature" | "chore" | "bug";
 }
 
 /** A reference to a Story Task. */
@@ -2723,7 +2724,7 @@ export interface HistoryReferenceWorkflowState {
   /** The type of entity referenced. */
   entity_type: string;
   /** Either "backlog", "unstarted", "started", or "done". */
-  type: 'started' | 'backlog' | 'unstarted' | 'done';
+  type: "started" | "backlog" | "unstarted" | "done";
   /** The name of the entity referenced. */
   name: string;
 }
@@ -2758,7 +2759,7 @@ export interface Identity {
   /** This is your login in VCS. */
   name?: string | null;
   /** The service this Identity is for. */
-  type?: 'slack' | 'github' | 'gitlab' | 'bitbucket' | null;
+  type?: "slack" | "github" | "gitlab" | "bitbucket" | null;
 }
 
 /** An Iteration is a defined, time-boxed period of development for a collection of Stories. See https://help.shortcut.com/hc/en-us/articles/360028953452-Iterations-Overview for more information. */
@@ -2984,7 +2985,7 @@ export interface KeyResult {
    */
   objective_id: number;
   /** The type of the Key Result (numeric, percent, or boolean). */
-  type: 'percent' | 'boolean' | 'numeric';
+  type: "percent" | "boolean" | "numeric";
   /** The starting value of the Key Result. */
   initial_observed_value: KeyResultValue;
   /** The starting value of the Key Result. */
@@ -3229,14 +3230,14 @@ export interface LinkedFile {
 /** Error returned when total maximum supported results have been reached. */
 export interface MaxSearchResultsExceededError {
   /** The name for this type of error, `maximum-results-exceeded` */
-  error: 'maximum-results-exceeded';
+  error: "maximum-results-exceeded";
   /** An explanatory message: "A maximum of 1000 search results are supported." */
   message: string;
   /**
    * The maximum number of search results supported, `1000`
    * @format int64
    */
-  'maximum-results': 1000;
+  "maximum-results": 1000;
 }
 
 /** Details about an individual user within the Workspace. */
@@ -3249,7 +3250,7 @@ export interface Member {
   disabled: boolean;
   global_id: string;
   /** The user state, one of partial, full, disabled, or imported.  A partial user is disabled, has no means to log in, and is not an import user.  A full user is enabled and has a means to log in.  A disabled user is disabled and has a means to log in.  An import user is disabled, has no means to log in, and is marked as an import user. */
-  state: 'partial' | 'full' | 'disabled' | 'imported';
+  state: "partial" | "full" | "disabled" | "imported";
   /**
    * The time/date the Member was last updated.
    * @format date-time
@@ -3789,7 +3790,7 @@ export interface Repository {
   /** The shorthand name of the VCS repository. */
   name?: string | null;
   /** The VCS provider for the Repository. */
-  type: 'github' | 'gitlab' | 'bitbucket';
+  type: "github" | "gitlab" | "bitbucket";
   /**
    * The time/date the Repository was updated.
    * @format date-time
@@ -3834,7 +3835,7 @@ export interface SearchStories {
    */
   owner_id?: string | null;
   /** The type of Stories that you want returned. */
-  story_type?: 'feature' | 'chore' | 'bug';
+  story_type?: "feature" | "chore" | "bug";
   /**
    * The Epic IDs that may be associated with the Stories.
    * @uniqueItems true
@@ -3856,7 +3857,7 @@ export interface SearchStories {
    */
   completed_at_end?: string;
   /** The type of Workflow State the Stories may be in. */
-  workflow_state_types?: ('started' | 'backlog' | 'unstarted' | 'done')[];
+  workflow_state_types?: ("started" | "backlog" | "unstarted" | "done")[];
   /**
    * Stories should have a deadline on or before this date.
    * @format date-time
@@ -4916,7 +4917,7 @@ export interface TypedStoryLink {
 
 export interface UnusableEntitlementError {
   /** The tag for violating an entitlement action. */
-  reason_tag: 'entitlement-violation';
+  reason_tag: "entitlement-violation";
   /**
    * Short tag describing the unusable entitlement action taken by the user.
    * @minLength 1
@@ -5045,7 +5046,7 @@ export interface UpdateEpic {
    */
   planned_start_date?: string | null;
   /** `Deprecated` The Epic's state (to do, in progress, or done); will be ignored when `epic_state_id` is set. */
-  state?: 'in progress' | 'to do' | 'done';
+  state?: "in progress" | "to do" | "done";
   /**
    * `Deprecated` The ID of the Milestone this Epic is related to. Use `objective_ids`.
    * @format int64
@@ -5155,22 +5156,22 @@ export interface UpdateGroup {
   name?: string;
   /** The color key you wish to use for the Group in the system. */
   color_key?:
-    | 'blue'
-    | 'purple'
-    | 'midnight-blue'
-    | 'orange'
-    | 'yellow-green'
-    | 'brass'
-    | 'gray'
-    | 'fuchsia'
-    | 'yellow'
-    | 'pink'
-    | 'sky-blue'
-    | 'green'
-    | 'red'
-    | 'black'
-    | 'slate'
-    | 'turquoise';
+    | "blue"
+    | "purple"
+    | "midnight-blue"
+    | "orange"
+    | "yellow-green"
+    | "brass"
+    | "gray"
+    | "fuchsia"
+    | "yellow"
+    | "pink"
+    | "sky-blue"
+    | "green"
+    | "red"
+    | "black"
+    | "slate"
+    | "turquoise";
   /**
    * The Member ids to add to this Group.
    * @uniqueItems true
@@ -5261,7 +5262,7 @@ export interface UpdateLinkedFile {
    */
   thumbnail_url?: string;
   /** The integration type of the file (e.g. google, dropbox, box). */
-  type?: 'google' | 'url' | 'dropbox' | 'box' | 'onedrive';
+  type?: "google" | "url" | "dropbox" | "box" | "onedrive";
   /**
    * The filesize, if the integration provided it.
    * @format int64
@@ -5300,7 +5301,7 @@ export interface UpdateMilestone {
    */
   name?: string;
   /** The workflow state that the Milestone is in. */
-  state?: 'in progress' | 'to do' | 'done';
+  state?: "in progress" | "to do" | "done";
   /**
    * A manual override for the time/date the Milestone was started.
    * @format date-time
@@ -5340,7 +5341,7 @@ export interface UpdateObjective {
    */
   name?: string;
   /** The workflow state that the Objective is in. */
-  state?: 'in progress' | 'to do' | 'done';
+  state?: "in progress" | "to do" | "done";
   /**
    * A manual override for the time/date the Objective was started.
    * @format date-time
@@ -5408,9 +5409,9 @@ export interface UpdateStories {
    */
   story_ids: number[];
   /** The type of story (feature, bug, chore). */
-  story_type?: 'feature' | 'chore' | 'bug';
+  story_type?: "feature" | "chore" | "bug";
   /** One of "first" or "last". This can be used to move the given story to the first or last position in the workflow state. */
-  move_to?: 'last' | 'first';
+  move_to?: "last" | "first";
   /**
    * The UUIDs of the new followers to be added.
    * @uniqueItems true
@@ -5509,11 +5510,11 @@ export interface UpdateStory {
    */
   pull_request_ids?: number[];
   /** The type of story (feature, bug, chore). */
-  story_type?: 'feature' | 'chore' | 'bug';
+  story_type?: "feature" | "chore" | "bug";
   /** A map specifying a CustomField ID and CustomFieldEnumValue ID that represents an assertion of some value for a CustomField. */
   custom_fields?: CustomFieldValueParams[];
   /** One of "first" or "last". This can be used to move the given story to the first or last position in the workflow state. */
-  move_to?: 'last' | 'first';
+  move_to?: "last" | "first";
   /**
    * An array of IDs of files attached to the story.
    * @uniqueItems true
@@ -5691,7 +5692,7 @@ export interface UpdateStoryContents {
 
 export interface UpdateStoryLink {
   /** The type of link. */
-  verb?: 'blocks' | 'duplicates' | 'relates to';
+  verb?: "blocks" | "duplicates" | "relates to";
   /**
    * The ID of the subject Story.
    * @format int64
