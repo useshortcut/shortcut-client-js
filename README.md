@@ -22,7 +22,7 @@ npm install @shortcut/client
 
 > [!IMPORTANT]
 > Our legacy npm organization namespace is `@useshortcut`.
-> 
+>
 > While it will still contain copies of all future released package versions, we **strongly** recommend switching to our primary `@shortcut` organization namespace.
 
 ### How to Get an API Token
