@@ -12,16 +12,22 @@
   },
   "license": "MIT",
   "sideEffects": false,
+  "type": "commonjs",
   "exports": {
     ".": {
-      "types": "./lib/index.d.ts",
-      "require": "./lib/index.js",
-      "import": "./lib/index.mjs"
+      "import": {
+        "types": "./lib/index.d.mts",
+        "default": "./lib/index.mjs"
+      },
+      "require": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.js"
+      }
     }
   },
-  "main": "lib/index.js",
-  "module": "lib/index.mjs",
-  "types": "lib/index.d.ts",
+  "main": "./lib/index.js",
+  "module": "./lib/index.mjs",
+  "types": "./lib/index.d.ts",
   "files": [
     "lib"
   ],
@@ -56,7 +62,6 @@
     "@total-typescript/tsconfig": "^1.0.4",
     "@types/glob": "^8.1.0",
     "@types/jest": "^29.5.14",
-    "glob": "^11.0.0",
     "@types/jscodeshift": "17.3.0",
     "@types/node": "^22.15.30",
     "@typescript-eslint/eslint-plugin": "^8.33.1",
@@ -67,6 +72,7 @@
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-jest": "^28.12.0",
     "eslint-plugin-prettier": "^5.4.1",
+    "glob": "^11.0.0",
     "jest": "^29.7.0",
     "jscodeshift": "^17.3.0",
     "prettier": "^3.5.3",
