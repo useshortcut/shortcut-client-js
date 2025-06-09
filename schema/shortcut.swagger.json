@@ -15,8 +15,8 @@
       "type": "object",
       "properties": {
         "description": {
-          "minLength": 1,
           "maxLength": 2048,
+          "minLength": 1,
           "description": "The Task description.",
           "type": "string"
         },
@@ -33,6 +33,7 @@
           }
         },
         "external_id": {
+          "maxLength": 128,
           "description": "This field can be set to another unique ID. In the case that the Task has been imported from another tool, the ID in the other tool can be indicated here.",
           "type": "string"
         }
@@ -45,8 +46,17 @@
     "BasicWorkspaceInfo": {
       "type": "object",
       "properties": {
-        "url_slug": {
-          "type": "string"
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "default_workflow_id": {
+          "type": "integer",
+          "format": "int64"
         },
         "estimate_scale": {
           "type": "array",
@@ -54,12 +64,26 @@
             "type": "integer",
             "format": "int64"
           }
+        },
+        "name": {
+          "type": "string"
+        },
+        "url_slug": {
+          "type": "string"
+        },
+        "utc_offset": {
+          "type": "string"
         }
       },
       "additionalProperties": false,
       "required": [
+        "id",
+        "created_at",
+        "default_workflow_id",
+        "estimate_scale",
+        "name",
         "url_slug",
-        "estimate_scale"
+        "utc_offset"
       ]
     },
     "Branch": {
@@ -79,7 +103,7 @@
           "type": "string"
         },
         "persistent": {
-          "description": "A true/false boolean indicating if the Branch is persistent; e.g. master.",
+          "description": "This field is deprecated, and will always be false.",
           "type": "boolean"
         },
         "updated_at": {
@@ -292,6 +316,7 @@
       "type": "object",
       "properties": {
         "name": {
+          "maxLength": 128,
           "minLength": 1,
           "description": "The name of the new Category.",
           "type": "string"
@@ -304,6 +329,7 @@
           "type": "string"
         },
         "external_id": {
+          "maxLength": 128,
           "minLength": 1,
           "description": "This field can be set to another unique ID. In the case that the Category has been imported from another tool, the ID in the other tool can be indicated here.",
           "type": "string"
@@ -323,6 +349,7 @@
       "type": "object",
       "properties": {
         "name": {
+          "maxLength": 128,
           "minLength": 1,
           "description": "The name of the new Category.",
           "type": "string"
@@ -335,6 +362,7 @@
           "type": "string"
         },
         "external_id": {
+          "maxLength": 128,
           "minLength": 1,
           "description": "This field can be set to another unique ID. In the case that the Category has been imported from another tool, the ID in the other tool can be indicated here.",
           "type": "string"
@@ -371,6 +399,7 @@
           "format": "date-time"
         },
         "external_id": {
+          "maxLength": 128,
           "description": "This field can be set to another unique ID. In the case that the comment has been imported from another tool, the ID in the other tool can be indicated here.",
           "type": "string"
         }
@@ -385,6 +414,7 @@
       "type": "object",
       "properties": {
         "name": {
+          "maxLength": 128,
           "minLength": 1,
           "description": "The name of the new entity template",
           "type": "string"
@@ -434,8 +464,8 @@
           }
         },
         "name": {
-          "minLength": 1,
           "maxLength": 256,
+          "minLength": 1,
           "description": "The Epic's name.",
           "type": "string"
         },
@@ -502,6 +532,12 @@
             "format": "uuid"
           }
         },
+        "converted_from_story_id": {
+          "description": "The ID of the Story that was converted to an Epic.",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
+        },
         "owner_ids": {
           "description": "An array of UUIDs for any members you want to add as Owners on this new Epic.",
           "type": "array",
@@ -511,6 +547,7 @@
           }
         },
         "external_id": {
+          "maxLength": 128,
           "description": "This field can be set to another unique ID. In the case that the Epic has been imported from another tool, the ID in the other tool can be indicated here.",
           "type": "string"
         },
@@ -557,6 +594,7 @@
           "format": "date-time"
         },
         "external_id": {
+          "maxLength": 128,
           "description": "This field can be set to another unique ID. In the case that the comment has been imported from another tool, the ID in the other tool can be indicated here.",
           "type": "string"
         }
@@ -566,10 +604,54 @@
         "text"
       ]
     },
+    "CreateEpicHealth": {
+      "x-doc-skip": true,
+      "type": "object",
+      "properties": {
+        "status": {
+          "description": "The health status of the Epic.",
+          "type": "string",
+          "enum": [
+            "At Risk",
+            "On Track",
+            "Off Track",
+            "No Health"
+          ]
+        },
+        "text": {
+          "description": "The description of the Health status.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ]
+    },
+    "CreateGenericIntegration": {
+      "type": "object",
+      "properties": {
+        "webhook_url": {
+          "pattern": "^https?://.+$",
+          "maxLength": 2048,
+          "type": "string"
+        },
+        "secret": {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "webhook_url"
+      ]
+    },
     "CreateGroup": {
       "type": "object",
       "properties": {
         "description": {
+          "maxLength": 4096,
           "description": "The description of the Group.",
           "type": "string"
         },
@@ -591,14 +673,14 @@
           }
         },
         "name": {
-          "minLength": 1,
           "maxLength": 63,
+          "minLength": 1,
           "description": "The name of this Group.",
           "type": "string"
         },
         "mention_name": {
-          "minLength": 1,
           "maxLength": 63,
+          "minLength": 1,
           "description": "The mention name of this Group.",
           "type": "string"
         },
@@ -675,8 +757,8 @@
           "type": "string"
         },
         "name": {
-          "minLength": 1,
           "maxLength": 256,
+          "minLength": 1,
           "description": "The name of this Iteration.",
           "type": "string"
         },
@@ -703,12 +785,13 @@
       "type": "object",
       "properties": {
         "name": {
-          "minLength": 1,
           "maxLength": 128,
+          "minLength": 1,
           "description": "The name of the new Label.",
           "type": "string"
         },
         "description": {
+          "maxLength": 1024,
           "description": "The description of the new Label.",
           "type": "string"
         },
@@ -720,6 +803,7 @@
           "type": "string"
         },
         "external_id": {
+          "maxLength": 128,
           "minLength": 1,
           "description": "This field can be set to another unique ID. In the case that the Label has been imported from another tool, the ID in the other tool can be indicated here.",
           "type": "string"
@@ -735,6 +819,7 @@
       "type": "object",
       "properties": {
         "description": {
+          "maxLength": 512,
           "description": "The description of the file.",
           "type": "string"
         },
@@ -744,8 +829,8 @@
           "format": "int64"
         },
         "name": {
-          "minLength": 1,
           "maxLength": 256,
+          "minLength": 1,
           "description": "The name of the file.",
           "type": "string"
         },
@@ -777,6 +862,7 @@
           "format": "uuid"
         },
         "content_type": {
+          "maxLength": 128,
           "description": "The content type of the image (e.g. txt/plain).",
           "type": "string"
         },
@@ -799,8 +885,8 @@
       "type": "object",
       "properties": {
         "name": {
-          "minLength": 1,
           "maxLength": 256,
+          "minLength": 1,
           "description": "The name of the Milestone.",
           "type": "string"
         },
@@ -846,8 +932,8 @@
       "type": "object",
       "properties": {
         "name": {
-          "minLength": 1,
           "maxLength": 256,
+          "minLength": 1,
           "description": "The name of the Objective.",
           "type": "string"
         },
@@ -919,8 +1005,8 @@
           "type": "string"
         },
         "name": {
-          "minLength": 1,
           "maxLength": 128,
+          "minLength": 1,
           "description": "The name of the Project.",
           "type": "string"
         },
@@ -943,6 +1029,7 @@
           }
         },
         "external_id": {
+          "maxLength": 128,
           "description": "This field can be set to another unique ID. In the case that the Project has been imported from another tool, the ID in the other tool can be indicated here.",
           "type": "string"
         },
@@ -957,6 +1044,7 @@
           "format": "int64"
         },
         "abbreviation": {
+          "maxLength": 63,
           "description": "The Project abbreviation used in Story summaries. Should be kept to 3 characters at most.",
           "type": "string"
         },
@@ -1014,6 +1102,7 @@
           "format": "date-time"
         },
         "external_id": {
+          "maxLength": 1024,
           "description": "This field can be set to another unique ID. In the case that the comment has been imported from another tool, the ID in the other tool can be indicated here.",
           "type": "string"
         },
@@ -1054,6 +1143,7 @@
           "format": "date-time"
         },
         "external_id": {
+          "maxLength": 1024,
           "description": "This field can be set to another unique ID. In the case that the comment has been imported from another tool, the ID in the other tool can be indicated here.",
           "type": "string"
         },
@@ -1105,6 +1195,7 @@
           "uniqueItems": true
         },
         "name": {
+          "maxLength": 512,
           "description": "The name of the story.",
           "type": "string"
         },
@@ -1119,6 +1210,14 @@
           "type": "array",
           "items": {
             "type": "string"
+          }
+        },
+        "sub_tasks": {
+          "description": "An array of sub-tasks connected to the story",
+          "x-doc-skip": true,
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CreateSubTaskParams"
           }
         },
         "iteration_id": {
@@ -1271,8 +1370,8 @@
           "format": "date-time"
         },
         "name": {
-          "minLength": 1,
           "maxLength": 512,
+          "minLength": 1,
           "description": "The name of the story. Must be provided if the template does not provide a name.",
           "type": "string"
         },
@@ -1336,6 +1435,21 @@
             "format": "uuid"
           },
           "uniqueItems": true
+        },
+        "sub_tasks": {
+          "description": "A list of either params to create a new sub-task or link an existing story as a sub-task",
+          "x-doc-skip": true,
+          "type": "array",
+          "items": {
+            "x-oneOf": [
+              {
+                "$ref": "#/definitions/LinkSubTaskParams"
+              },
+              {
+                "$ref": "#/definitions/CreateSubTaskParams"
+              }
+            ]
+          }
         },
         "linked_file_ids_remove": {
           "description": "An array of IDs of linked files removed from files from the template. Cannot be used in conjunction with `linked_files.`",
@@ -1420,6 +1534,7 @@
           "uniqueItems": true
         },
         "external_id": {
+          "maxLength": 1024,
           "description": "This field can be set to another unique ID. In the case that the Story has been imported from another tool, the ID in the other tool can be indicated here.",
           "type": "string"
         },
@@ -1644,8 +1759,8 @@
           "format": "date-time"
         },
         "name": {
-          "minLength": 1,
           "maxLength": 512,
+          "minLength": 1,
           "description": "The name of the story.",
           "type": "string"
         },
@@ -1673,6 +1788,21 @@
           "type": "array",
           "items": {
             "type": "string"
+          }
+        },
+        "sub_tasks": {
+          "description": "A list of either params to create a new sub-task or link an existing story as a sub-task",
+          "x-doc-skip": true,
+          "type": "array",
+          "items": {
+            "x-oneOf": [
+              {
+                "$ref": "#/definitions/LinkSubTaskParams"
+              },
+              {
+                "$ref": "#/definitions/CreateSubTaskParams"
+              }
+            ]
           }
         },
         "requested_by_id": {
@@ -1733,6 +1863,7 @@
           "uniqueItems": true
         },
         "external_id": {
+          "maxLength": 1024,
           "description": "This field can be set to another unique ID. In the case that the Story has been imported from another tool, the ID in the other tool can be indicated here.",
           "type": "string"
         },
@@ -1774,13 +1905,43 @@
         "name"
       ]
     },
+    "CreateSubTaskParams": {
+      "x-doc-skip": true,
+      "type": "object",
+      "properties": {
+        "name": {
+          "maxLength": 512,
+          "minLength": 1,
+          "description": "The name of the SubTask.",
+          "type": "string"
+        },
+        "owner_ids": {
+          "description": "An array of UUIDs of the owners of this story.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "uniqueItems": true
+        },
+        "workflow_state_id": {
+          "description": "The ID of the workflow state the story will be in.",
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ]
+    },
     "CreateTask": {
       "x-doc-skip": true,
       "type": "object",
       "properties": {
         "description": {
-          "minLength": 1,
           "maxLength": 2048,
+          "minLength": 1,
           "description": "The Task description.",
           "type": "string"
         },
@@ -1797,6 +1958,7 @@
           }
         },
         "external_id": {
+          "maxLength": 128,
           "description": "This field can be set to another unique ID. In the case that the Task has been imported from another tool, the ID in the other tool can be indicated here.",
           "type": "string"
         },
@@ -1821,8 +1983,8 @@
       "type": "object",
       "properties": {
         "description": {
-          "minLength": 1,
           "maxLength": 2048,
+          "minLength": 1,
           "description": "The Task description.",
           "type": "string"
         },
@@ -1839,6 +2001,7 @@
           }
         },
         "external_id": {
+          "maxLength": 128,
           "description": "This field can be set to another unique ID. In the case that the Task has been imported from another tool, the ID in the other tool can be indicated here.",
           "type": "string"
         },
@@ -1862,14 +2025,14 @@
       "type": "object",
       "properties": {
         "description": {
-          "minLength": 1,
           "maxLength": 512,
+          "minLength": 1,
           "description": "A string description of the CustomField",
           "type": "string"
         },
         "icon_set_identifier": {
-          "minLength": 1,
           "maxLength": 63,
+          "minLength": 1,
           "description": "A string that represents the icon that corresponds to this custom field.",
           "type": "string"
         },
@@ -1889,8 +2052,8 @@
           }
         },
         "name": {
-          "minLength": 1,
           "maxLength": 63,
+          "minLength": 1,
           "description": "The name of the Custom Field.",
           "type": "string"
         },
@@ -1963,8 +2126,8 @@
           "format": "uuid"
         },
         "value": {
-          "minLength": 1,
           "maxLength": 63,
+          "minLength": 1,
           "description": "A string value within the domain of this Custom Field.",
           "type": "string"
         },
@@ -2027,7 +2190,6 @@
     },
     "DataConflictError": {
       "description": "Error returned when Datomic tx fails due to Datomc :db.error/cas-failed error",
-      "x-doc-skip": true,
       "type": "object",
       "properties": {
         "error": {
@@ -2342,6 +2504,9 @@
           "type": "integer",
           "format": "int64"
         },
+        "health": {
+          "$ref": "#/definitions/Health"
+        },
         "position": {
           "description": "The Epic's relative position in the Epic workflow state.",
           "type": "integer",
@@ -2415,7 +2580,6 @@
       ]
     },
     "EpicAssociatedGroup": {
-      "x-doc-skip": true,
       "type": "object",
       "properties": {
         "group_id": {
@@ -2432,6 +2596,36 @@
       "additionalProperties": false,
       "required": [
         "group_id"
+      ]
+    },
+    "EpicPaginatedResults": {
+      "description": "Results schema for paginated Epic listing.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "Array of Epic objects on the current page",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EpicSlim"
+          }
+        },
+        "next": {
+          "description": "The next page number if there are more results, or null for the last page",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
+        },
+        "total": {
+          "description": "The total number of Epics matching the query over all pages",
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "next",
+        "total"
       ]
     },
     "EpicSearchResult": {
@@ -2656,6 +2850,9 @@
           "description": "The unique ID of the Epic.",
           "type": "integer",
           "format": "int64"
+        },
+        "health": {
+          "$ref": "#/definitions/Health"
         },
         "position": {
           "description": "The Epic's relative position in the Epic workflow state.",
@@ -3121,11 +3318,6 @@
           "type": "integer",
           "format": "int64"
         },
-        "average_cycle_time": {
-          "description": "The average cycle time (in seconds) of completed stories in this Epic.",
-          "type": "integer",
-          "format": "int64"
-        },
         "num_stories_unstarted": {
           "description": "The total number of unstarted Stories in this Epic.",
           "type": "integer",
@@ -3164,11 +3356,6 @@
         },
         "num_stories_backlog": {
           "description": "The total number of backlog Stories in this Epic.",
-          "type": "integer",
-          "format": "int64"
-        },
-        "average_lead_time": {
-          "description": "The average lead time (in seconds) of completed stories in this Epic.",
           "type": "integer",
           "format": "int64"
         },
@@ -3345,6 +3532,12 @@
           "$ref": "#/definitions/Icon",
           "x-nullable": true
         },
+        "default_workflow_id": {
+          "description": "The ID of the default workflow for stories created in this group.",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
+        },
         "member_ids": {
           "description": "The Member IDs contain within the Group.",
           "type": "array",
@@ -3383,10 +3576,75 @@
         "workflow_ids"
       ]
     },
+    "Health": {
+      "description": "The current health status of the Epic.",
+      "type": "object",
+      "properties": {
+        "entity_type": {
+          "description": "A string description of this resource.",
+          "type": "string"
+        },
+        "author_id": {
+          "description": "The ID of the permission who created or updated the Health record.",
+          "type": "string",
+          "format": "uuid"
+        },
+        "epic_id": {
+          "description": "The ID of the Epic associated with this Health record.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "objective_id": {
+          "description": "The ID of the Objective associated with this Health record.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "updated_at": {
+          "description": "The time that the Health record was updated.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "status": {
+          "description": "The health status of the Epic or Objective.",
+          "type": "string",
+          "enum": [
+            "At Risk",
+            "On Track",
+            "Off Track",
+            "No Health"
+          ]
+        },
+        "id": {
+          "description": "The unique ID of the Health record.",
+          "type": "string",
+          "format": "uuid",
+          "x-nullable": true
+        },
+        "created_at": {
+          "description": "The time that the Health record was created.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "text": {
+          "description": "The text of the Health record.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "entity_type",
+        "status",
+        "id"
+      ]
+    },
     "History": {
       "description": "A history item is a group of actions that represent a transactional change to a Story.",
       "type": "object",
       "properties": {
+        "actor_name": {
+          "description": "The name of the actor that performed the action, if it can be determined.",
+          "type": "string"
+        },
         "changed_at": {
           "description": "The date when the change occurred.",
           "type": "string"
@@ -5926,6 +6184,21 @@
         "num_epics_completed"
       ]
     },
+    "LinkSubTaskParams": {
+      "x-doc-skip": true,
+      "type": "object",
+      "properties": {
+        "story_id": {
+          "description": "The ID of the story to link as a sub-task of the parent story",
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "story_id"
+      ]
+    },
     "LinkedFile": {
       "description": "Linked files are stored on a third-party website and linked to one or more Stories. Shortcut currently supports linking files from Google Drive, Dropbox, Box, and by URL.",
       "type": "object",
@@ -6163,10 +6436,16 @@
           "type": "string",
           "format": "uuid"
         },
+        "is_owner": {
+          "type": "boolean"
+        },
+        "mention_name": {
+          "type": "string"
+        },
         "name": {
           "type": "string"
         },
-        "mention_name": {
+        "role": {
           "type": "string"
         },
         "workspace2": {
@@ -6176,8 +6455,10 @@
       "additionalProperties": false,
       "required": [
         "id",
-        "name",
+        "is_owner",
         "mention_name",
+        "name",
+        "role",
         "workspace2"
       ]
     },
@@ -6665,6 +6946,11 @@
           "type": "string",
           "x-nullable": true
         },
+        "is_agent": {
+          "description": "Whether this profile is an Agent/Bot user.",
+          "x-doc-skip": true,
+          "type": "boolean"
+        },
         "gravatar_hash": {
           "description": "This is the gravatar hash associated with email_address.",
           "type": "string",
@@ -7062,8 +7348,8 @@
       "type": "object",
       "properties": {
         "name": {
-          "minLength": 1,
           "maxLength": 128,
+          "minLength": 1,
           "description": "The name of the new Label to remove.",
           "type": "string"
         }
@@ -7316,6 +7602,7 @@
           "uniqueItems": true
         },
         "external_id": {
+          "maxLength": 1024,
           "description": "An ID or URL that references an external resource. Useful during imports.",
           "type": "string"
         },
@@ -7481,14 +7768,6 @@
           "format": "int64",
           "x-nullable": true
         },
-        "unresolved_blocker_comments": {
-          "description": "The IDs of any unresolved blocker comments on the Story.",
-          "type": "array",
-          "items": {
-            "type": "integer",
-            "format": "int64"
-          }
-        },
         "story_template_id": {
           "description": "The ID of the story template used to create this story, or null if not created using a template.",
           "type": "string",
@@ -7521,12 +7800,26 @@
           "format": "int64",
           "x-nullable": true
         },
+        "sub_task_story_ids": {
+          "x-doc-skip": true,
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
         "tasks": {
           "description": "An array of tasks connected to the story.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/Task"
           }
+        },
+        "formatted_vcs_branch_name": {
+          "description": "The formatted branch name for this story.",
+          "x-doc-skip": true,
+          "type": "string",
+          "x-nullable": true
         },
         "label_ids": {
           "description": "An array of label ids attached to the story.",
@@ -7604,6 +7897,12 @@
           "description": "The lead time (in seconds) of this story when complete.",
           "type": "integer",
           "format": "int64"
+        },
+        "parent_story_id": {
+          "x-doc-skip": true,
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
         },
         "estimate": {
           "description": "The numeric point estimate of the story. Can also be null, which means unestimated.",
@@ -7899,6 +8198,14 @@
           "type": "array",
           "items": {
             "type": "string"
+          }
+        },
+        "sub_tasks": {
+          "description": "An array of sub-tasks connected to the story",
+          "x-doc-skip": true,
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CreateSubTaskParams"
           }
         },
         "iteration_id": {
@@ -8201,7 +8508,6 @@
     },
     "StoryReaction": {
       "description": "Emoji reaction on a comment.",
-      "x-doc-skip": true,
       "type": "object",
       "properties": {
         "emoji": {
@@ -8378,14 +8684,6 @@
           "format": "int64",
           "x-nullable": true
         },
-        "unresolved_blocker_comments": {
-          "description": "The IDs of any unresolved blocker comments on the Story.",
-          "type": "array",
-          "items": {
-            "type": "integer",
-            "format": "int64"
-          }
-        },
         "story_template_id": {
           "description": "The ID of the story template used to create this story, or null if not created using a template.",
           "type": "string",
@@ -8418,12 +8716,26 @@
           "format": "int64",
           "x-nullable": true
         },
+        "sub_task_story_ids": {
+          "x-doc-skip": true,
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
         "tasks": {
           "description": "An array of tasks connected to the story.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/Task"
           }
+        },
+        "formatted_vcs_branch_name": {
+          "description": "The formatted branch name for this story.",
+          "x-doc-skip": true,
+          "type": "string",
+          "x-nullable": true
         },
         "label_ids": {
           "description": "An array of label ids attached to the story.",
@@ -8501,6 +8813,12 @@
           "description": "The lead time (in seconds) of this story when complete.",
           "type": "integer",
           "format": "int64"
+        },
+        "parent_story_id": {
+          "x-doc-skip": true,
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
         },
         "estimate": {
           "description": "The numeric point estimate of the story. Can also be null, which means unestimated.",
@@ -8787,14 +9105,6 @@
           "format": "int64",
           "x-nullable": true
         },
-        "unresolved_blocker_comments": {
-          "description": "The IDs of any unresolved blocker comments on the Story.",
-          "type": "array",
-          "items": {
-            "type": "integer",
-            "format": "int64"
-          }
-        },
         "story_template_id": {
           "description": "The ID of the story template used to create this story, or null if not created using a template.",
           "type": "string",
@@ -8825,6 +9135,20 @@
           "description": "The ID of the iteration the story belongs to.",
           "type": "integer",
           "format": "int64",
+          "x-nullable": true
+        },
+        "sub_task_story_ids": {
+          "x-doc-skip": true,
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "formatted_vcs_branch_name": {
+          "description": "The formatted branch name for this story.",
+          "x-doc-skip": true,
+          "type": "string",
           "x-nullable": true
         },
         "label_ids": {
@@ -8896,6 +9220,12 @@
           "description": "The lead time (in seconds) of this story when complete.",
           "type": "integer",
           "format": "int64"
+        },
+        "parent_story_id": {
+          "x-doc-skip": true,
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
         },
         "estimate": {
           "description": "The numeric point estimate of the story. Can also be null, which means unestimated.",
@@ -9011,7 +9341,6 @@
       ]
     },
     "StoryStats": {
-      "x-doc-skip": true,
       "description": "The stats object for Stories",
       "type": "object",
       "properties": {
@@ -9085,6 +9414,10 @@
           "format": "date-time",
           "x-nullable": true
         },
+        "global_id": {
+          "x-doc-skip": true,
+          "type": "string"
+        },
         "updated_at": {
           "description": "The time/date the Task was updated.",
           "type": "string",
@@ -9140,6 +9473,7 @@
         "mention_ids",
         "member_mention_ids",
         "completed_at",
+        "global_id",
         "updated_at",
         "group_mention_ids",
         "owner_ids",
@@ -9306,7 +9640,6 @@
       ]
     },
     "UnusableEntitlementError": {
-      "x-doc-skip": true,
       "type": "object",
       "properties": {
         "reason_tag": {
@@ -9317,14 +9650,14 @@
           ]
         },
         "entitlement_tag": {
-          "minLength": 1,
           "maxLength": 63,
+          "minLength": 1,
           "description": "Short tag describing the unusable entitlement action taken by the user.",
           "type": "string"
         },
         "message": {
-          "minLength": 1,
           "maxLength": 256,
+          "minLength": 1,
           "description": "Message displayed to the user on why their action failed.",
           "type": "string"
         }
@@ -9382,8 +9715,8 @@
           "type": "boolean"
         },
         "name": {
-          "minLength": 1,
           "maxLength": 63,
+          "minLength": 1,
           "description": "A collection of objects representing reporting periods for years.",
           "type": "string"
         },
@@ -9395,8 +9728,8 @@
           }
         },
         "icon_set_identifier": {
-          "minLength": 1,
           "maxLength": 63,
+          "minLength": 1,
           "description": "A frontend-controlled string that represents the icon for this custom field.",
           "type": "string"
         },
@@ -9426,8 +9759,8 @@
           "format": "uuid"
         },
         "value": {
-          "minLength": 1,
           "maxLength": 63,
+          "minLength": 1,
           "description": "A string value within the domain of this Custom Field.",
           "type": "string"
         },
@@ -9448,6 +9781,7 @@
       "type": "object",
       "properties": {
         "name": {
+          "maxLength": 128,
           "minLength": 1,
           "description": "The updated template name.",
           "type": "string"
@@ -9493,8 +9827,8 @@
           }
         },
         "name": {
-          "minLength": 1,
           "maxLength": 256,
+          "minLength": 1,
           "description": "The Epic's name.",
           "type": "string"
         },
@@ -9566,6 +9900,7 @@
           }
         },
         "external_id": {
+          "maxLength": 128,
           "description": "This field can be set to another unique ID. In the case that the Epic has been imported from another tool, the ID in the other tool can be indicated here.",
           "type": "string"
         },
@@ -9593,6 +9928,7 @@
       "type": "object",
       "properties": {
         "description": {
+          "maxLength": 4096,
           "description": "The description of the file.",
           "type": "string"
         },
@@ -9607,8 +9943,8 @@
           "format": "date-time"
         },
         "name": {
-          "minLength": 1,
           "maxLength": 1024,
+          "minLength": 1,
           "description": "The name of the file.",
           "type": "string"
         },
@@ -9618,6 +9954,7 @@
           "format": "uuid"
         },
         "external_id": {
+          "maxLength": 128,
           "description": "An additional ID that you may wish to assign to the file.",
           "type": "string"
         }
@@ -9628,6 +9965,7 @@
       "type": "object",
       "properties": {
         "description": {
+          "maxLength": 4096,
           "description": "The description of this Group.",
           "type": "string"
         },
@@ -9651,14 +9989,14 @@
           "x-nullable": true
         },
         "mention_name": {
-          "minLength": 1,
           "maxLength": 63,
+          "minLength": 1,
           "description": "The mention name of this Group.",
           "type": "string"
         },
         "name": {
-          "minLength": 1,
           "maxLength": 63,
+          "minLength": 1,
           "description": "The name of this Group.",
           "type": "string"
         },
@@ -9684,6 +10022,12 @@
             "turquoise"
           ]
         },
+        "default_workflow_id": {
+          "description": "The ID of the default workflow for stories created in this group.",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
+        },
         "member_ids": {
           "description": "The Member ids to add to this Group.",
           "type": "array",
@@ -9700,6 +10044,27 @@
             "type": "integer",
             "format": "int64"
           }
+        }
+      },
+      "additionalProperties": false
+    },
+    "UpdateHealth": {
+      "x-doc-skip": true,
+      "type": "object",
+      "properties": {
+        "status": {
+          "description": "The health status of the Epic.",
+          "type": "string",
+          "enum": [
+            "At Risk",
+            "On Track",
+            "Off Track",
+            "No Health"
+          ]
+        },
+        "text": {
+          "description": "The description of the Health status.",
+          "type": "string"
         }
       },
       "additionalProperties": false
@@ -9736,8 +10101,8 @@
           "type": "string"
         },
         "name": {
-          "minLength": 1,
           "maxLength": 256,
+          "minLength": 1,
           "description": "The name of this Iteration",
           "type": "string"
         },
@@ -9758,6 +10123,7 @@
       "type": "object",
       "properties": {
         "name": {
+          "maxLength": 1024,
           "description": "The name of the Key Result.",
           "type": "string"
         },
@@ -9778,12 +10144,13 @@
       "type": "object",
       "properties": {
         "name": {
-          "minLength": 1,
           "maxLength": 128,
+          "minLength": 1,
           "description": "The new name of the label.",
           "type": "string"
         },
         "description": {
+          "maxLength": 1024,
           "description": "The new description of the label.",
           "type": "string"
         },
@@ -9807,6 +10174,7 @@
       "type": "object",
       "properties": {
         "description": {
+          "maxLength": 512,
           "description": "The description of the file.",
           "type": "string"
         },
@@ -9876,8 +10244,8 @@
           "x-nullable": true
         },
         "name": {
-          "minLength": 1,
           "maxLength": 256,
+          "minLength": 1,
           "description": "The name of the Milestone.",
           "type": "string"
         },
@@ -9936,8 +10304,8 @@
           "x-nullable": true
         },
         "name": {
-          "minLength": 1,
           "maxLength": 256,
+          "minLength": 1,
           "description": "The name of the Objective.",
           "type": "string"
         },
@@ -10002,8 +10370,8 @@
           "type": "string"
         },
         "name": {
-          "minLength": 1,
           "maxLength": 128,
+          "minLength": 1,
           "description": "The Project's name.",
           "type": "string"
         },
@@ -10267,8 +10635,8 @@
           "x-nullable": true
         },
         "name": {
-          "minLength": 1,
           "maxLength": 512,
+          "minLength": 1,
           "description": "The title of the story.",
           "type": "string"
         },
@@ -10348,6 +10716,13 @@
             "format": "uuid"
           },
           "uniqueItems": true
+        },
+        "parent_story_id": {
+          "description": "The parent story id. If you want to unset this value set parent_story_id to null.",
+          "x-doc-skip": true,
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
         },
         "before_id": {
           "description": "The ID of the story we want to move this story before.",
@@ -10456,6 +10831,14 @@
             "type": "string"
           }
         },
+        "sub_tasks": {
+          "description": "An array of sub-tasks connected to the story",
+          "x-doc-skip": true,
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CreateSubTaskParams"
+          }
+        },
         "iteration_id": {
           "description": "The ID of the iteration the to be populated.",
           "type": "integer",
@@ -10558,8 +10941,8 @@
       "type": "object",
       "properties": {
         "description": {
-          "minLength": 1,
           "maxLength": 2048,
+          "minLength": 1,
           "description": "The Task's description.",
           "type": "string"
         },
@@ -11547,6 +11930,55 @@
         "summary": "Create Epic"
       }
     },
+    "/api/v3/epics/paginated": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "includes_description",
+            "description": "A true/false boolean indicating whether to return Epics with their descriptions.",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "description": "The page number to return, starting with 1. Defaults to 1.",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "description": "The number of Epics to return per page. Minimum 1, maximum 250, default 10.",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/EpicPaginatedResults"
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "listEpicsPaginated",
+        "description": "List Epics with pagination returns a paginated list of Epics and their attributes.",
+        "summary": "List Epics Paginated"
+      }
+    },
     "/api/v3/epics/{epic-public-id}": {
       "get": {
         "parameters": [
@@ -11904,6 +12336,118 @@
         "operationId": "deleteEpicComment",
         "description": "This endpoint allows you to delete a Comment from an Epic.",
         "summary": "Delete Epic Comment"
+      }
+    },
+    "/api/v3/epics/{epic-public-id}/health": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "epic-public-id",
+            "description": "The unique ID of the Epic.",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/Health"
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "getEpicHealth",
+        "description": "Get the current health for the specified Epic.",
+        "summary": "Get Epic Health"
+      },
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "epic-public-id",
+            "description": "The unique ID of the Epic.",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "body",
+            "name": "CreateEpicHealth",
+            "description": "",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateEpicHealth"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "schema": {
+              "$ref": "#/definitions/Health"
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "createEpicHealth",
+        "description": "Create a new health status for the specified Epic.",
+        "summary": "Create Epic Health"
+      }
+    },
+    "/api/v3/epics/{epic-public-id}/health-history": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "epic-public-id",
+            "description": "The unique ID of the Epic.",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Health"
+              }
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "listEpicHealths",
+        "description": "List the history of health statuses for the specified Epic, most recent first.",
+        "summary": "List Epic Healths"
       }
     },
     "/api/v3/epics/{epic-public-id}/stories": {
@@ -12281,48 +12825,6 @@
         "summary": "Create Group"
       }
     },
-    "/api/v3/groups/disable": {
-      "put": {
-        "responses": {
-          "204": {
-            "description": "No Content"
-          },
-          "400": {
-            "description": "Schema mismatch"
-          },
-          "404": {
-            "description": "Resource does not exist"
-          },
-          "422": {
-            "description": "Unprocessable"
-          }
-        },
-        "operationId": "disableGroups",
-        "description": "Disables Groups for the current workspace2",
-        "summary": "Disable Groups"
-      }
-    },
-    "/api/v3/groups/enable": {
-      "put": {
-        "responses": {
-          "204": {
-            "description": "No Content"
-          },
-          "400": {
-            "description": "Schema mismatch"
-          },
-          "404": {
-            "description": "Resource does not exist"
-          },
-          "422": {
-            "description": "Unprocessable"
-          }
-        },
-        "operationId": "enableGroups",
-        "description": "Enables Groups for the current workspace2",
-        "summary": "Enable Groups"
-      }
-    },
     "/api/v3/groups/{group-public-id}": {
       "get": {
         "parameters": [
@@ -12453,6 +12955,138 @@
         "operationId": "listGroupStories",
         "description": "List the Stories assigned to the Group. (By default, limited to 1,000).",
         "summary": "List Group Stories"
+      }
+    },
+    "/api/v3/health/{health-public-id}": {
+      "put": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "health-public-id",
+            "description": "The unique ID of the Health record.",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "in": "body",
+            "name": "UpdateHealth",
+            "description": "",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UpdateHealth"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/Health"
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "updateHealth",
+        "description": "Update an existing health status by its ID.",
+        "summary": "Update Health"
+      }
+    },
+    "/api/v3/integrations/webhook": {
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "CreateGenericIntegration",
+            "description": "",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateGenericIntegration"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "createGenericIntegration",
+        "summary": "Create Generic Integration"
+      }
+    },
+    "/api/v3/integrations/webhook/{integration-public-id}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "integration-public-id",
+            "description": "",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resource"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "getGenericIntegration",
+        "summary": "Get Generic Integration"
+      },
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "integration-public-id",
+            "description": "",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "deleteGenericIntegration",
+        "summary": "Delete Generic Integration"
       }
     },
     "/api/v3/iterations": {
@@ -13228,6 +13862,13 @@
             "x-doc-skip": true,
             "type": "string",
             "format": "uuid"
+          },
+          {
+            "in": "query",
+            "name": "disabled",
+            "description": "Filter members by their disabled state. If true, return only disabled members. If false, return only enabled members.",
+            "required": false,
+            "type": "boolean"
           }
         ],
         "responses": {
@@ -13995,7 +14636,7 @@
           {
             "in": "query",
             "name": "page_size",
-            "description": "The number of search results to include in a page. Minimum of 1 and maximum of 25.",
+            "description": "The number of search results to include in a page. Minimum of 1 and maximum of 250.",
             "required": false,
             "type": "integer",
             "format": "int64"
@@ -14016,7 +14657,6 @@
             "name": "next",
             "description": "The next page token.",
             "required": false,
-            "x-doc-skip": true,
             "type": "string"
           },
           {
@@ -14024,7 +14664,6 @@
             "name": "entity_types",
             "description": "A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, objective, story.",
             "required": false,
-            "x-doc-skip": true,
             "type": "array",
             "items": {
               "type": "string",
@@ -14078,7 +14717,7 @@
           {
             "in": "query",
             "name": "page_size",
-            "description": "The number of search results to include in a page. Minimum of 1 and maximum of 25.",
+            "description": "The number of search results to include in a page. Minimum of 1 and maximum of 250.",
             "required": false,
             "type": "integer",
             "format": "int64"
@@ -14099,7 +14738,6 @@
             "name": "next",
             "description": "The next page token.",
             "required": false,
-            "x-doc-skip": true,
             "type": "string"
           },
           {
@@ -14107,7 +14745,6 @@
             "name": "entity_types",
             "description": "A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, objective, story.",
             "required": false,
-            "x-doc-skip": true,
             "type": "array",
             "items": {
               "type": "string",
@@ -14161,7 +14798,7 @@
           {
             "in": "query",
             "name": "page_size",
-            "description": "The number of search results to include in a page. Minimum of 1 and maximum of 25.",
+            "description": "The number of search results to include in a page. Minimum of 1 and maximum of 250.",
             "required": false,
             "type": "integer",
             "format": "int64"
@@ -14182,7 +14819,6 @@
             "name": "next",
             "description": "The next page token.",
             "required": false,
-            "x-doc-skip": true,
             "type": "string"
           },
           {
@@ -14190,7 +14826,6 @@
             "name": "entity_types",
             "description": "A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, objective, story.",
             "required": false,
-            "x-doc-skip": true,
             "type": "array",
             "items": {
               "type": "string",
@@ -14244,7 +14879,7 @@
           {
             "in": "query",
             "name": "page_size",
-            "description": "The number of search results to include in a page. Minimum of 1 and maximum of 25.",
+            "description": "The number of search results to include in a page. Minimum of 1 and maximum of 250.",
             "required": false,
             "type": "integer",
             "format": "int64"
@@ -14265,7 +14900,6 @@
             "name": "next",
             "description": "The next page token.",
             "required": false,
-            "x-doc-skip": true,
             "type": "string"
           },
           {
@@ -14273,7 +14907,6 @@
             "name": "entity_types",
             "description": "A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, objective, story.",
             "required": false,
-            "x-doc-skip": true,
             "type": "array",
             "items": {
               "type": "string",
@@ -14327,7 +14960,7 @@
           {
             "in": "query",
             "name": "page_size",
-            "description": "The number of search results to include in a page. Minimum of 1 and maximum of 25.",
+            "description": "The number of search results to include in a page. Minimum of 1 and maximum of 250.",
             "required": false,
             "type": "integer",
             "format": "int64"
@@ -14348,7 +14981,6 @@
             "name": "next",
             "description": "The next page token.",
             "required": false,
-            "x-doc-skip": true,
             "type": "string"
           },
           {
@@ -14356,7 +14988,6 @@
             "name": "entity_types",
             "description": "A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, objective, story.",
             "required": false,
-            "x-doc-skip": true,
             "type": "array",
             "items": {
               "type": "string",
@@ -14410,7 +15041,7 @@
           {
             "in": "query",
             "name": "page_size",
-            "description": "The number of search results to include in a page. Minimum of 1 and maximum of 25.",
+            "description": "The number of search results to include in a page. Minimum of 1 and maximum of 250.",
             "required": false,
             "type": "integer",
             "format": "int64"
@@ -14431,7 +15062,6 @@
             "name": "next",
             "description": "The next page token.",
             "required": false,
-            "x-doc-skip": true,
             "type": "string"
           },
           {
@@ -14439,7 +15069,6 @@
             "name": "entity_types",
             "description": "A collection of entity_types to search. Defaults to story and epic. Supports: epic, iteration, objective, story.",
             "required": false,
-            "x-doc-skip": true,
             "type": "array",
             "items": {
               "type": "string",
@@ -14510,7 +15139,7 @@
           }
         },
         "operationId": "createStory",
-        "description": "Create Story is used to add a new story to your Shortcut Workspace.",
+        "description": "Create Story is used to add a new story to your Shortcut Workspace.\n    This endpoint requires that either **workflow_state_id** or **project_id** be provided, but will reject the request if both or neither are specified. The workflow_state_id has been marked as required and is the recommended field to specify because we are in the process of sunsetting Projects in Shortcut.",
         "summary": "Create Story"
       }
     },

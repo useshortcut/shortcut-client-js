@@ -17,6 +17,8 @@ import {
   CreateEntityTemplate,
   CreateEpic,
   CreateEpicComment,
+  CreateEpicHealth,
+  CreateGenericIntegration,
   CreateGroup,
   CreateIteration,
   CreateLabelParams,
@@ -36,10 +38,12 @@ import {
   DeleteStories,
   EntityTemplate,
   Epic,
+  EpicPaginatedResults,
   EpicSearchResults,
   EpicSlim,
   EpicWorkflow,
   Group,
+  Health,
   History,
   Iteration,
   IterationSearchResults,
@@ -73,6 +77,7 @@ import {
   UpdateEpic,
   UpdateFile,
   UpdateGroup,
+  UpdateHealth,
   UpdateIteration,
   UpdateKeyResult,
   UpdateLabel,
@@ -482,6 +487,39 @@ export class Api<
       ...params,
     });
   /**
+   * @description List Epics with pagination returns a paginated list of Epics and their attributes.
+   *
+   * @name ListEpicsPaginated
+   * @summary List Epics Paginated
+   * @request GET:/api/v3/epics/paginated
+   * @secure
+   */
+  listEpicsPaginated = (
+    query?: {
+      /** A true/false boolean indicating whether to return Epics with their descriptions. */
+      includes_description?: boolean;
+      /**
+       * The page number to return, starting with 1. Defaults to 1.
+       * @format int64
+       */
+      page?: number;
+      /**
+       * The number of Epics to return per page. Minimum 1, maximum 250, default 10.
+       * @format int64
+       */
+      page_size?: number;
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<EpicPaginatedResults, void>({
+      path: `/api/v3/epics/paginated`,
+      method: "GET",
+      query: query,
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
    * @description Get Epic returns information about the selected Epic.
    *
    * @name GetEpic
@@ -655,6 +693,60 @@ export class Api<
       path: `/api/v3/epics/${epicPublicId}/comments/${commentPublicId}`,
       method: "DELETE",
       secure: true,
+      ...params,
+    });
+  /**
+   * @description Get the current health for the specified Epic.
+   *
+   * @name GetEpicHealth
+   * @summary Get Epic Health
+   * @request GET:/api/v3/epics/{epic-public-id}/health
+   * @secure
+   */
+  getEpicHealth = (epicPublicId: number, params: RequestParams = {}) =>
+    this.request<Health, void>({
+      path: `/api/v3/epics/${epicPublicId}/health`,
+      method: "GET",
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Create a new health status for the specified Epic.
+   *
+   * @name CreateEpicHealth
+   * @summary Create Epic Health
+   * @request POST:/api/v3/epics/{epic-public-id}/health
+   * @secure
+   */
+  createEpicHealth = (
+    epicPublicId: number,
+    CreateEpicHealth: CreateEpicHealth,
+    params: RequestParams = {},
+  ) =>
+    this.request<Health, void>({
+      path: `/api/v3/epics/${epicPublicId}/health`,
+      method: "POST",
+      body: CreateEpicHealth,
+      secure: true,
+      type: ContentType.Json,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description List the history of health statuses for the specified Epic, most recent first.
+   *
+   * @name ListEpicHealths
+   * @summary List Epic Healths
+   * @request GET:/api/v3/epics/{epic-public-id}/health-history
+   * @secure
+   */
+  listEpicHealths = (epicPublicId: number, params: RequestParams = {}) =>
+    this.request<Health[], void>({
+      path: `/api/v3/epics/${epicPublicId}/health-history`,
+      method: "GET",
+      secure: true,
+      format: "json",
       ...params,
     });
   /**
@@ -877,36 +969,6 @@ export class Api<
       ...params,
     });
   /**
-   * @description Disables Groups for the current workspace2
-   *
-   * @name DisableGroups
-   * @summary Disable Groups
-   * @request PUT:/api/v3/groups/disable
-   * @secure
-   */
-  disableGroups = (params: RequestParams = {}) =>
-    this.request<void, void>({
-      path: `/api/v3/groups/disable`,
-      method: "PUT",
-      secure: true,
-      ...params,
-    });
-  /**
-   * @description Enables Groups for the current workspace2
-   *
-   * @name EnableGroups
-   * @summary Enable Groups
-   * @request PUT:/api/v3/groups/enable
-   * @secure
-   */
-  enableGroups = (params: RequestParams = {}) =>
-    this.request<void, void>({
-      path: `/api/v3/groups/enable`,
-      method: "PUT",
-      secure: true,
-      ...params,
-    });
-  /**
    * No description
    *
    * @name GetGroup
@@ -974,6 +1036,84 @@ export class Api<
       query: query,
       secure: true,
       format: "json",
+      ...params,
+    });
+  /**
+   * @description Update an existing health status by its ID.
+   *
+   * @name UpdateHealth
+   * @summary Update Health
+   * @request PUT:/api/v3/health/{health-public-id}
+   * @secure
+   */
+  updateHealth = (
+    healthPublicId: string,
+    UpdateHealth: UpdateHealth,
+    params: RequestParams = {},
+  ) =>
+    this.request<Health, void>({
+      path: `/api/v3/health/${healthPublicId}`,
+      method: "PUT",
+      body: UpdateHealth,
+      secure: true,
+      type: ContentType.Json,
+      format: "json",
+      ...params,
+    });
+  /**
+   * No description
+   *
+   * @name CreateGenericIntegration
+   * @summary Create Generic Integration
+   * @request POST:/api/v3/integrations/webhook
+   * @secure
+   */
+  createGenericIntegration = (
+    CreateGenericIntegration: CreateGenericIntegration,
+    params: RequestParams = {},
+  ) =>
+    this.request<void, void>({
+      path: `/api/v3/integrations/webhook`,
+      method: "POST",
+      body: CreateGenericIntegration,
+      secure: true,
+      type: ContentType.Json,
+      ...params,
+    });
+  /**
+   * No description
+   *
+   * @name GetGenericIntegration
+   * @summary Get Generic Integration
+   * @request GET:/api/v3/integrations/webhook/{integration-public-id}
+   * @secure
+   */
+  getGenericIntegration = (
+    integrationPublicId: number,
+    params: RequestParams = {},
+  ) =>
+    this.request<void, void>({
+      path: `/api/v3/integrations/webhook/${integrationPublicId}`,
+      method: "GET",
+      secure: true,
+      ...params,
+    });
+  /**
+   * No description
+   *
+   * @name DeleteGenericIntegration
+   * @summary Delete Generic Integration
+   * @request DELETE:/api/v3/integrations/webhook/{integration-public-id}
+   * @secure
+   */
+  deleteGenericIntegration = (
+    integrationPublicId: number,
+    params: RequestParams = {},
+  ) =>
+    this.request<void, void>({
+      path: `/api/v3/integrations/webhook/${integrationPublicId}`,
+      method: "DELETE",
+      secure: true,
       ...params,
     });
   /**
@@ -1416,6 +1556,8 @@ export class Api<
        * @format uuid
        */
       "org-public-id"?: string;
+      /** Filter members by their disabled state. If true, return only disabled members. If false, return only enabled members. */
+      disabled?: boolean;
     },
     params: RequestParams = {},
   ) =>
@@ -1831,7 +1973,7 @@ export class Api<
        */
       query: string;
       /**
-       * The number of search results to include in a page. Minimum of 1 and maximum of 25.
+       * The number of search results to include in a page. Minimum of 1 and maximum of 250.
        * @format int64
        */
       page_size?: number;
@@ -1881,7 +2023,7 @@ export class Api<
        */
       query: string;
       /**
-       * The number of search results to include in a page. Minimum of 1 and maximum of 25.
+       * The number of search results to include in a page. Minimum of 1 and maximum of 250.
        * @format int64
        */
       page_size?: number;
@@ -1931,7 +2073,7 @@ export class Api<
        */
       query: string;
       /**
-       * The number of search results to include in a page. Minimum of 1 and maximum of 25.
+       * The number of search results to include in a page. Minimum of 1 and maximum of 250.
        * @format int64
        */
       page_size?: number;
@@ -1981,7 +2123,7 @@ export class Api<
        */
       query: string;
       /**
-       * The number of search results to include in a page. Minimum of 1 and maximum of 25.
+       * The number of search results to include in a page. Minimum of 1 and maximum of 250.
        * @format int64
        */
       page_size?: number;
@@ -2031,7 +2173,7 @@ export class Api<
        */
       query: string;
       /**
-       * The number of search results to include in a page. Minimum of 1 and maximum of 25.
+       * The number of search results to include in a page. Minimum of 1 and maximum of 250.
        * @format int64
        */
       page_size?: number;
@@ -2081,7 +2223,7 @@ export class Api<
        */
       query: string;
       /**
-       * The number of search results to include in a page. Minimum of 1 and maximum of 25.
+       * The number of search results to include in a page. Minimum of 1 and maximum of 250.
        * @format int64
        */
       page_size?: number;
@@ -2116,7 +2258,7 @@ export class Api<
       ...params,
     });
   /**
-   * @description Create Story is used to add a new story to your Shortcut Workspace.
+   * @description Create Story is used to add a new story to your Shortcut Workspace. This endpoint requires that either **workflow_state_id** or **project_id** be provided, but will reject the request if both or neither are specified. The workflow_state_id has been marked as required and is the recommended field to specify because we are in the process of sunsetting Projects in Shortcut.
    *
    * @name CreateStory
    * @summary Create Story
