@@ -22,13 +22,24 @@ export interface BaseTaskParams {
   complete?: boolean;
   /** An array of UUIDs for any members you want to add as Owners on this new Task. */
   owner_ids?: string[];
-  /** This field can be set to another unique ID. In the case that the Task has been imported from another tool, the ID in the other tool can be indicated here. */
+  /**
+   * This field can be set to another unique ID. In the case that the Task has been imported from another tool, the ID in the other tool can be indicated here.
+   * @maxLength 128
+   */
   external_id?: string;
 }
 
 export interface BasicWorkspaceInfo {
-  url_slug: string;
+  /** @format uuid */
+  id: string;
+  /** @format date-time */
+  created_at: string;
+  /** @format int64 */
+  default_workflow_id: number;
   estimate_scale: number[];
+  name: string;
+  url_slug: string;
+  utc_offset: string;
 }
 
 /** Branch refers to a VCS branch. Branches are feature branches associated with Shortcut Stories. */
@@ -39,7 +50,7 @@ export interface Branch {
   deleted: boolean;
   /** The name of the Branch. */
   name: string;
-  /** A true/false boolean indicating if the Branch is persistent; e.g. master. */
+  /** This field is deprecated, and will always be false. */
   persistent: boolean;
   /**
    * The time/date the Branch was updated.
@@ -157,6 +168,7 @@ export interface CreateCategory {
   /**
    * The name of the new Category.
    * @minLength 1
+   * @maxLength 128
    */
   name: string;
   /**
@@ -169,6 +181,7 @@ export interface CreateCategory {
   /**
    * This field can be set to another unique ID. In the case that the Category has been imported from another tool, the ID in the other tool can be indicated here.
    * @minLength 1
+   * @maxLength 128
    */
   external_id?: string;
   /** The type of entity this Category is associated with; currently Milestone or Objective is the only type of Category. */
@@ -180,6 +193,7 @@ export interface CreateCategoryParams {
   /**
    * The name of the new Category.
    * @minLength 1
+   * @maxLength 128
    */
   name: string;
   /**
@@ -192,6 +206,7 @@ export interface CreateCategoryParams {
   /**
    * This field can be set to another unique ID. In the case that the Category has been imported from another tool, the ID in the other tool can be indicated here.
    * @minLength 1
+   * @maxLength 128
    */
   external_id?: string;
 }
@@ -218,7 +233,10 @@ export interface CreateCommentComment {
    * @format date-time
    */
   updated_at?: string;
-  /** This field can be set to another unique ID. In the case that the comment has been imported from another tool, the ID in the other tool can be indicated here. */
+  /**
+   * This field can be set to another unique ID. In the case that the comment has been imported from another tool, the ID in the other tool can be indicated here.
+   * @maxLength 128
+   */
   external_id?: string;
 }
 
@@ -227,6 +245,7 @@ export interface CreateEntityTemplate {
   /**
    * The name of the new entity template
    * @minLength 1
+   * @maxLength 128
    */
   name: string;
   /**
@@ -300,9 +319,17 @@ export interface CreateEpic {
   follower_ids?: string[];
   /** An array of UUIDS for Groups to which this Epic is related. */
   group_ids?: string[];
+  /**
+   * The ID of the Story that was converted to an Epic.
+   * @format int64
+   */
+  converted_from_story_id?: number | null;
   /** An array of UUIDs for any members you want to add as Owners on this new Epic. */
   owner_ids?: string[];
-  /** This field can be set to another unique ID. In the case that the Epic has been imported from another tool, the ID in the other tool can be indicated here. */
+  /**
+   * This field can be set to another unique ID. In the case that the Epic has been imported from another tool, the ID in the other tool can be indicated here.
+   * @maxLength 128
+   */
   external_id?: string;
   /**
    * The Epic's deadline.
@@ -338,12 +365,38 @@ export interface CreateEpicComment {
    * @format date-time
    */
   updated_at?: string;
-  /** This field can be set to another unique ID. In the case that the comment has been imported from another tool, the ID in the other tool can be indicated here. */
+  /**
+   * This field can be set to another unique ID. In the case that the comment has been imported from another tool, the ID in the other tool can be indicated here.
+   * @maxLength 128
+   */
   external_id?: string;
 }
 
+export interface CreateEpicHealth {
+  /** The health status of the Epic. */
+  status: "At Risk" | "On Track" | "Off Track" | "No Health";
+  /** The description of the Health status. */
+  text?: string;
+}
+
+export interface CreateGenericIntegration {
+  /**
+   * @maxLength 2048
+   * @pattern ^https?://.+$
+   */
+  webhook_url: string;
+  /**
+   * @minLength 1
+   * @maxLength 128
+   */
+  secret?: string;
+}
+
 export interface CreateGroup {
-  /** The description of the Group. */
+  /**
+   * The description of the Group.
+   * @maxLength 4096
+   */
   description?: string;
   /**
    * The Member ids to add to this Group.
@@ -434,7 +487,10 @@ export interface CreateLabelParams {
    * @maxLength 128
    */
   name: string;
-  /** The description of the new Label. */
+  /**
+   * The description of the new Label.
+   * @maxLength 1024
+   */
   description?: string;
   /**
    * The hex color to be displayed with the Label (for example, "#ff0000").
@@ -446,12 +502,16 @@ export interface CreateLabelParams {
   /**
    * This field can be set to another unique ID. In the case that the Label has been imported from another tool, the ID in the other tool can be indicated here.
    * @minLength 1
+   * @maxLength 128
    */
   external_id?: string;
 }
 
 export interface CreateLinkedFile {
-  /** The description of the file. */
+  /**
+   * The description of the file.
+   * @maxLength 512
+   */
   description?: string;
   /**
    * The ID of the linked story.
@@ -482,7 +542,10 @@ export interface CreateLinkedFile {
    * @format uuid
    */
   uploader_id?: string;
-  /** The content type of the image (e.g. txt/plain). */
+  /**
+   * The content type of the image (e.g. txt/plain).
+   * @maxLength 128
+   */
   content_type?: string;
   /**
    * The URL of linked file.
@@ -584,7 +647,10 @@ export interface CreateProject {
   updated_at?: string;
   /** An array of UUIDs for any members you want to add as Owners on this new Epic. */
   follower_ids?: string[];
-  /** This field can be set to another unique ID. In the case that the Project has been imported from another tool, the ID in the other tool can be indicated here. */
+  /**
+   * This field can be set to another unique ID. In the case that the Project has been imported from another tool, the ID in the other tool can be indicated here.
+   * @maxLength 128
+   */
   external_id?: string;
   /**
    * The ID of the team the project belongs to.
@@ -596,7 +662,10 @@ export interface CreateProject {
    * @format int64
    */
   iteration_length?: number;
-  /** The Project abbreviation used in Story summaries. Should be kept to 3 characters at most. */
+  /**
+   * The Project abbreviation used in Story summaries. Should be kept to 3 characters at most.
+   * @maxLength 63
+   */
   abbreviation?: string;
   /**
    * Defaults to the time/date it is created but can be set to reflect another date.
@@ -631,7 +700,10 @@ export interface CreateStoryComment {
    * @format date-time
    */
   updated_at?: string;
-  /** This field can be set to another unique ID. In the case that the comment has been imported from another tool, the ID in the other tool can be indicated here. */
+  /**
+   * This field can be set to another unique ID. In the case that the comment has been imported from another tool, the ID in the other tool can be indicated here.
+   * @maxLength 1024
+   */
   external_id?: string;
   /**
    * The ID of the Comment that this comment is threaded under.
@@ -662,7 +734,10 @@ export interface CreateStoryCommentParams {
    * @format date-time
    */
   updated_at?: string;
-  /** This field can be set to another unique ID. In the case that the comment has been imported from another tool, the ID in the other tool can be indicated here. */
+  /**
+   * This field can be set to another unique ID. In the case that the comment has been imported from another tool, the ID in the other tool can be indicated here.
+   * @maxLength 1024
+   */
   external_id?: string;
   /**
    * The ID of the Comment that this comment is threaded under.
@@ -686,7 +761,10 @@ export interface CreateStoryContents {
    * @uniqueItems true
    */
   file_ids?: number[];
-  /** The name of the story. */
+  /**
+   * The name of the story.
+   * @maxLength 512
+   */
   name?: string;
   /**
    * The ID of the epic the to be populated.
@@ -695,6 +773,8 @@ export interface CreateStoryContents {
   epic_id?: number | null;
   /** An array of external links to be populated. */
   external_links?: string[];
+  /** An array of sub-tasks connected to the story */
+  sub_tasks?: CreateSubTaskParams[];
   /**
    * The ID of the iteration the to be populated.
    * @format int64
@@ -817,6 +897,8 @@ export interface CreateStoryFromTemplateParams {
    * @uniqueItems true
    */
   follower_ids_remove?: string[];
+  /** A list of either params to create a new sub-task or link an existing story as a sub-task */
+  sub_tasks?: (LinkSubTaskParams | CreateSubTaskParams)[];
   /**
    * An array of IDs of linked files removed from files from the template. Cannot be used in conjunction with `linked_files.`
    * @uniqueItems true
@@ -874,7 +956,10 @@ export interface CreateStoryFromTemplateParams {
    * @uniqueItems true
    */
   owner_ids?: string[];
-  /** This field can be set to another unique ID. In the case that the Story has been imported from another tool, the ID in the other tool can be indicated here. */
+  /**
+   * This field can be set to another unique ID. In the case that the Story has been imported from another tool, the ID in the other tool can be indicated here.
+   * @maxLength 1024
+   */
   external_id?: string;
   /**
    * The numeric point estimate of the story. Can also be null, which means unestimated.
@@ -1018,6 +1103,8 @@ export interface CreateStoryParams {
   story_template_id?: string | null;
   /** An array of External Links associated with this story. */
   external_links?: string[];
+  /** A list of either params to create a new sub-task or link an existing story as a sub-task */
+  sub_tasks?: (LinkSubTaskParams | CreateSubTaskParams)[];
   /**
    * The ID of the member that requested the story.
    * @format uuid
@@ -1060,7 +1147,10 @@ export interface CreateStoryParams {
    * @uniqueItems true
    */
   owner_ids?: string[];
-  /** This field can be set to another unique ID. In the case that the Story has been imported from another tool, the ID in the other tool can be indicated here. */
+  /**
+   * This field can be set to another unique ID. In the case that the Story has been imported from another tool, the ID in the other tool can be indicated here.
+   * @maxLength 1024
+   */
   external_id?: string;
   /**
    * The numeric point estimate of the story. Can also be null, which means unestimated.
@@ -1089,6 +1179,25 @@ export interface CreateStoryParams {
   created_at?: string;
 }
 
+export interface CreateSubTaskParams {
+  /**
+   * The name of the SubTask.
+   * @minLength 1
+   * @maxLength 512
+   */
+  name: string;
+  /**
+   * An array of UUIDs of the owners of this story.
+   * @uniqueItems true
+   */
+  owner_ids?: string[];
+  /**
+   * The ID of the workflow state the story will be in.
+   * @format int64
+   */
+  workflow_state_id?: number;
+}
+
 export interface CreateTask {
   /**
    * The Task description.
@@ -1100,7 +1209,10 @@ export interface CreateTask {
   complete?: boolean;
   /** An array of UUIDs for any members you want to add as Owners on this new Task. */
   owner_ids?: string[];
-  /** This field can be set to another unique ID. In the case that the Task has been imported from another tool, the ID in the other tool can be indicated here. */
+  /**
+   * This field can be set to another unique ID. In the case that the Task has been imported from another tool, the ID in the other tool can be indicated here.
+   * @maxLength 128
+   */
   external_id?: string;
   /**
    * Defaults to the time/date the Task is created but can be set to reflect another creation time/date.
@@ -1126,7 +1238,10 @@ export interface CreateTaskParams {
   complete?: boolean;
   /** An array of UUIDs for any members you want to add as Owners on this new Task. */
   owner_ids?: string[];
-  /** This field can be set to another unique ID. In the case that the Task has been imported from another tool, the ID in the other tool can be indicated here. */
+  /**
+   * This field can be set to another unique ID. In the case that the Task has been imported from another tool, the ID in the other tool can be indicated here.
+   * @maxLength 128
+   */
   external_id?: string;
   /**
    * Defaults to the time/date the Task is created but can be set to reflect another creation time/date.
@@ -1402,6 +1517,8 @@ export interface Epic {
    * @format int64
    */
   id: number;
+  /** The current health status of the Epic. */
+  health?: Health;
   /**
    * The Epic's relative position in the Epic workflow state.
    * @format int64
@@ -1434,6 +1551,22 @@ export interface EpicAssociatedGroup {
    * @format int64
    */
   associated_stories_count?: number;
+}
+
+/** Results schema for paginated Epic listing. */
+export interface EpicPaginatedResults {
+  /** Array of Epic objects on the current page */
+  data: EpicSlim[];
+  /**
+   * The next page number if there are more results, or null for the last page
+   * @format int64
+   */
+  next?: number | null;
+  /**
+   * The total number of Epics matching the query over all pages
+   * @format int64
+   */
+  total: number;
 }
 
 /** An Epic in search results. This is typed differently from Epic because the details=slim search argument will omit some fields. */
@@ -1553,6 +1686,8 @@ export interface EpicSearchResult {
    * @format int64
    */
   id: number;
+  /** The current health status of the Epic. */
+  health?: Health;
   /**
    * The Epic's relative position in the Epic workflow state.
    * @format int64
@@ -1776,11 +1911,6 @@ export interface EpicStats {
    */
   num_related_documents: number;
   /**
-   * The average cycle time (in seconds) of completed stories in this Epic.
-   * @format int64
-   */
-  average_cycle_time?: number;
-  /**
    * The total number of unstarted Stories in this Epic.
    * @format int64
    */
@@ -1820,11 +1950,6 @@ export interface EpicStats {
    * @format int64
    */
   num_stories_backlog: number;
-  /**
-   * The average lead time (in seconds) of completed stories in this Epic.
-   * @format int64
-   */
-  average_lead_time?: number;
   /**
    * The total number of backlog points in this Epic.
    * @format int64
@@ -1942,14 +2067,61 @@ export interface Group {
   id: string;
   /** Icons are used to attach images to Groups, Workspaces, Members, and Loading screens in the Shortcut web application. */
   display_icon: Icon | null;
+  /**
+   * The ID of the default workflow for stories created in this group.
+   * @format int64
+   */
+  default_workflow_id?: number | null;
   /** The Member IDs contain within the Group. */
   member_ids: string[];
   /** The Workflow IDs contained within the Group. */
   workflow_ids: number[];
 }
 
+/** The current health status of the Epic. */
+export interface Health {
+  /** A string description of this resource. */
+  entity_type: string;
+  /**
+   * The ID of the permission who created or updated the Health record.
+   * @format uuid
+   */
+  author_id?: string;
+  /**
+   * The ID of the Epic associated with this Health record.
+   * @format int64
+   */
+  epic_id?: number;
+  /**
+   * The ID of the Objective associated with this Health record.
+   * @format int64
+   */
+  objective_id?: number;
+  /**
+   * The time that the Health record was updated.
+   * @format date-time
+   */
+  updated_at?: string;
+  /** The health status of the Epic or Objective. */
+  status: "At Risk" | "On Track" | "Off Track" | "No Health";
+  /**
+   * The unique ID of the Health record.
+   * @format uuid
+   */
+  id?: string | null;
+  /**
+   * The time that the Health record was created.
+   * @format date-time
+   */
+  created_at?: string;
+  /** The text of the Health record. */
+  text?: string;
+}
+
 /** A history item is a group of actions that represent a transactional change to a Story. */
 export interface History {
+  /** The name of the actor that performed the action, if it can be determined. */
+  actor_name?: string;
   /** The date when the change occurred. */
   changed_at: string;
   /** The ID of the primary entity that has changed, if applicable. */
@@ -3176,6 +3348,14 @@ export interface LabelStats {
   num_epics_completed: number;
 }
 
+export interface LinkSubTaskParams {
+  /**
+   * The ID of the story to link as a sub-task of the parent story
+   * @format int64
+   */
+  story_id: number;
+}
+
 /** Linked files are stored on a third-party website and linked to one or more Stories. Shortcut currently supports linking files from Google Drive, Dropbox, Box, and by URL. */
 export interface LinkedFile {
   /** The description of the file. */
@@ -3282,8 +3462,10 @@ export interface Member {
 export interface MemberInfo {
   /** @format uuid */
   id: string;
-  name: string;
+  is_owner: boolean;
   mention_name: string;
+  name: string;
+  role: string;
   workspace2: BasicWorkspaceInfo;
 }
 
@@ -3551,6 +3733,8 @@ export interface Profile {
   mention_name: string;
   /** The Member's name within the Organization. */
   name?: string | null;
+  /** Whether this profile is an Agent/Bot user. */
+  is_agent?: boolean;
   /** This is the gravatar hash associated with email_address. */
   gravatar_hash?: string | null;
   /**
@@ -3928,7 +4112,10 @@ export interface SearchStories {
    * @uniqueItems true
    */
   owner_ids?: string[];
-  /** An ID or URL that references an external resource. Useful during imports. */
+  /**
+   * An ID or URL that references an external resource. Useful during imports.
+   * @maxLength 1024
+   */
   external_id?: string;
   /** Whether to include the story description in the response. */
   includes_description?: boolean;
@@ -4018,8 +4205,6 @@ export interface Story {
    * @format int64
    */
   epic_id?: number | null;
-  /** The IDs of any unresolved blocker comments on the Story. */
-  unresolved_blocker_comments?: number[];
   /**
    * The ID of the story template used to create this story, or null if not created using a template.
    * @format uuid
@@ -4039,8 +4224,11 @@ export interface Story {
    * @format int64
    */
   iteration_id?: number | null;
+  sub_task_story_ids?: number[];
   /** An array of tasks connected to the story. */
   tasks: Task[];
+  /** The formatted branch name for this story. */
+  formatted_vcs_branch_name?: string | null;
   /** An array of label ids attached to the story. */
   label_ids: number[];
   /**
@@ -4083,6 +4271,8 @@ export interface Story {
    * @format int64
    */
   lead_time?: number;
+  /** @format int64 */
+  parent_story_id?: number | null;
   /**
    * The numeric point estimate of the story. Can also be null, which means unestimated.
    * @format int64
@@ -4214,6 +4404,8 @@ export interface StoryContents {
   epic_id?: number;
   /** An array of external links connected to the story. */
   external_links?: string[];
+  /** An array of sub-tasks connected to the story */
+  sub_tasks?: CreateSubTaskParams[];
   /**
    * The ID of the iteration the story belongs to.
    * @format int64
@@ -4466,8 +4658,6 @@ export interface StorySearchResult {
    * @format int64
    */
   epic_id?: number | null;
-  /** The IDs of any unresolved blocker comments on the Story. */
-  unresolved_blocker_comments?: number[];
   /**
    * The ID of the story template used to create this story, or null if not created using a template.
    * @format uuid
@@ -4487,8 +4677,11 @@ export interface StorySearchResult {
    * @format int64
    */
   iteration_id?: number | null;
+  sub_task_story_ids?: number[];
   /** An array of tasks connected to the story. */
   tasks?: Task[];
+  /** The formatted branch name for this story. */
+  formatted_vcs_branch_name?: string | null;
   /** An array of label ids attached to the story. */
   label_ids: number[];
   /**
@@ -4531,6 +4724,8 @@ export interface StorySearchResult {
    * @format int64
    */
   lead_time?: number;
+  /** @format int64 */
+  parent_story_id?: number | null;
   /**
    * The numeric point estimate of the story. Can also be null, which means unestimated.
    * @format int64
@@ -4660,8 +4855,6 @@ export interface StorySlim {
    * @format int64
    */
   epic_id?: number | null;
-  /** The IDs of any unresolved blocker comments on the Story. */
-  unresolved_blocker_comments?: number[];
   /**
    * The ID of the story template used to create this story, or null if not created using a template.
    * @format uuid
@@ -4681,6 +4874,9 @@ export interface StorySlim {
    * @format int64
    */
   iteration_id?: number | null;
+  sub_task_story_ids?: number[];
+  /** The formatted branch name for this story. */
+  formatted_vcs_branch_name?: string | null;
   /** An array of label ids attached to the story. */
   label_ids: number[];
   /**
@@ -4721,6 +4917,8 @@ export interface StorySlim {
    * @format int64
    */
   lead_time?: number;
+  /** @format int64 */
+  parent_story_id?: number | null;
   /**
    * The numeric point estimate of the story. Can also be null, which means unestimated.
    * @format int64
@@ -4803,6 +5001,7 @@ export interface Task {
    * @format date-time
    */
   completed_at?: string | null;
+  global_id: string;
   /**
    * The time/date the Task was updated.
    * @format date-time
@@ -5011,6 +5210,7 @@ export interface UpdateEntityTemplate {
   /**
    * The updated template name.
    * @minLength 1
+   * @maxLength 128
    */
   name?: string;
   /** Updated attributes for the template to populate. */
@@ -5078,7 +5278,10 @@ export interface UpdateEpic {
   group_ids?: string[];
   /** An array of UUIDs for any members you want to add as Owners on this Epic. */
   owner_ids?: string[];
-  /** This field can be set to another unique ID. In the case that the Epic has been imported from another tool, the ID in the other tool can be indicated here. */
+  /**
+   * This field can be set to another unique ID. In the case that the Epic has been imported from another tool, the ID in the other tool can be indicated here.
+   * @maxLength 128
+   */
   external_id?: string;
   /**
    * The ID of the Epic we want to move this Epic before.
@@ -5098,7 +5301,10 @@ export interface UpdateEpic {
 }
 
 export interface UpdateFile {
-  /** The description of the file. */
+  /**
+   * The description of the file.
+   * @maxLength 4096
+   */
   description?: string;
   /**
    * The time/date that the file was uploaded.
@@ -5121,12 +5327,18 @@ export interface UpdateFile {
    * @format uuid
    */
   uploader_id?: string;
-  /** An additional ID that you may wish to assign to the file. */
+  /**
+   * An additional ID that you may wish to assign to the file.
+   * @maxLength 128
+   */
   external_id?: string;
 }
 
 export interface UpdateGroup {
-  /** The description of this Group. */
+  /**
+   * The description of this Group.
+   * @maxLength 4096
+   */
   description?: string;
   /** Whether or not this Group is archived. */
   archived?: boolean | null;
@@ -5173,12 +5385,24 @@ export interface UpdateGroup {
     | "slate"
     | "turquoise";
   /**
+   * The ID of the default workflow for stories created in this group.
+   * @format int64
+   */
+  default_workflow_id?: number | null;
+  /**
    * The Member ids to add to this Group.
    * @uniqueItems true
    */
   member_ids?: string[];
   /** The Workflow ids to add to the Group. */
   workflow_ids?: number[];
+}
+
+export interface UpdateHealth {
+  /** The health status of the Epic. */
+  status?: "At Risk" | "On Track" | "Off Track" | "No Health";
+  /** The description of the Health status. */
+  text?: string;
 }
 
 export interface UpdateIteration {
@@ -5212,7 +5436,10 @@ export interface UpdateIteration {
 }
 
 export interface UpdateKeyResult {
-  /** The name of the Key Result. */
+  /**
+   * The name of the Key Result.
+   * @maxLength 1024
+   */
   name?: string;
   /** The starting value of the Key Result. */
   initial_observed_value?: KeyResultValue;
@@ -5229,7 +5456,10 @@ export interface UpdateLabel {
    * @maxLength 128
    */
   name?: string;
-  /** The new description of the label. */
+  /**
+   * The new description of the label.
+   * @maxLength 1024
+   */
   description?: string;
   /**
    * The hex color to be displayed with the Label (for example, "#ff0000").
@@ -5243,7 +5473,10 @@ export interface UpdateLabel {
 }
 
 export interface UpdateLinkedFile {
-  /** The description of the file. */
+  /**
+   * The description of the file.
+   * @maxLength 512
+   */
   description?: string;
   /**
    * The ID of the linked story.
@@ -5584,6 +5817,11 @@ export interface UpdateStory {
    */
   owner_ids?: string[];
   /**
+   * The parent story id. If you want to unset this value set parent_story_id to null.
+   * @format int64
+   */
+  parent_story_id?: number | null;
+  /**
    * The ID of the story we want to move this story before.
    * @format int64
    */
@@ -5647,6 +5885,8 @@ export interface UpdateStoryContents {
   epic_id?: number | null;
   /** An array of external links to be populated. */
   external_links?: string[];
+  /** An array of sub-tasks connected to the story */
+  sub_tasks?: CreateSubTaskParams[];
   /**
    * The ID of the iteration the to be populated.
    * @format int64
