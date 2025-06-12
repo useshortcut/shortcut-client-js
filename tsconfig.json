@@ -1,5 +1,5 @@
 {
   "extends": "@total-typescript/tsconfig/bundler/no-dom/library",
   "include": ["src"],
-  "exclude": ["**/__tests__/**"],
+  "exclude": ["**/__tests__/**"]
 }
