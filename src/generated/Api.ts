@@ -10,7 +10,7 @@
  * ---------------------------------------------------------------
  */
 
-import {
+import type {
   Category,
   CreateCategory,
   CreateCommentComment,
@@ -93,7 +93,7 @@ import {
   UploadedFile,
   Workflow,
 } from "./data-contracts";
-import { ContentType, HttpClient, RequestParams } from "./http-client";
+import { ContentType, HttpClient, type RequestParams } from "./http-client";
 
 /** 
  * Please don't use this class directly, instead use the `ShortcutClient` class we provided which is extending this class to add headers for authorization. * @internal

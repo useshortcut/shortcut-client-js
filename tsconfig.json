@@ -2,7 +2,4 @@
   "extends": "@total-typescript/tsconfig/bundler/no-dom/library",
   "include": ["src"],
   "exclude": ["**/__tests__/**"],
-  "ts-node": {
-    "files": true
-  }
 }
