@@ -240,6 +240,17 @@ export interface CreateCommentComment {
   external_id?: string;
 }
 
+export interface CreateDoc {
+  /**
+   * The title for the new document
+   * @minLength 1
+   * @maxLength 256
+   */
+  title: string;
+  /** The content for the new document */
+  content: string;
+}
+
 /** Request parameters for creating an entirely new entity template. */
 export interface CreateEntityTemplate {
   /**
@@ -962,6 +973,11 @@ export interface CreateStoryFromTemplateParams {
    */
   external_id?: string;
   /**
+   * The id of the parent story to associate with this story.
+   * @format int64
+   */
+  parent_story_id?: number | null;
+  /**
    * The numeric point estimate of the story. Can also be null, which means unestimated.
    * @format int64
    */
@@ -1152,6 +1168,11 @@ export interface CreateStoryParams {
    * @maxLength 1024
    */
   external_id?: string;
+  /**
+   * The id of the parent story to associate with this story.
+   * @format int64
+   */
+  parent_story_id?: number | null;
   /**
    * The numeric point estimate of the story. Can also be null, which means unestimated.
    * @format int64
@@ -1363,6 +1384,23 @@ export interface DeleteStories {
    * @uniqueItems true
    */
   story_ids: number[];
+}
+
+export interface DisabledFeatureError {
+  /** The feature that is disabled */
+  feature_tag: string;
+  /** The message explaining the error */
+  message: string;
+}
+
+export interface DocSlim {
+  /**
+   * The public id of the Doc
+   * @format uuid
+   */
+  id: string;
+  /** The Docs Title */
+  title?: string | null;
 }
 
 /** An entity template can be used to prefill various fields when creating new stories. */
@@ -3467,6 +3505,12 @@ export interface MemberInfo {
   name: string;
   role: string;
   workspace2: BasicWorkspaceInfo;
+  organization2: MemberInfoOrganization2;
+}
+
+export interface MemberInfoOrganization2 {
+  /** @format uuid */
+  id: string;
 }
 
 /** (Deprecated) A Milestone is a collection of Epics that represent a release or some other large initiative that you are working on. Milestones have become Objectives, so you should use Objective-related API resources instead of Milestone ones. */

@@ -409,6 +409,26 @@
         "text"
       ]
     },
+    "CreateDoc": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "maxLength": 256,
+          "minLength": 1,
+          "description": "The title for the new document",
+          "type": "string"
+        },
+        "content": {
+          "description": "The content for the new document",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "content"
+      ]
+    },
     "CreateEntityTemplate": {
       "description": "Request parameters for creating an entirely new entity template.",
       "type": "object",
@@ -1538,6 +1558,12 @@
           "description": "This field can be set to another unique ID. In the case that the Story has been imported from another tool, the ID in the other tool can be indicated here.",
           "type": "string"
         },
+        "parent_story_id": {
+          "description": "The id of the parent story to associate with this story.",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
+        },
         "estimate": {
           "description": "The numeric point estimate of the story. Can also be null, which means unestimated.",
           "type": "integer",
@@ -1866,6 +1892,12 @@
           "maxLength": 1024,
           "description": "This field can be set to another unique ID. In the case that the Story has been imported from another tool, the ID in the other tool can be indicated here.",
           "type": "string"
+        },
+        "parent_story_id": {
+          "description": "The id of the parent story to associate with this story.",
+          "type": "integer",
+          "format": "int64",
+          "x-nullable": true
         },
         "estimate": {
           "description": "The numeric point estimate of the story. Can also be null, which means unestimated.",
@@ -2226,6 +2258,44 @@
       "additionalProperties": false,
       "required": [
         "story_ids"
+      ]
+    },
+    "DisabledFeatureError": {
+      "type": "object",
+      "properties": {
+        "feature_tag": {
+          "description": "The feature that is disabled",
+          "type": "string"
+        },
+        "message": {
+          "description": "The message explaining the error",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "feature_tag",
+        "message"
+      ]
+    },
+    "DocSlim": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "The public id of the Doc",
+          "type": "string",
+          "format": "uuid"
+        },
+        "title": {
+          "description": "The Docs Title",
+          "type": "string",
+          "x-nullable": true
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title"
       ]
     },
     "EntityTemplate": {
@@ -6450,6 +6520,9 @@
         },
         "workspace2": {
           "$ref": "#/definitions/BasicWorkspaceInfo"
+        },
+        "organization2": {
+          "$ref": "#/definitions/MemberInfoOrganization2"
         }
       },
       "additionalProperties": false,
@@ -6459,7 +6532,21 @@
         "mention_name",
         "name",
         "role",
-        "workspace2"
+        "workspace2",
+        "organization2"
+      ]
+    },
+    "MemberInfoOrganization2": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id"
       ]
     },
     "Milestone": {
@@ -11630,6 +11717,78 @@
         },
         "operationId": "deleteCustomField",
         "summary": "Delete Custom Field"
+      }
+    },
+    "/api/v3/documents": {
+      "get": {
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/DocSlim"
+              }
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "403": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/DisabledFeatureError"
+            }
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "listDocs",
+        "description": "List Docs returns a list of Doc that the current user can read.",
+        "summary": "List Docs"
+      },
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "CreateDoc",
+            "description": "",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateDoc"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "schema": {
+              "$ref": "#/definitions/DocSlim"
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "403": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/DisabledFeatureError"
+            }
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "createDoc",
+        "description": "Creates a new Doc.",
+        "summary": "Create Doc"
       }
     },
     "/api/v3/entity-templates": {
