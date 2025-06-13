@@ -1,7 +1,7 @@
 {
   "name": "@shortcut/client",
   "version": "2.0.0",
-  "description": "A Promise based library to the Shortcut REST API",
+  "description": "A library for interacting with the Shortcut REST API",
   "homepage": "https://github.com/useshortcut/shortcut-client-js",
   "bugs": {
     "url": "https://github.com/useshortcut/shortcut-client-js/issues"
