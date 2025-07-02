@@ -14,6 +14,7 @@ import type {
   Category,
   CreateCategory,
   CreateCommentComment,
+  CreateDoc,
   CreateEntityTemplate,
   CreateEpic,
   CreateEpicComment,
@@ -36,6 +37,8 @@ import type {
   CustomField,
   DataConflictError,
   DeleteStories,
+  DisabledFeatureError,
+  DocSlim,
   EntityTemplate,
   Epic,
   EpicPaginatedResults,
@@ -301,6 +304,40 @@ export class Api<
       path: `/api/v3/custom-fields/${customFieldPublicId}`,
       method: "DELETE",
       secure: true,
+      ...params,
+    });
+  /**
+   * @description List Docs returns a list of Doc that the current user can read.
+   *
+   * @name ListDocs
+   * @summary List Docs
+   * @request GET:/api/v3/documents
+   * @secure
+   */
+  listDocs = (params: RequestParams = {}) =>
+    this.request<DocSlim[], void | DisabledFeatureError>({
+      path: `/api/v3/documents`,
+      method: "GET",
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Creates a new Doc.
+   *
+   * @name CreateDoc
+   * @summary Create Doc
+   * @request POST:/api/v3/documents
+   * @secure
+   */
+  createDoc = (CreateDoc: CreateDoc, params: RequestParams = {}) =>
+    this.request<DocSlim, void | DisabledFeatureError>({
+      path: `/api/v3/documents`,
+      method: "POST",
+      body: CreateDoc,
+      secure: true,
+      type: ContentType.Json,
+      format: "json",
       ...params,
     });
   /**
