@@ -1401,6 +1401,8 @@ export interface DocSlim {
   id: string;
   /** The Docs Title */
   title?: string | null;
+  /** The Shortcut application url for the Doc. */
+  app_url: string;
 }
 
 /** An entity template can be used to prefill various fields when creating new stories. */
@@ -2388,8 +2390,6 @@ export interface HistoryActionStoryCommentCreate {
    * @pattern ^https?://.+$
    */
   app_url: string;
-  /** The text of the Story Comment. */
-  text: string;
   /**
    * The Member ID of who created the Story Comment.
    * @format uuid
