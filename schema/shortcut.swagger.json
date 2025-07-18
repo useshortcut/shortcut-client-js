@@ -2290,12 +2290,17 @@
           "description": "The Docs Title",
           "type": "string",
           "x-nullable": true
+        },
+        "app_url": {
+          "description": "The Shortcut application url for the Doc.",
+          "type": "string"
         }
       },
       "additionalProperties": false,
       "required": [
         "id",
-        "title"
+        "title",
+        "app_url"
       ]
     },
     "EntityTemplate": {
@@ -4213,10 +4218,6 @@
           "description": "The application URL of the Story Comment.",
           "type": "string"
         },
-        "text": {
-          "description": "The text of the Story Comment.",
-          "type": "string"
-        },
         "author_id": {
           "description": "The Member ID of who created the Story Comment.",
           "type": "string",
@@ -4229,7 +4230,6 @@
         "entity_type",
         "action",
         "app_url",
-        "text",
         "author_id"
       ]
     },
