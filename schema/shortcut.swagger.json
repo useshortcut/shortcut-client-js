@@ -73,6 +73,9 @@
         },
         "utc_offset": {
           "type": "string"
+        },
+        "korey_enabled": {
+          "type": "boolean"
         }
       },
       "additionalProperties": false,
@@ -3593,6 +3596,11 @@
           "type": "integer",
           "format": "int64"
         },
+        "updated_at": {
+          "description": "The last instant when this group was updated.",
+          "type": "string",
+          "format": "date-time"
+        },
         "num_stories_backlog": {
           "description": "The number of stories assigned to the group which are in a backlog workflow state.",
           "type": "integer",
@@ -3628,6 +3636,11 @@
             "type": "integer",
             "format": "int64"
           }
+        },
+        "created_at": {
+          "description": "The instant when this group was created.",
+          "type": "string",
+          "format": "date-time"
         }
       },
       "additionalProperties": false,
@@ -3644,11 +3657,13 @@
         "color_key",
         "num_stories",
         "num_epics_started",
+        "updated_at",
         "num_stories_backlog",
         "id",
         "display_icon",
         "member_ids",
-        "workflow_ids"
+        "workflow_ids",
+        "created_at"
       ]
     },
     "Health": {
@@ -4355,6 +4370,11 @@
           "type": "integer",
           "format": "int64"
         },
+        "parent_story_id": {
+          "description": "The Story's Parent ID (only applicable if Story is a Sub-task)",
+          "type": "integer",
+          "format": "int64"
+        },
         "estimate": {
           "description": "The estimate (or point value) for the Story.",
           "type": "integer",
@@ -4431,6 +4451,11 @@
             "chore",
             "bug"
           ]
+        },
+        "parent_story_id": {
+          "description": "The Story's Parent ID (only applicable if Story is a Sub-task)",
+          "type": "integer",
+          "format": "int64"
         }
       },
       "additionalProperties": false,
@@ -4639,6 +4664,11 @@
             "chore",
             "bug"
           ]
+        },
+        "parent_story_id": {
+          "description": "The Story's Parent ID (only applicable if Story is a Sub-task)",
+          "type": "integer",
+          "format": "int64"
         }
       },
       "additionalProperties": false,
@@ -4896,6 +4926,9 @@
         },
         "custom_field_value_ids": {
           "$ref": "#/definitions/StoryHistoryChangeAddsRemovesUuid"
+        },
+        "parent_story_id": {
+          "$ref": "#/definitions/StoryHistoryChangeOldNewInt"
         },
         "estimate": {
           "$ref": "#/definitions/StoryHistoryChangeOldNewInt"
@@ -5348,6 +5381,11 @@
             "chore",
             "bug"
           ]
+        },
+        "parent_story_id": {
+          "description": "The Story's Parent ID (only applicable if Story is a Sub-task)",
+          "type": "integer",
+          "format": "int64"
         }
       },
       "additionalProperties": false,
@@ -6465,6 +6503,12 @@
         },
         "id": {
           "description": "The Member's ID in Shortcut.",
+          "type": "string",
+          "format": "uuid"
+        },
+        "installation_id": {
+          "description": "Only set for agents. The installation id associated with this agent.",
+          "x-doc-skip": true,
           "type": "string",
           "format": "uuid"
         },
@@ -15474,9 +15518,9 @@
             "description": "Unprocessable"
           }
         },
-        "operationId": "searchStoriesOld",
+        "operationId": "queryStories",
         "description": "Search Stories lets you search Stories based on desired parameters.",
-        "summary": "Search Stories (Old)"
+        "summary": "Query Stories"
       }
     },
     "/api/v3/stories/{story-public-id}": {

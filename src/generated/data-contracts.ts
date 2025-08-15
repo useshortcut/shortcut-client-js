@@ -40,6 +40,7 @@ export interface BasicWorkspaceInfo {
   name: string;
   url_slug: string;
   utc_offset: string;
+  korey_enabled?: boolean;
 }
 
 /** Branch refers to a VCS branch. Branches are feature branches associated with Shortcut Stories. */
@@ -2096,6 +2097,11 @@ export interface Group {
    */
   num_epics_started: number;
   /**
+   * The last instant when this group was updated.
+   * @format date-time
+   */
+  updated_at: string;
+  /**
    * The number of stories assigned to the group which are in a backlog workflow state.
    * @format int64
    */
@@ -2116,6 +2122,11 @@ export interface Group {
   member_ids: string[];
   /** The Workflow IDs contained within the Group. */
   workflow_ids: number[];
+  /**
+   * The instant when this group was created.
+   * @format date-time
+   */
+  created_at: string;
 }
 
 /** The current health status of the Epic. */
@@ -2462,6 +2473,11 @@ export interface HistoryActionStoryCreate {
    */
   id: number;
   /**
+   * The Story's Parent ID (only applicable if Story is a Sub-task)
+   * @format int64
+   */
+  parent_story_id?: number;
+  /**
    * The estimate (or point value) for the Story.
    * @format int64
    */
@@ -2496,6 +2512,11 @@ export interface HistoryActionStoryDelete {
   name: string;
   /** The type of Story; either feature, bug, or chore. */
   story_type: "feature" | "chore" | "bug";
+  /**
+   * The Story's Parent ID (only applicable if Story is a Sub-task)
+   * @format int64
+   */
+  parent_story_id?: number;
 }
 
 /** An action representing a Story Link being created. */
@@ -2598,6 +2619,11 @@ export interface HistoryActionStoryUpdate {
   name: string;
   /** The type of Story; either feature, bug, or chore. */
   story_type: "feature" | "chore" | "bug";
+  /**
+   * The Story's Parent ID (only applicable if Story is a Sub-task)
+   * @format int64
+   */
+  parent_story_id?: number;
 }
 
 /** An action representing a Task being created. */
@@ -2723,6 +2749,8 @@ export interface HistoryChangesStory {
   owner_ids?: StoryHistoryChangeAddsRemovesUuid;
   /** Custom Field Enum Value IDs that have been added or removed from the Story. */
   custom_field_value_ids?: StoryHistoryChangeAddsRemovesUuid;
+  /** The estimate value for the Story */
+  parent_story_id?: StoryHistoryChangeOldNewInt;
   /** The estimate value for the Story */
   estimate?: StoryHistoryChangeOldNewInt;
   /** Task IDs that have been added or removed from the Story. */
@@ -2915,6 +2943,11 @@ export interface HistoryReferenceStory {
   name: string;
   /** If the referenced entity is a Story, either "bug", "chore", or "feature". */
   story_type: "feature" | "chore" | "bug";
+  /**
+   * The Story's Parent ID (only applicable if Story is a Sub-task)
+   * @format int64
+   */
+  parent_story_id?: number;
 }
 
 /** A reference to a Story Task. */
@@ -3483,6 +3516,11 @@ export interface Member {
    * @format uuid
    */
   id: string;
+  /**
+   * Only set for agents. The installation id associated with this agent.
+   * @format uuid
+   */
+  installation_id?: string;
   /** A group of Member profile details. */
   profile: Profile;
   /**
