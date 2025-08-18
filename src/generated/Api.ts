@@ -2401,15 +2401,12 @@ export class Api<
   /**
    * @description Search Stories lets you search Stories based on desired parameters.
    *
-   * @name SearchStoriesOld
-   * @summary Search Stories (Old)
+   * @name QueryStories
+   * @summary Query Stories
    * @request POST:/api/v3/stories/search
    * @secure
    */
-  searchStoriesOld = (
-    SearchStories: SearchStories,
-    params: RequestParams = {},
-  ) =>
+  queryStories = (SearchStories: SearchStories, params: RequestParams = {}) =>
     this.request<StorySlim[], void>({
       path: `/api/v3/stories/search`,
       method: "POST",
