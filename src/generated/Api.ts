@@ -323,7 +323,7 @@ export class Api<
       ...params,
     });
   /**
-   * @description Creates a new Doc.
+   * @description Creates a new Doc. Supports markdown or HTML input via content_format parameter.
    *
    * @name CreateDoc
    * @summary Create Doc
@@ -979,10 +979,17 @@ export class Api<
    * @request GET:/api/v3/groups
    * @secure
    */
-  listGroups = (params: RequestParams = {}) =>
+  listGroups = (
+    query?: {
+      /** Filter groups by their archived state. If true, returns only archived groups. If false, returns only unarchived groups. If not provided, returns all groups */
+      archived?: boolean;
+    },
+    params: RequestParams = {},
+  ) =>
     this.request<Group[], void>({
       path: `/api/v3/groups`,
       method: "GET",
+      query: query,
       secure: true,
       format: "json",
       ...params,
@@ -2645,6 +2652,22 @@ export class Api<
   storyHistory = (storyPublicId: number, params: RequestParams = {}) =>
     this.request<History[], void>({
       path: `/api/v3/stories/${storyPublicId}/history`,
+      method: "GET",
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description List Story Sub tasks returns a list of all Sub-task Stories for a given parent Story.
+   *
+   * @name ListStorySubTasks
+   * @summary List Story Sub tasks
+   * @request GET:/api/v3/stories/{story-public-id}/sub-tasks
+   * @secure
+   */
+  listStorySubTasks = (storyPublicId: number, params: RequestParams = {}) =>
+    this.request<StorySlim[], void>({
+      path: `/api/v3/stories/${storyPublicId}/sub-tasks`,
       method: "GET",
       secure: true,
       format: "json",
