@@ -78,3 +78,33 @@ You can play with it in your web browser with this live playground:
 [Documentation for this client](https://useshortcut.github.io/shortcut-client-js/).
 
 [Documentation for the REST API](https://developer.shortcut.com/api/rest/v3).
+
+## Publishing & Deployment
+
+This library uses GitHub Actions for CI/CD. The deployment process is fully automated.
+
+### Release Process
+
+To publish a new version:
+
+1. Update the version in `package.json`
+2. Commit and push to `main`
+3. Create a GitHub Release with a version tag (e.g., `v2.4.0`)
+4. The publish workflow will automatically build and publish to npm
+
+### Publishing to npm
+
+Publishing is triggered automatically when a **GitHub Release is created**:
+
+1. **Create a GitHub Release**: Go to the repository's Releases page and create a new release with a version tag (e.g., `v2.4.0`)
+2. The `publish.yml` workflow will:
+   - Build the package (`yarn build` via `prepublishOnly`)
+   - Publish to npm under `@shortcut/client`
+   - Also publish under the legacy `@useshortcut/client` namespace for backwards compatibility
+
+### Documentation Deployment
+
+API documentation is automatically deployed to GitHub Pages on every push to `main`:
+
+1. The `gh-pages.yml` workflow builds the documentation using TypeDoc
+2. Documentation is published to https://useshortcut.github.io/shortcut-client-js/
