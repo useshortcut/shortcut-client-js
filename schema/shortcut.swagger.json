@@ -413,17 +413,26 @@
       ]
     },
     "CreateDoc": {
+      "x-doc-skip": true,
       "type": "object",
       "properties": {
         "title": {
           "maxLength": 256,
           "minLength": 1,
-          "description": "The title for the new document",
+          "description": "The title for the new document.",
           "type": "string"
         },
         "content": {
-          "description": "The content for the new document",
+          "description": "The content for the new document.",
           "type": "string"
+        },
+        "content_format": {
+          "description": "Format of the content being sent. Defaults to 'html'. If 'markdown', content will be converted to HTML for storage. Storage is always HTML; this parameter just tells us what format you're sending.",
+          "type": "string",
+          "enum": [
+            "markdown",
+            "html"
+          ]
         }
       },
       "additionalProperties": false,
@@ -1236,8 +1245,7 @@
           }
         },
         "sub_tasks": {
-          "description": "An array of sub-tasks connected to the story",
-          "x-doc-skip": true,
+          "description": "An array of maps specifying the sub-tasks to create and link to the story.\nField only applicable when Sub-task feature is enabled.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/CreateSubTaskParams"
@@ -1460,8 +1468,7 @@
           "uniqueItems": true
         },
         "sub_tasks": {
-          "description": "A list of either params to create a new sub-task or link an existing story as a sub-task",
-          "x-doc-skip": true,
+          "description": "An array of maps specifying sub-tasks to be associated with the created story. Each map can either link to an existing story or create a new sub-task story to be linked to the created story.\nField only applicable when Sub-task feature is enabled.",
           "type": "array",
           "items": {
             "x-oneOf": [
@@ -1562,7 +1569,7 @@
           "type": "string"
         },
         "parent_story_id": {
-          "description": "The id of the parent story to associate with this story.",
+          "description": "The ID of the parent story to associate with this story (making the created story a sub-task).\nField only applicable when Sub-task feature is enabled.",
           "type": "integer",
           "format": "int64",
           "x-nullable": true
@@ -1820,8 +1827,7 @@
           }
         },
         "sub_tasks": {
-          "description": "A list of either params to create a new sub-task or link an existing story as a sub-task",
-          "x-doc-skip": true,
+          "description": "An array of maps specifying sub-tasks to be associated with the created story. Each map can either link to an existing story or create a new sub-task story to be linked to the created story.\nField only applicable when Sub-task feature is enabled.",
           "type": "array",
           "items": {
             "x-oneOf": [
@@ -1897,7 +1903,7 @@
           "type": "string"
         },
         "parent_story_id": {
-          "description": "The id of the parent story to associate with this story.",
+          "description": "The ID of the parent story to associate with this story (making the created story a sub-task).\nField only applicable when Sub-task feature is enabled.",
           "type": "integer",
           "format": "int64",
           "x-nullable": true
@@ -1941,7 +1947,6 @@
       ]
     },
     "CreateSubTaskParams": {
-      "x-doc-skip": true,
       "type": "object",
       "properties": {
         "name": {
@@ -2282,6 +2287,7 @@
       ]
     },
     "DocSlim": {
+      "x-doc-skip": true,
       "type": "object",
       "properties": {
         "id": {
@@ -6293,7 +6299,6 @@
       ]
     },
     "LinkSubTaskParams": {
-      "x-doc-skip": true,
       "type": "object",
       "properties": {
         "story_id": {
@@ -7932,7 +7937,7 @@
           "x-nullable": true
         },
         "sub_task_story_ids": {
-          "x-doc-skip": true,
+          "description": "The Story IDs of Sub-tasks attached to the Story\nField only applicable when Sub-task feature is enabled.",
           "type": "array",
           "items": {
             "type": "integer",
@@ -8030,7 +8035,7 @@
           "format": "int64"
         },
         "parent_story_id": {
-          "x-doc-skip": true,
+          "description": "The ID of the parent story to this story (making this story a sub-task).\nField only applicable when Sub-task feature is enabled.",
           "type": "integer",
           "format": "int64",
           "x-nullable": true
@@ -8332,8 +8337,7 @@
           }
         },
         "sub_tasks": {
-          "description": "An array of sub-tasks connected to the story",
-          "x-doc-skip": true,
+          "description": "An array of maps specifying the sub-tasks to create and link to the story.\nField only applicable when Sub-task feature is enabled.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/CreateSubTaskParams"
@@ -8848,7 +8852,7 @@
           "x-nullable": true
         },
         "sub_task_story_ids": {
-          "x-doc-skip": true,
+          "description": "The Story IDs of Sub-tasks attached to the Story\nField only applicable when Sub-task feature is enabled.",
           "type": "array",
           "items": {
             "type": "integer",
@@ -8946,7 +8950,7 @@
           "format": "int64"
         },
         "parent_story_id": {
-          "x-doc-skip": true,
+          "description": "The ID of the parent story to this story (making this story a sub-task).\nField only applicable when Sub-task feature is enabled.",
           "type": "integer",
           "format": "int64",
           "x-nullable": true
@@ -9269,7 +9273,7 @@
           "x-nullable": true
         },
         "sub_task_story_ids": {
-          "x-doc-skip": true,
+          "description": "The Story IDs of Sub-tasks attached to the Story\nField only applicable when Sub-task feature is enabled.",
           "type": "array",
           "items": {
             "type": "integer",
@@ -9353,7 +9357,7 @@
           "format": "int64"
         },
         "parent_story_id": {
-          "x-doc-skip": true,
+          "description": "The ID of the parent story to this story (making this story a sub-task).\nField only applicable when Sub-task feature is enabled.",
           "type": "integer",
           "format": "int64",
           "x-nullable": true
@@ -9768,6 +9772,18 @@
         "subject_id",
         "subject_workflow_state_id",
         "created_at"
+      ]
+    },
+    "UnprocessableError": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "message"
       ]
     },
     "UnusableEntitlementError": {
@@ -10802,6 +10818,13 @@
           },
           "uniqueItems": true
         },
+        "sub_tasks": {
+          "description": "An array of story IDs to attach to this story as sub-tasks. This list represents the final state of the parent's sub-tasks - missing stories will be unlinked, new stories will be linked, and the input order reflects sub-task positions.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LinkSubTaskParams"
+          }
+        },
         "requested_by_id": {
           "description": "The ID of the member that requested the story.",
           "type": "string",
@@ -10963,8 +10986,7 @@
           }
         },
         "sub_tasks": {
-          "description": "An array of sub-tasks connected to the story",
-          "x-doc-skip": true,
+          "description": "An array of maps specifying the sub-tasks to create and link to the story.\nField only applicable when Sub-task feature is enabled.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/CreateSubTaskParams"
@@ -11831,7 +11853,7 @@
           }
         },
         "operationId": "createDoc",
-        "description": "Creates a new Doc.",
+        "description": "Creates a new Doc. Supports markdown or HTML input via content_format parameter.",
         "summary": "Create Doc"
       }
     },
@@ -12965,6 +12987,15 @@
     },
     "/api/v3/groups": {
       "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "archived",
+            "description": "Filter groups by their archived state. If true, returns only archived groups. If false, returns only unarchived groups. If not provided, returns all groups",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
         "responses": {
           "200": {
             "schema": {
@@ -16009,6 +16040,43 @@
         },
         "operationId": "storyHistory",
         "summary": "Story History"
+      }
+    },
+    "/api/v3/stories/{story-public-id}/sub-tasks": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "story-public-id",
+            "description": "The ID of the Story.",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/StorySlim"
+              }
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "listStorySubTasks",
+        "description": "List Story Sub tasks returns a list of all Sub-task Stories for a given parent Story.",
+        "summary": "List Story Sub tasks"
       }
     },
     "/api/v3/stories/{story-public-id}/tasks": {

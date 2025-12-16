@@ -243,13 +243,15 @@ export interface CreateCommentComment {
 
 export interface CreateDoc {
   /**
-   * The title for the new document
+   * The title for the new document.
    * @minLength 1
    * @maxLength 256
    */
   title: string;
-  /** The content for the new document */
+  /** The content for the new document. */
   content: string;
+  /** Format of the content being sent. Defaults to 'html'. If 'markdown', content will be converted to HTML for storage. Storage is always HTML; this parameter just tells us what format you're sending. */
+  content_format?: "markdown" | "html";
 }
 
 /** Request parameters for creating an entirely new entity template. */
@@ -785,7 +787,10 @@ export interface CreateStoryContents {
   epic_id?: number | null;
   /** An array of external links to be populated. */
   external_links?: string[];
-  /** An array of sub-tasks connected to the story */
+  /**
+   * An array of maps specifying the sub-tasks to create and link to the story.
+   * Field only applicable when Sub-task feature is enabled.
+   */
   sub_tasks?: CreateSubTaskParams[];
   /**
    * The ID of the iteration the to be populated.
@@ -909,7 +914,10 @@ export interface CreateStoryFromTemplateParams {
    * @uniqueItems true
    */
   follower_ids_remove?: string[];
-  /** A list of either params to create a new sub-task or link an existing story as a sub-task */
+  /**
+   * An array of maps specifying sub-tasks to be associated with the created story. Each map can either link to an existing story or create a new sub-task story to be linked to the created story.
+   * Field only applicable when Sub-task feature is enabled.
+   */
   sub_tasks?: (LinkSubTaskParams | CreateSubTaskParams)[];
   /**
    * An array of IDs of linked files removed from files from the template. Cannot be used in conjunction with `linked_files.`
@@ -974,7 +982,8 @@ export interface CreateStoryFromTemplateParams {
    */
   external_id?: string;
   /**
-   * The id of the parent story to associate with this story.
+   * The ID of the parent story to associate with this story (making the created story a sub-task).
+   * Field only applicable when Sub-task feature is enabled.
    * @format int64
    */
   parent_story_id?: number | null;
@@ -1120,7 +1129,10 @@ export interface CreateStoryParams {
   story_template_id?: string | null;
   /** An array of External Links associated with this story. */
   external_links?: string[];
-  /** A list of either params to create a new sub-task or link an existing story as a sub-task */
+  /**
+   * An array of maps specifying sub-tasks to be associated with the created story. Each map can either link to an existing story or create a new sub-task story to be linked to the created story.
+   * Field only applicable when Sub-task feature is enabled.
+   */
   sub_tasks?: (LinkSubTaskParams | CreateSubTaskParams)[];
   /**
    * The ID of the member that requested the story.
@@ -1170,7 +1182,8 @@ export interface CreateStoryParams {
    */
   external_id?: string;
   /**
-   * The id of the parent story to associate with this story.
+   * The ID of the parent story to associate with this story (making the created story a sub-task).
+   * Field only applicable when Sub-task feature is enabled.
    * @format int64
    */
   parent_story_id?: number | null;
@@ -4306,6 +4319,10 @@ export interface Story {
    * @format int64
    */
   iteration_id?: number | null;
+  /**
+   * The Story IDs of Sub-tasks attached to the Story
+   * Field only applicable when Sub-task feature is enabled.
+   */
   sub_task_story_ids?: number[];
   /** An array of tasks connected to the story. */
   tasks: Task[];
@@ -4353,7 +4370,11 @@ export interface Story {
    * @format int64
    */
   lead_time?: number;
-  /** @format int64 */
+  /**
+   * The ID of the parent story to this story (making this story a sub-task).
+   * Field only applicable when Sub-task feature is enabled.
+   * @format int64
+   */
   parent_story_id?: number | null;
   /**
    * The numeric point estimate of the story. Can also be null, which means unestimated.
@@ -4486,7 +4507,10 @@ export interface StoryContents {
   epic_id?: number;
   /** An array of external links connected to the story. */
   external_links?: string[];
-  /** An array of sub-tasks connected to the story */
+  /**
+   * An array of maps specifying the sub-tasks to create and link to the story.
+   * Field only applicable when Sub-task feature is enabled.
+   */
   sub_tasks?: CreateSubTaskParams[];
   /**
    * The ID of the iteration the story belongs to.
@@ -4759,6 +4783,10 @@ export interface StorySearchResult {
    * @format int64
    */
   iteration_id?: number | null;
+  /**
+   * The Story IDs of Sub-tasks attached to the Story
+   * Field only applicable when Sub-task feature is enabled.
+   */
   sub_task_story_ids?: number[];
   /** An array of tasks connected to the story. */
   tasks?: Task[];
@@ -4806,7 +4834,11 @@ export interface StorySearchResult {
    * @format int64
    */
   lead_time?: number;
-  /** @format int64 */
+  /**
+   * The ID of the parent story to this story (making this story a sub-task).
+   * Field only applicable when Sub-task feature is enabled.
+   * @format int64
+   */
   parent_story_id?: number | null;
   /**
    * The numeric point estimate of the story. Can also be null, which means unestimated.
@@ -4956,6 +4988,10 @@ export interface StorySlim {
    * @format int64
    */
   iteration_id?: number | null;
+  /**
+   * The Story IDs of Sub-tasks attached to the Story
+   * Field only applicable when Sub-task feature is enabled.
+   */
   sub_task_story_ids?: number[];
   /** The formatted branch name for this story. */
   formatted_vcs_branch_name?: string | null;
@@ -4999,7 +5035,11 @@ export interface StorySlim {
    * @format int64
    */
   lead_time?: number;
-  /** @format int64 */
+  /**
+   * The ID of the parent story to this story (making this story a sub-task).
+   * Field only applicable when Sub-task feature is enabled.
+   * @format int64
+   */
   parent_story_id?: number | null;
   /**
    * The numeric point estimate of the story. Can also be null, which means unestimated.
@@ -5194,6 +5234,10 @@ export interface TypedStoryLink {
    * @format date-time
    */
   created_at: string;
+}
+
+export interface UnprocessableError {
+  message: string;
 }
 
 export interface UnusableEntitlementError {
@@ -5863,6 +5907,8 @@ export interface UpdateStory {
    * @uniqueItems true
    */
   commit_ids?: number[];
+  /** An array of story IDs to attach to this story as sub-tasks. This list represents the final state of the parent's sub-tasks - missing stories will be unlinked, new stories will be linked, and the input order reflects sub-task positions. */
+  sub_tasks?: LinkSubTaskParams[];
   /**
    * The ID of the member that requested the story.
    * @format uuid
@@ -5967,7 +6013,10 @@ export interface UpdateStoryContents {
   epic_id?: number | null;
   /** An array of external links to be populated. */
   external_links?: string[];
-  /** An array of sub-tasks connected to the story */
+  /**
+   * An array of maps specifying the sub-tasks to create and link to the story.
+   * Field only applicable when Sub-task feature is enabled.
+   */
   sub_tasks?: CreateSubTaskParams[];
   /**
    * The ID of the iteration the to be populated.
