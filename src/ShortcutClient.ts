@@ -1,7 +1,5 @@
 import { Api } from './generated/Api';
-import { ContentType } from './generated/http-client';
-import type { ApiConfig, RequestParams } from './generated/http-client';
-import type { SearchStories, StorySlim } from './generated/data-contracts';
+import type { ApiConfig } from './generated/http-client';
 
 export class ShortcutClient<
   SecurityDataType = unknown,
@@ -17,27 +15,4 @@ export class ShortcutClient<
       ...config,
     });
   }
-
-  /**
-   * @deprecated Use queryStories instead.
-   * @description Search Stories (Old) lets you search Stories based on desired parameters.
-   *
-   * @name SearchStoriesOld
-   * @summary Search Stories (Old)
-   * @request POST:/api/v3/stories/search
-   * @secure
-   */
-  searchStoriesOld = (
-    searchStories: SearchStories,
-    params: RequestParams = {},
-  ) =>
-    this.request<StorySlim[], void>({
-      path: `/api/v3/stories/search`,
-      method: 'POST',
-      body: searchStories,
-      secure: true,
-      type: ContentType.Json,
-      format: 'json',
-      ...params,
-    });
 }
