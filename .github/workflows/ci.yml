@@ -13,17 +13,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Lint
+          - name: lint
             command: yarn lint
-          - name: Validate Schema
+          - name: validate-schema
             command: yarn validate:schema
-          - name: Test
+          - name: test
             command: yarn test
-          - name: Format Check
+          - name: format-check
             command: yarn format:check
-          - name: Validate Examples
+          - name: validate-examples
             command: yarn validate:examples
-          - name: Build
+          - name: build
             command: yarn build && yarn check-exports
     name: ${{ matrix.name }}
     steps:
