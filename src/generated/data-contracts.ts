@@ -1407,6 +1407,47 @@ export interface DisabledFeatureError {
   message: string;
 }
 
+export interface Doc {
+  /**
+   * The public id of the Doc
+   * @format uuid
+   */
+  id: string;
+  /** The Doc's title */
+  title?: string | null;
+  /** The Doc's content in Markdown format (converted from HTML storage). */
+  content_markdown?: string | null;
+  /** The Doc's content in HTML format (as stored in S3). Only included when include_html=true query parameter is provided. */
+  content_html?: string | null;
+  /** The Shortcut application url for the Doc */
+  app_url: string;
+  /**
+   * The time/date the Doc was created
+   * @format date-time
+   */
+  created_at: string;
+  /**
+   * The time/date the Doc was last updated
+   * @format date-time
+   */
+  updated_at: string;
+  /** Whether the Doc is archived */
+  archived: boolean;
+}
+
+/** The results of the Document search query. */
+export interface DocSearchResults {
+  /**
+   * The total number of matches for the search query. The first 1000 matches can be paged through via the API.
+   * @format int64
+   */
+  total: number;
+  /** A list of document search results. */
+  data: DocSlim[];
+  /** The URL path and query string for the next page of search results. */
+  next?: string | null;
+}
+
 export interface DocSlim {
   /**
    * The public id of the Doc
@@ -2047,6 +2088,11 @@ export interface EpicWorkflow {
   default_epic_state_id: number;
   /** A map of the Epic States in this Epic Workflow. */
   epic_states: EpicState[];
+}
+
+export interface GetDoc {
+  /** Format of the content to return. Defaults to 'markdown'. If 'html', includes HTML content in response. */
+  content_format?: "markdown" | "html";
 }
 
 /** A Group. */
@@ -5236,10 +5282,6 @@ export interface TypedStoryLink {
   created_at: string;
 }
 
-export interface UnprocessableError {
-  message: string;
-}
-
 export interface UnusableEntitlementError {
   /** The tag for violating an entitlement action. */
   reason_tag: "entitlement-violation";
@@ -5326,6 +5368,19 @@ export interface UpdateCustomFieldEnumValue {
   color_key?: string | null;
   /** Whether this EnumValue is enabled for its CustomField or not. Leaving this key out of the request leaves the current enabled state untouched. */
   enabled?: boolean;
+}
+
+export interface UpdateDoc {
+  /**
+   * The new title for the document
+   * @minLength 1
+   * @maxLength 256
+   */
+  title?: string;
+  /** The new content for the document. */
+  content?: string;
+  /** Format of content. For input: specifies format of provided content (defaults to 'html'). For output: controls response format - 'markdown' (default) or 'html' to include HTML content. */
+  content_format?: "markdown" | "html";
 }
 
 /**

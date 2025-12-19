@@ -38,6 +38,8 @@ import type {
   DataConflictError,
   DeleteStories,
   DisabledFeatureError,
+  Doc,
+  DocSearchResults,
   DocSlim,
   EntityTemplate,
   Epic,
@@ -45,6 +47,7 @@ import type {
   EpicSearchResults,
   EpicSlim,
   EpicWorkflow,
+  GetDoc,
   Group,
   Health,
   History,
@@ -76,6 +79,7 @@ import type {
   UpdateCategory,
   UpdateComment,
   UpdateCustomField,
+  UpdateDoc,
   UpdateEntityTemplate,
   UpdateEpic,
   UpdateFile,
@@ -338,6 +342,73 @@ export class Api<
       secure: true,
       type: ContentType.Json,
       format: "json",
+      ...params,
+    });
+  /**
+   * @description Get a Doc by its public ID with content. Use content_format=html query parameter to include HTML content.
+   *
+   * @name GetDoc
+   * @summary Get Doc
+   * @request GET:/api/v3/documents/{doc-public-id}
+   * @secure
+   */
+  getDoc = (
+    docPublicId: string,
+    query?: {
+      /** Format of the content to return. Defaults to 'markdown'. If 'html', includes HTML content in response. */
+      content_format?: "markdown" | "html";
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<Doc, void | DisabledFeatureError>({
+      path: `/api/v3/documents/${docPublicId}`,
+      method: "GET",
+      query: query,
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Updates an existing Doc's title and/or content. Supports markdown or HTML input via content_format parameter. When a document is updated: (1) If users are connected, SSE events notify them to refresh their view. (2) If no users are connected, CKEditor cache is flushed to ensure fresh content.
+   *
+   * @name UpdateDoc
+   * @summary Update Doc
+   * @request PUT:/api/v3/documents/{doc-public-id}
+   * @secure
+   */
+  updateDoc = (
+    docPublicId: string,
+    UpdateDoc: UpdateDoc,
+    params: RequestParams = {},
+  ) =>
+    this.request<Doc, void | DisabledFeatureError>({
+      path: `/api/v3/documents/${docPublicId}`,
+      method: "PUT",
+      body: UpdateDoc,
+      secure: true,
+      type: ContentType.Json,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Permanently deletes a Doc and its associated data. Requires admin access to the doc. When a document is deleted, connected clients will be notified via SSE events.
+   *
+   * @name DeleteDoc
+   * @summary Delete Doc
+   * @request DELETE:/api/v3/documents/{doc-public-id}
+   * @secure
+   */
+  deleteDoc = (
+    docPublicId: string,
+    GetDoc: GetDoc,
+    params: RequestParams = {},
+  ) =>
+    this.request<void, void | DisabledFeatureError>({
+      path: `/api/v3/documents/${docPublicId}`,
+      method: "DELETE",
+      body: GetDoc,
+      secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -2045,6 +2116,48 @@ export class Api<
   ) =>
     this.request<SearchResults, MaxSearchResultsExceededError | void>({
       path: `/api/v3/search`,
+      method: "GET",
+      query: query,
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Search Documents lets you search Documents based on desired parameters. Supports structured filters: title, archived, created_by_me, followed_by_me.
+   *
+   * @name SearchDocuments
+   * @summary Search Documents
+   * @request GET:/api/v3/search/documents
+   * @secure
+   */
+  searchDocuments = (
+    query: {
+      /**
+       * Search text to match against document titles. Supports fuzzy matching. Required.
+       * @minLength 1
+       */
+      title: string;
+      /** When true, find archived documents. When false, find non-archived documents. */
+      archived?: boolean;
+      /** When true, find documents created by the current user. When false, find documents NOT created by current user. */
+      created_by_me?: boolean;
+      /** When true, find documents that the current user is following. When false, find documents NOT followed. */
+      followed_by_me?: boolean;
+      /**
+       * The number of search results to include in a page. Minimum of 1 and maximum of 250.
+       * @format int64
+       */
+      page_size?: number;
+      /** The next page token. */
+      next?: string;
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<
+      DocSearchResults,
+      MaxSearchResultsExceededError | DisabledFeatureError | void
+    >({
+      path: `/api/v3/search/documents`,
       method: "GET",
       query: query,
       secure: true,
