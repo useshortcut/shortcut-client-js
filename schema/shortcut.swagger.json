@@ -9873,6 +9873,18 @@
         "created_at"
       ]
     },
+    "UnprocessableError": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "message"
+      ]
+    },
     "UnusableEntitlementError": {
       "type": "object",
       "properties": {
@@ -12111,6 +12123,140 @@
         "summary": "Delete Doc"
       }
     },
+    "/api/v3/documents/{doc-public-id}/epics": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "doc-public-id",
+            "description": "The public ID of the Document.",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/EpicSlim"
+              }
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "403": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/DisabledFeatureError"
+            }
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "listDocumentEpics",
+        "description": "Get a list of all Epics related to this Document.",
+        "summary": "List Document Epics"
+      }
+    },
+    "/api/v3/documents/{doc-public-id}/epics/{epic-public-id}": {
+      "put": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "doc-public-id",
+            "description": "The public ID of the Document.",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "in": "path",
+            "name": "epic-public-id",
+            "description": "The public ID of the Epic.",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "403": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/DisabledFeatureError"
+            }
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "**Either:** (1) Unprocessable **or** (2)  ",
+            "schema": {
+              "$ref": "#/definitions/UnprocessableError"
+            }
+          }
+        },
+        "operationId": "linkDocumentToEpic",
+        "description": "Create a relationship between a Document and an Epic.",
+        "summary": "Link Document to Epic"
+      },
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "doc-public-id",
+            "description": "The public ID of the Document.",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "in": "path",
+            "name": "epic-public-id",
+            "description": "The public ID of the Epic.",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "403": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/DisabledFeatureError"
+            }
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "unlinkDocumentFromEpic",
+        "description": "Remove a relationship between a Document and an Epic.",
+        "summary": "Unlink Document from Epic"
+      }
+    },
     "/api/v3/entity-templates": {
       "get": {
         "responses": {
@@ -12815,6 +12961,43 @@
         "operationId": "deleteEpicComment",
         "description": "This endpoint allows you to delete a Comment from an Epic.",
         "summary": "Delete Epic Comment"
+      }
+    },
+    "/api/v3/epics/{epic-public-id}/documents": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "epic-public-id",
+            "description": "The unique ID of the Epic.",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/DocSlim"
+              }
+            },
+            "description": "Resource"
+          },
+          "400": {
+            "description": "Schema mismatch"
+          },
+          "404": {
+            "description": "Resource does not exist"
+          },
+          "422": {
+            "description": "Unprocessable"
+          }
+        },
+        "operationId": "listEpicDocuments",
+        "description": "Get a list of all Documents related to this Epic.",
+        "summary": "List Epic Documents"
       }
     },
     "/api/v3/epics/{epic-public-id}/health": {
