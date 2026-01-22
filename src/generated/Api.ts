@@ -75,6 +75,7 @@ import type {
   StorySlim,
   Task,
   ThreadedComment,
+  UnprocessableError,
   UnusableEntitlementError,
   UpdateCategory,
   UpdateComment,
@@ -409,6 +410,60 @@ export class Api<
       body: GetDoc,
       secure: true,
       type: ContentType.Json,
+      ...params,
+    });
+  /**
+   * @description Get a list of all Epics related to this Document.
+   *
+   * @name ListDocumentEpics
+   * @summary List Document Epics
+   * @request GET:/api/v3/documents/{doc-public-id}/epics
+   * @secure
+   */
+  listDocumentEpics = (docPublicId: string, params: RequestParams = {}) =>
+    this.request<EpicSlim[], void | DisabledFeatureError>({
+      path: `/api/v3/documents/${docPublicId}/epics`,
+      method: "GET",
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Create a relationship between a Document and an Epic.
+   *
+   * @name LinkDocumentToEpic
+   * @summary Link Document to Epic
+   * @request PUT:/api/v3/documents/{doc-public-id}/epics/{epic-public-id}
+   * @secure
+   */
+  linkDocumentToEpic = (
+    docPublicId: string,
+    epicPublicId: number,
+    params: RequestParams = {},
+  ) =>
+    this.request<void, void | DisabledFeatureError | UnprocessableError>({
+      path: `/api/v3/documents/${docPublicId}/epics/${epicPublicId}`,
+      method: "PUT",
+      secure: true,
+      ...params,
+    });
+  /**
+   * @description Remove a relationship between a Document and an Epic.
+   *
+   * @name UnlinkDocumentFromEpic
+   * @summary Unlink Document from Epic
+   * @request DELETE:/api/v3/documents/{doc-public-id}/epics/{epic-public-id}
+   * @secure
+   */
+  unlinkDocumentFromEpic = (
+    docPublicId: string,
+    epicPublicId: number,
+    params: RequestParams = {},
+  ) =>
+    this.request<void, void | DisabledFeatureError>({
+      path: `/api/v3/documents/${docPublicId}/epics/${epicPublicId}`,
+      method: "DELETE",
+      secure: true,
       ...params,
     });
   /**
@@ -801,6 +856,22 @@ export class Api<
       path: `/api/v3/epics/${epicPublicId}/comments/${commentPublicId}`,
       method: "DELETE",
       secure: true,
+      ...params,
+    });
+  /**
+   * @description Get a list of all Documents related to this Epic.
+   *
+   * @name ListEpicDocuments
+   * @summary List Epic Documents
+   * @request GET:/api/v3/epics/{epic-public-id}/documents
+   * @secure
+   */
+  listEpicDocuments = (epicPublicId: number, params: RequestParams = {}) =>
+    this.request<DocSlim[], void>({
+      path: `/api/v3/epics/${epicPublicId}/documents`,
+      method: "GET",
+      secure: true,
+      format: "json",
       ...params,
     });
   /**

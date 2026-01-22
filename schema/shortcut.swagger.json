@@ -10023,7 +10023,6 @@
       "additionalProperties": false
     },
     "UpdateDoc": {
-      "x-doc-skip": true,
       "type": "object",
       "properties": {
         "title": {
