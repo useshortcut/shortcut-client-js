@@ -5282,6 +5282,10 @@ export interface TypedStoryLink {
   created_at: string;
 }
 
+export interface UnprocessableError {
+  message: string;
+}
+
 export interface UnusableEntitlementError {
   /** The tag for violating an entitlement action. */
   reason_tag: "entitlement-violation";
