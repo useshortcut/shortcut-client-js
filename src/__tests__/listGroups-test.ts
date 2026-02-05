@@ -1,5 +1,5 @@
-import { ShortcutClient } from '../ShortcutClient';
 import axios from 'axios';
+import { ShortcutClient } from '../ShortcutClient';
 
 jest.mock('axios');
 
