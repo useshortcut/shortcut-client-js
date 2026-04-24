@@ -13,7 +13,8 @@ describe('listGroups', () => {
   let mockRequest: Mock<(config: unknown) => Promise<{ data: never[] }>>;
 
   beforeEach(() => {
-    mockRequest = vi.fn<(config: unknown) => Promise<{ data: never[] }>>()
+    mockRequest = vi
+      .fn<(config: unknown) => Promise<{ data: never[] }>>()
       .mockResolvedValue({ data: [] });
     const mockInstance = {
       defaults: {

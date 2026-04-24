@@ -46,10 +46,8 @@
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.1",
     "@total-typescript/tsconfig": "1.0.4",
-    "@types/glob": "8.1.0",
     "@types/jscodeshift": "17.3.0",
     "@types/node": "22.15.30",
-    "glob": "11.1.0",
     "jscodeshift": "17.3.0",
     "oxfmt": "0.46.0",
     "oxlint": "1.61.0",
