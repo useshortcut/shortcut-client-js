@@ -6,6 +6,14 @@
     "vitest": true
   },
   "ignorePatterns": ["src/generated", "lib"],
+  "overrides": [
+    {
+      "files": ["examples/**"],
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ],
   "rules": {
     "no-undef": "off",
     "import/extensions": "off",

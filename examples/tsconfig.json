@@ -1,5 +1,13 @@
 {
-  "ts-node": {
-    "files": true
-  }
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "noEmit": true,
+    "types": ["node"],
+    "skipLibCheck": true,
+    "strictNullChecks": false,
+    "noImplicitAny": false
+  },
+  "include": ["*.ts"]
 }

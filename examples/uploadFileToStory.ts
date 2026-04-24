@@ -1,29 +1,31 @@
 import * as fs from 'fs';
-import * as streamToBlob from 'stream-to-blob';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import streamToBlob from 'stream-to-blob';
 
-import { ShortcutClient } from '../src';
+import { ShortcutClient } from '../lib/index.mjs';
 
-(async () => {
-  const shortcut = new ShortcutClient(process.env.SHORTCUT_API_TOKEN); // See https://github.com/useshortcut/shortcut-client-js#how-to-get-an-api-token
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
-  const FILE_PATH = `${__dirname}/logo.png`;
+const shortcut = new ShortcutClient(process.env.SHORTCUT_API_TOKEN); // See https://github.com/useshortcut/shortcut-client-js#how-to-get-an-api-token
 
-  const { data: workflows } = await shortcut.listWorkflows();
+const FILE_PATH = `${__dirname}/logo.png`;
 
-  const { data: story } = await shortcut.createStory({
-    name: 'Upload a file to a story',
-    workflow_state_id: workflows[0].states[0].id,
-  });
+const { data: workflows } = await shortcut.listWorkflows();
 
-  console.log('Story created with ID:', story.id);
+const { data: story } = await shortcut.createStory({
+  name: 'Upload a file to a story',
+  workflow_state_id: workflows[0].states[0].id,
+});
 
-  // This is proper to Node, replace this based on your environment
-  const fileStream = fs.createReadStream(FILE_PATH);
+console.log('Story created with ID:', story.id);
 
-  const { data: file } = await shortcut.uploadFiles({
-    story_id: story.id,
-    file0: (await streamToBlob(fileStream)) as any, // On Web, this is expecting a File object, but on Node, it's a ReadableStream
-  });
+// This is proper to Node, replace this based on your environment
+const fileStream = fs.createReadStream(FILE_PATH);
 
-  console.log(file);
-})();
+const { data: file } = await shortcut.uploadFiles({
+  story_id: story.id,
+  file0: (await streamToBlob(fileStream)) as any, // On Web, this is expecting a File object, but on Node, it's a ReadableStream
+});
+
+console.log(file);
