@@ -1,0 +1,8 @@
+{
+  "singleQuote": true,
+  "semi": true,
+  "trailingComma": "all",
+  "arrowParens": "always",
+  "printWidth": 80,
+  "ignorePatterns": ["/src/generated", "/schema", "/lib"]
+}
