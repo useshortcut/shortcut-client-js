@@ -1,17 +1,20 @@
 import axios from 'axios';
+import type { Mock } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ShortcutClient } from '../ShortcutClient';
 
-jest.mock('axios');
+vi.mock('axios');
 
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+const mockedAxios = vi.mocked(axios);
 
 describe('listGroups', () => {
   let shortcut: ShortcutClient;
 
-  let mockRequest: jest.Mock;
+  let mockRequest: Mock<(config: unknown) => Promise<{ data: never[] }>>;
 
   beforeEach(() => {
-    mockRequest = jest.fn().mockResolvedValue({ data: [] });
+    mockRequest = vi.fn<(config: unknown) => Promise<{ data: never[] }>>()
+      .mockResolvedValue({ data: [] });
     const mockInstance = {
       defaults: {
         headers: { common: {} },
