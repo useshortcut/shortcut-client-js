@@ -9,5 +9,5 @@ You will need to set an environment variable with your API Token. See [How to Ge
 Then, you can run the file you want with:
 
 ```bash
-SHORTCUT_API_TOKEN=YOUR_API_TOKEN npx ts-node FILE_EXAMPLE
+SHORTCUT_API_TOKEN=YOUR_API_TOKEN node FILE_EXAMPLE
 ```

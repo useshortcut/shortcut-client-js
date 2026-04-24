@@ -16,13 +16,13 @@
   ],
   "type": "commonjs",
   "sideEffects": false,
-  "main": "./lib/index.js",
+  "main": "./lib/index.cjs",
   "module": "./lib/index.mjs",
-  "types": "./lib/index.d.ts",
+  "types": "./lib/index.d.cts",
   "exports": {
     ".": {
       "import": "./lib/index.mjs",
-      "require": "./lib/index.js"
+      "require": "./lib/index.cjs"
     }
   },
   "scripts": {
@@ -33,11 +33,11 @@
     "check-exports": "attw --pack .",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
-    "lint": "oxlint src",
+    "lint": "oxlint src examples",
     "prepublishOnly": "yarn build",
     "sync:schema": "curl --silent https://developer.shortcut.com/api/rest/v3/shortcut.swagger.json --output ./schema/shortcut.swagger.json && yarn validate:schema",
     "test": "vitest",
-    "validate:examples": "npx tsc examples/*.ts --noEmit",
+    "validate:examples": "npx tsc --project examples/tsconfig.json",
     "validate:schema": "swagger-cli validate ./schema/shortcut.swagger.json"
   },
   "dependencies": {
@@ -53,11 +53,11 @@
     "oxlint": "1.61.0",
     "stream-to-blob": "2.0.1",
     "swagger-cli": "4.0.4",
-    "swagger-typescript-api": "13.2.0",
-    "tsdown": "0.12.7",
-    "typedoc": "0.28.5",
+    "swagger-typescript-api": "13.6.10",
+    "tsdown": "0.21.10",
+    "typedoc": "0.28.19",
     "typedoc-plugin-merge-modules": "7.0.0",
-    "typescript": "5.8.3",
+    "typescript": "6.0.3",
     "vitest": "4.1.5"
   },
   "packageManager": "yarn@4.14.1+sha512.64df448055b2d37ba269d7db535a469b8da93f8ef1140c25fd7a83c00a8fbaacb214ca0e02553b92a2c54cef78bb67d0b4817fab02001df0e24fac0faccc3b42"

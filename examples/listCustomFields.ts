@@ -1,5 +1,7 @@
-import { ShortcutClient } from '../src';
+import { ShortcutClient } from '../lib/index.mjs';
 
 const shortcut = new ShortcutClient(process.env.SHORTCUT_API_TOKEN); // See https://github.com/useshortcut/shortcut-client-js#how-to-get-an-api-token
 
-shortcut.listCustomFields().then((response) => console.log(response?.data));
+const { data: customFields } = await shortcut.listCustomFields();
+
+console.log(customFields);

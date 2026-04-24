@@ -22,7 +22,7 @@ jobs:
           - name: format-check
             command: yarn format:check
           - name: validate-examples
-            command: yarn validate:examples
+            command: yarn build && yarn validate:examples
           - name: build
             command: yarn build && yarn check-exports
     name: ${{ matrix.name }}
