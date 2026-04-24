@@ -1,6 +1,7 @@
+import { describe, expect, it, vi } from 'vitest';
 import { ShortcutClient } from '../ShortcutClient';
 
-jest.unmock('axios');
+vi.unmock('axios');
 
 describe('ShortcutClient', () => {
   const token = 'SOME-TOKEN';

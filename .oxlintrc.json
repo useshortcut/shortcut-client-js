@@ -1,9 +1,9 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript", "import", "jest"],
+  "plugins": ["typescript", "import", "vitest"],
   "env": {
     "es6": true,
-    "jest": true
+    "vitest": true
   },
   "ignorePatterns": ["src/generated", "lib"],
   "rules": {
