@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "import", "jest"],
+  "env": {
+    "es6": true,
+    "jest": true
+  },
+  "ignorePatterns": ["src/generated", "lib"],
+  "rules": {
+    "no-undef": "off",
+    "import/extensions": "off",
+    "import/prefer-default-export": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "no-restricted-exports": "off"
+  }
+}
