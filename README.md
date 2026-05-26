@@ -81,7 +81,7 @@ You can play with it in your web browser with this live playground:
 
 ## Publishing & Deployment
 
-This library uses GitHub Actions for CI/CD. The deployment process is fully automated.
+This library uses GitHub Actions for CI/CD. npm releases are staged automatically, then approved manually in npm.
 
 ### Release Process
 
@@ -90,17 +90,19 @@ To publish a new version:
 1. Update the version in `package.json`
 2. Commit and push to `main`
 3. Create a GitHub Release with a version tag (e.g., `v2.4.0`)
-4. The publish workflow will automatically build and publish to npm
+4. The publish workflow will automatically build and stage the package versions on npm
+5. Review and approve both staged packages in npm to publish them live
 
-### Publishing to npm
+### Staged Publishing to npm
 
-Publishing is triggered automatically when a **GitHub Release is created**:
+Staging is triggered automatically when a **GitHub Release is created**:
 
 1. **Create a GitHub Release**: Go to the repository's Releases page and create a new release with a version tag (e.g., `v2.4.0`)
-2. The `publish.yml` workflow will:
-   - Build the package (`yarn build` via `prepublishOnly`)
-   - Publish to npm under `@shortcut/client`
-   - Also publish under the legacy `@useshortcut/client` namespace for backwards compatibility
+2. The `publish.yml` workflow will build the package (`yarn build` via `prepublishOnly`) and stage both `@shortcut/client` and `@useshortcut/client` using npm staged publishing
+3. Review the staged packages in npm using `npm stage list`, `npm stage view <stage-id>`, or the npmjs.com **Staged Packages** tab
+4. Approve both staged packages with 2FA using `npm stage approve <stage-id>` or the npmjs.com approval flow
+
+The npm trusted publisher for this repository must allow `npm stage publish` for `.github/workflows/publish.yml`. Trusted publishing from GitHub Actions automatically generates provenance for public packages from public repositories. Staged publishing requires npm CLI `11.15.0` or later and Node.js `22.14.0` or later.
 
 ### Documentation Deployment
 
