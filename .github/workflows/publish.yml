@@ -1,4 +1,4 @@
-name: Publish Package to npmjs
+name: Stage Package on npmjs
 
 on:
   release:
@@ -19,14 +19,14 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'yarn'
           registry-url: 'https://registry.npmjs.org'
-      # Ensure npm 11.5.1 or later is installed
+      # Ensure npm 11.15.0 or later is installed for staged publishing.
       - name: Update npm
         run: npm install -g npm@latest
       - name: Install dependencies
         run: yarn install --immutable
-      - run: npm publish --access public
+      - name: Stage @shortcut/client
+        run: npm stage publish --access public
       - name: Rename package to @useshortcut/client
-        run: |
-          sed -i 's/"name": ".*"/"name": "@useshortcut\/client"/' package.json
-      - name: Publish under @useshortcut scope
-        run: npm publish --access public
+        run: npm pkg set name=@useshortcut/client
+      - name: Stage @useshortcut/client
+        run: npm stage publish --access public
