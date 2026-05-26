@@ -36,6 +36,6 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'yarn'
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
       - name: ${{ matrix.name }}
         run: ${{ matrix.command }}

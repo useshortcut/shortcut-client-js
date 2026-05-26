@@ -23,7 +23,7 @@ jobs:
       - name: Update npm
         run: npm install -g npm@latest
       - name: Install dependencies
-        run: yarn --frozen-lockfile
+        run: yarn install --immutable
       - run: npm publish --access public
       - name: Rename package to @useshortcut/client
         run: |
