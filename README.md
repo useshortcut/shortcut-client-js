@@ -98,7 +98,7 @@ To publish a new version:
 Staging is triggered automatically when a **GitHub Release is created**:
 
 1. **Create a GitHub Release**: Go to the repository's Releases page and create a new release with a version tag (e.g., `v2.4.0`)
-2. The `publish.yml` workflow will build the package (`yarn build` via `prepublishOnly`) and stage both `@shortcut/client` and `@useshortcut/client` using npm staged publishing
+2. The `publish.yml` workflow will stage `@shortcut/client`, then stage the same built package under the legacy `@useshortcut/client` namespace
 3. Review the staged packages in npm using `npm stage list`, `npm stage view <stage-id>`, or the npmjs.com **Staged Packages** tab
 4. Approve both staged packages with 2FA using `npm stage approve <stage-id>` or the npmjs.com approval flow
 
