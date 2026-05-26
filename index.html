@@ -63,7 +63,7 @@ Tokens provide complete access to your Shortcut account, <strong>so keep them se
 <p>Staging is triggered automatically when a <strong>GitHub Release is created</strong>:</p>
 <ol>
 <li><strong>Create a GitHub Release</strong>: Go to the repository's Releases page and create a new release with a version tag (e.g., <code>v2.4.0</code>)</li>
-<li>The <code>publish.yml</code> workflow will build the package (<code>yarn build</code> via <code>prepublishOnly</code>) and stage both <code>@shortcut/client</code> and <code>@useshortcut/client</code> using npm staged publishing</li>
+<li>The <code>publish.yml</code> workflow will stage <code>@shortcut/client</code>, then stage the same built package under the legacy <code>@useshortcut/client</code> namespace</li>
 <li>Review the staged packages in npm using <code>npm stage list</code>, <code>npm stage view &lt;stage-id&gt;</code>, or the <a href="http://npmjs.com">npmjs.com</a> <strong>Staged Packages</strong> tab</li>
 <li>Approve both staged packages with 2FA using <code>npm stage approve &lt;stage-id&gt;</code> or the <a href="http://npmjs.com">npmjs.com</a> approval flow</li>
 </ol>
