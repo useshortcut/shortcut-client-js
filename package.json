@@ -53,7 +53,7 @@
     "oxlint": "1.61.0",
     "stream-to-blob": "2.0.1",
     "swagger-cli": "4.0.4",
-    "swagger-typescript-api": "13.6.10",
+    "swagger-typescript-api": "13.12.2",
     "tsdown": "0.21.10",
     "typedoc": "0.28.19",
     "typedoc-plugin-merge-modules": "7.0.0",
