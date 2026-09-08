@@ -1,0 +1,171 @@
+/**
+ * Rewrites the published v4 OpenAPI document into a shape that generates
+ * readable TypeScript.
+ *
+ * The published document names every response and request body by a numeric
+ * id (`Response1631704`, `Body1631589`) and wraps each success schema in an
+ * object with a single `schema` property. This script:
+ *
+ * - points each success response straight at the wrapped schema
+ *   (`StoryEntityWrapper`) and drops the numeric wrapper;
+ * - collapses the empty error-response schemas into one shared `ApiError`;
+ * - renames each request body after its operation
+ *   (`Body1631589` -> `CreateStoryCommentParams`).
+ *
+ * Usage: node scripts/normalize-v4-schema.mts <input.json> <output.json>
+ */
+import { readFileSync, writeFileSync } from 'node:fs';
+
+type Json = Record<string, any>;
+
+const [input, output] = process.argv.slice(2);
+if (!input || !output) {
+  console.error('usage: normalize-v4-schema.mts <input.json> <output.json>');
+  process.exit(2);
+}
+
+const doc: Json = JSON.parse(readFileSync(input, 'utf8'));
+const schemas: Json = doc.components.schemas;
+const responses: Json = doc.components.responses ?? {};
+const requestBodies: Json = doc.components.requestBodies ?? {};
+const refName = (ref: string) => ref.split('/').pop() as string;
+const renames = new Map<string, string>();
+const suffixed: string[] = [];
+
+// 1. Success responses: unwrap `{ schema: $ref }`; errors: share one schema.
+schemas.ApiError = {
+  type: 'object',
+  description: 'Error response body.',
+  properties: {
+    message: {
+      type: 'string',
+      description: 'Human-readable description of the error.',
+    },
+    tag: { type: 'string', description: 'Machine-readable error tag.' },
+    errors: {
+      type: 'object',
+      additionalProperties: true,
+      description: 'Field-level details, when present.',
+    },
+  },
+  required: ['message'],
+  additionalProperties: true,
+};
+for (const [name, response] of Object.entries(responses)) {
+  const content = (response as Json).content?.['application/json'];
+  const ref = content?.schema?.$ref;
+  if (!ref) continue;
+  const schema = schemas[refName(ref)];
+  const props = schema?.properties ?? {};
+  const keys = Object.keys(props);
+  if (keys.length === 1 && keys[0] === 'schema' && props.schema.$ref) {
+    content.schema = { $ref: props.schema.$ref };
+    delete schemas[refName(ref)];
+  } else if (keys.length === 0) {
+    content.schema = { $ref: '#/components/schemas/ApiError' };
+    delete schemas[refName(ref)];
+  }
+  void name;
+}
+
+// 2. Request bodies: name after the operation that uses them.
+const pascal = (id: string) =>
+  id.replace(/(^|[^a-zA-Z0-9])([a-z0-9])/g, (_, __, c) => c.toUpperCase());
+for (const pathItem of Object.values(doc.paths as Json)) {
+  for (const operation of Object.values(pathItem as Json)) {
+    const ref = (operation as Json)?.requestBody?.$ref;
+    if (!ref || !(operation as Json).operationId) continue;
+    const oldName = refName(ref);
+    const newName = `${pascal((operation as Json).operationId)}Params`;
+    const body = requestBodies[oldName];
+    const mediaType =
+      body?.content &&
+      (body.content['application/json'] ?? Object.values(body.content)[0]);
+    const schemaRef = (mediaType as Json | undefined)?.schema?.$ref;
+    if (!body || !schemaRef || renames.has(oldName)) continue;
+    const oldSchema = refName(schemaRef);
+    // The document often already has a named copy of the body schema. Reuse it
+    // when identical; otherwise keep both apart with a `Body` suffix.
+    let target = newName;
+    if (schemas[newName] && newName !== oldSchema) {
+      if (
+        JSON.stringify(schemas[newName]) !== JSON.stringify(schemas[oldSchema])
+      ) {
+        target = `${pascal((operation as Json).operationId)}Body`;
+        if (schemas[target])
+          throw new Error(
+            `Cannot rename ${oldSchema}: ${target} already exists`,
+          );
+      }
+    }
+    if (target !== oldSchema) {
+      if (!schemas[target]) schemas[target] = schemas[oldSchema];
+      delete schemas[oldSchema];
+    }
+    (mediaType as Json).schema = { $ref: `#/components/schemas/${target}` };
+    requestBodies[target] = body;
+    delete requestBodies[oldName];
+    (operation as Json).requestBody = {
+      $ref: `#/components/requestBodies/${target}`,
+    };
+    renames.set(oldName, target);
+    renames.set(oldSchema, target);
+    if (target !== newName) suffixed.push(target);
+  }
+}
+
+// 3. Nested numerically named schemas (position anchors inside bodies): merge
+// identical shapes and name them by their descriptive suffix.
+const groups = new Map<string, string[]>();
+for (const name of Object.keys(schemas)) {
+  if (!/^(Body|Response)\d+/.test(name)) continue;
+  const shape = JSON.stringify(schemas[name]);
+  groups.set(shape, [...(groups.get(shape) ?? []), name]);
+}
+const claimed = new Set(Object.keys(schemas));
+for (const [shape, names] of groups) {
+  const suffixes = names
+    .map((name) => name.replace(/^(Body|Response)\d+/, ''))
+    .filter(Boolean);
+  const props = Object.keys(JSON.parse(shape).properties ?? {});
+  let target =
+    suffixes.sort((a, b) => a.length - b.length)[0] ??
+    `${pascal(props.join('_'))}Body`;
+  if (claimed.has(target)) {
+    const distinguishing =
+      props.find((prop) => prop !== 'position') ?? props[0] ?? 'Value';
+    target = `${pascal(distinguishing.replace(/^anchor_|_id$/g, ''))}${target}`;
+  }
+  if (claimed.has(target))
+    throw new Error(
+      `Cannot name nested schema ${names[0]}: ${target} already exists`,
+    );
+  claimed.add(target);
+  schemas[target] = JSON.parse(shape);
+  for (const name of names) {
+    delete schemas[name];
+    renames.set(name, target);
+  }
+}
+
+// 4. Any remaining references to renamed schemas.
+const rewrite = (node: unknown): void => {
+  if (Array.isArray(node)) return node.forEach(rewrite);
+  if (!node || typeof node !== 'object') return;
+  for (const [key, value] of Object.entries(node as Json)) {
+    if (
+      key === '$ref' &&
+      typeof value === 'string' &&
+      value.startsWith('#/components/schemas/')
+    ) {
+      const target = renames.get(refName(value));
+      if (target) (node as Json)[key] = `#/components/schemas/${target}`;
+    } else rewrite(value);
+  }
+};
+rewrite(doc);
+
+writeFileSync(output, `${JSON.stringify(doc, null, 2)}\n`);
+console.log(
+  `normalized ${input} -> ${output}: ${Object.keys(requestBodies).length} request bodies named after operations (${suffixed.length} kept apart with a Body suffix), ${groups.size} nested shapes merged, ${Object.keys(schemas).length} schemas`,
+);

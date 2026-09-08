@@ -5,7 +5,7 @@
     "es6": true,
     "vitest": true
   },
-  "ignorePatterns": ["src/generated", "lib"],
+  "ignorePatterns": ["src/generated", "lib", "src/v4/generated"],
   "overrides": [
     {
       "files": ["examples/**"],
