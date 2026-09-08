@@ -76,21 +76,33 @@ Two additional entrypoints cover the [REST API v4](https://developer.shortcut.co
 v4 is workspace-scoped: every operation takes the workspace slug first, and `workspace(slug)` binds it once. Requests that fail reject with the `Response`, whose `error` carries the parsed body. Lists page by cursor; `paginate()` follows `next_page_url` and only sends the token back to the same API origin.
 
 ```ts
-import { ShortcutV4Client, isShortcutV4RequestError } from '@shortcut/client/v4';
+import {
+  ShortcutV4Client,
+  isShortcutV4RequestError,
+} from '@shortcut/client/v4';
 
 const client = new ShortcutV4Client({ token: process.env.SHORTCUT_TOKEN });
 const acme = client.workspace('acme');
 
-const { entity: story } = await acme.getStory(123, { fields: 'name,team,workflow_state' });
+const { entity: story } = await acme.getStory(123, {
+  fields: 'name,team,workflow_state',
+});
 
-for await (const comment of client.paginate(acme.listStoryComments(123, { fields: 'id,author,deleted', limit: 100 }))) {
+for await (const comment of client.paginate(
+  acme.listStoryComments(123, { fields: 'id,author,deleted', limit: 100 }),
+)) {
   console.log(comment.id);
 }
 
 try {
-  await acme.createStoryComment(123, { text: 'Hello from an agent' }, { fields: 'id' });
+  await acme.createStoryComment(
+    123,
+    { text: 'Hello from an agent' },
+    { fields: 'id' },
+  );
 } catch (error) {
-  if (isShortcutV4RequestError(error)) console.error(error.status, error.error.message);
+  if (isShortcutV4RequestError(error))
+    console.error(error.status, error.error.message);
 }
 ```
 
