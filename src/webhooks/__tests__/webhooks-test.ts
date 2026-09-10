@@ -3,6 +3,9 @@ import { describe, expect, it } from 'vitest';
 import {
   ShortcutWebhookClient,
   ShortcutWebhookError,
+  isShortcutInteractionPayload,
+  isShortcutObserverPayload,
+  shortcutWebhookEventType,
   signShortcutWebhookBody,
   verifyShortcutWebhookSignature,
 } from '../index';
@@ -167,6 +170,12 @@ describe('ShortcutWebhookClient.verify', () => {
       400,
       async () => signed({ id: 'x', workspace2: { id: 'workspace-1' } }),
     ],
+    ['invalid_body', 400, async () => signed({ actions: [] })],
+    [
+      'invalid_body',
+      400,
+      async () => signed({ trigger: { type: 'observer' } }),
+    ],
   ])('rejects with %s (%i)', async (code, status, make) => {
     const error = await client
       .verify(await make())
@@ -174,6 +183,93 @@ describe('ShortcutWebhookClient.verify', () => {
     expect(error).toBeInstanceOf(ShortcutWebhookError);
     expect((error as ShortcutWebhookError).code).toBe(code);
     expect((error as ShortcutWebhookError).status).toBe(status);
+  });
+
+  it.each([
+    ['a missing delivery id', { ...observer, id: undefined }],
+    ['a missing version', { ...observer, version: undefined }],
+    ['a missing timestamp', { ...observer, timestamp: undefined }],
+    ['an actor without a name', { ...observer, actor: { member_id: 'm' } }],
+    ['a workspace without a slug', { ...observer, workspace2: { id: 'w' } }],
+    ['a missing installation id', { ...observer, installation_id: '' }],
+    ['a non-array actions field', { ...observer, actions: {} }],
+    [
+      'an action with an unknown type',
+      { ...observer, actions: [{ ...observer.actions[0], action: 'merge' }] },
+    ],
+    [
+      'an action without a global id',
+      { ...observer, actions: [{ ...observer.actions[0], global_id: '' }] },
+    ],
+    [
+      'an action whose changes are not a list',
+      { ...observer, actions: [{ ...observer.actions[0], changes: {} }] },
+    ],
+    [
+      'an unknown trigger type',
+      { ...interaction, trigger: { ...interaction.trigger, type: 'poked' } },
+    ],
+    [
+      'a trigger without an entity',
+      { ...interaction, trigger: { type: 'assigned', entity_type: 'story' } },
+    ],
+    [
+      'a mention without a context',
+      {
+        ...interaction,
+        trigger: { type: 'mentioned', entity_type: 'story', entity_id: '1' },
+      },
+    ],
+    [
+      'a comment reply without the parent comment',
+      {
+        ...interaction,
+        trigger: {
+          type: 'comment-reply',
+          entity_type: 'story',
+          entity_id: '1',
+          comment_id: '2',
+        },
+      },
+    ],
+  ])('rejects a signed payload with %s', async (_label, payload) => {
+    const error = await client
+      .verify(await signed(payload))
+      .catch((caught: unknown) => caught);
+    expect(error).toBeInstanceOf(ShortcutWebhookError);
+    expect((error as ShortcutWebhookError).code).toBe('invalid_body');
+    expect((error as ShortcutWebhookError).status).toBe(400);
+  });
+
+  it('accepts every recognized trigger shape', async () => {
+    const triggers = [
+      { type: 'assigned', entity_type: 'story', entity_id: '1' },
+      {
+        type: 'comment-reply',
+        entity_type: 'story',
+        entity_id: '1',
+        comment_id: '2',
+        parent_comment_id: '3',
+      },
+      {
+        type: 'mentioned',
+        entity_type: 'epic',
+        entity_id: '4',
+        context: 'description',
+      },
+    ];
+    for (const trigger of triggers) {
+      const payload = { ...interaction, trigger };
+      expect(isShortcutInteractionPayload(payload)).toBe(true);
+      expect(isShortcutObserverPayload(payload)).toBe(false);
+      expect(shortcutWebhookEventType(payload)).toBe('interaction');
+      const delivery = await client.verify(await signed(payload));
+      expect(delivery.payload).toEqual(payload);
+    }
+    expect(isShortcutObserverPayload(observer)).toBe(true);
+    expect(isShortcutInteractionPayload(observer)).toBe(false);
+    expect(shortcutWebhookEventType(observer)).toBe('observer');
+    expect(shortcutWebhookEventType({ actions: [] })).toBeUndefined();
   });
 
   it('caps the body before verifying it', async () => {

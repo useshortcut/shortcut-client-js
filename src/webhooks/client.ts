@@ -1,15 +1,12 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import {
   type ShortcutInteractionPayload,
-  type ShortcutInteractionTriggerType,
   type ShortcutObserverPayload,
   type ShortcutValidationPayload,
-  type ShortcutWebhookEventType,
   type ShortcutWebhookPayload,
   isShortcutInteractionPayload,
   isShortcutObserverPayload,
   isShortcutValidationPayload,
-  shortcutWebhookEventType,
 } from './types';
 import {
   SHORTCUT_WEBHOOK_SIGNATURE_HEADER,
@@ -177,28 +174,24 @@ export class ShortcutWebhookClient {
     } catch {
       throw new ShortcutWebhookError('invalid_body', 400);
     }
-    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-      throw new ShortcutWebhookError('invalid_body', 400);
-    }
-    const typed = payload as ShortcutWebhookPayload;
-    if (!isShortcutValidationPayload(typed)) {
+    if (!isShortcutValidationPayload(payload)) {
       if (
-        !isShortcutObserverPayload(typed) &&
-        !isShortcutInteractionPayload(typed)
+        !isShortcutObserverPayload(payload) &&
+        !isShortcutInteractionPayload(payload)
       ) {
         throw new ShortcutWebhookError('invalid_body', 400);
       }
-      if (this.workspaceId && typed.workspace2?.id !== this.workspaceId) {
+      if (this.workspaceId && payload.workspace2.id !== this.workspaceId) {
         throw new ShortcutWebhookError('wrong_workspace', 403);
       }
       if (
         this.installationId &&
-        typed.installation_id !== this.installationId
+        payload.installation_id !== this.installationId
       ) {
         throw new ShortcutWebhookError('wrong_installation', 403);
       }
       if (this.timestampToleranceMs !== undefined) {
-        const sent = Date.parse(typed.timestamp);
+        const sent = Date.parse(payload.timestamp);
         if (
           !Number.isFinite(sent) ||
           Math.abs(Date.now() - sent) > this.timestampToleranceMs
@@ -207,9 +200,9 @@ export class ShortcutWebhookClient {
         }
       }
     }
-    const deliveryId = (typed as { id?: unknown }).id;
+    const deliveryId = (payload as { id?: unknown }).id;
     return {
-      payload: typed,
+      payload,
       rawBody,
       ...(typeof deliveryId === 'string' && deliveryId ? { deliveryId } : {}),
     };
@@ -281,15 +274,11 @@ export class ShortcutWebhookClient {
   private eventsFor(
     payload: ShortcutWebhookPayload,
   ): ShortcutWebhookEventName[] {
-    const type = shortcutWebhookEventType(payload) as ShortcutWebhookEventType;
-    if (type === 'interaction') {
-      return [
-        type,
-        (payload as ShortcutInteractionPayload).trigger
-          .type as ShortcutInteractionTriggerType,
-      ];
+    if (isShortcutValidationPayload(payload)) return ['validation'];
+    if (isShortcutInteractionPayload(payload)) {
+      return ['interaction', payload.trigger.type];
     }
-    return [type];
+    return ['observer'];
   }
 
   private async verifyAdapter(

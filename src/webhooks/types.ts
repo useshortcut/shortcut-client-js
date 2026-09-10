@@ -131,32 +131,125 @@ export type ShortcutWebhookEventType =
   | 'interaction'
   | 'validation';
 
-export function isShortcutValidationPayload(
-  payload: ShortcutWebhookPayload,
-): payload is ShortcutValidationPayload {
-  return (payload as ShortcutValidationPayload).type === 'validation';
-}
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+const isNonEmptyString = (value: unknown): value is string =>
+  typeof value === 'string' && value.length > 0;
+const isEntityId = (value: unknown): value is string | number =>
+  isNonEmptyString(value) ||
+  (typeof value === 'number' && Number.isFinite(value));
 
-export function isShortcutObserverPayload(
-  payload: ShortcutWebhookPayload,
-): payload is ShortcutObserverPayload {
-  return Array.isArray((payload as ShortcutObserverPayload).actions);
-}
+const OBSERVER_ACTION_TYPES: ReadonlySet<string> = new Set([
+  'create',
+  'update',
+  'delete',
+]);
+const INTERACTION_TRIGGER_TYPES: ReadonlySet<string> = new Set([
+  'assigned',
+  'comment-reply',
+  'mentioned',
+]);
 
-export function isShortcutInteractionPayload(
-  payload: ShortcutWebhookPayload,
-): payload is ShortcutInteractionPayload {
-  const trigger = (payload as ShortcutInteractionPayload).trigger;
+/**
+ * The fields every observer and interaction delivery carries. Validation
+ * pings carry none of them. `version` is only required to be present so a
+ * future additive bump is not rejected outright.
+ */
+function hasShortcutWebhookEnvelope(payload: unknown): payload is Record<
+  string,
+  unknown
+> & {
+  id: string;
+  version: string;
+  timestamp: string;
+  actor: ShortcutWebhookActor;
+  workspace2: ShortcutWebhookWorkspace;
+  installation_id: string;
+} {
+  if (!isRecord(payload)) return false;
+  const { actor, workspace2 } = payload;
   return (
-    typeof trigger === 'object' &&
-    trigger !== null &&
-    typeof trigger.type === 'string'
+    isNonEmptyString(payload.id) &&
+    isNonEmptyString(payload.version) &&
+    isNonEmptyString(payload.timestamp) &&
+    isRecord(actor) &&
+    isNonEmptyString(actor.displayable_name) &&
+    isRecord(workspace2) &&
+    isNonEmptyString(workspace2.id) &&
+    isNonEmptyString(workspace2.url_slug) &&
+    isNonEmptyString(payload.installation_id)
+  );
+}
+
+function isShortcutObserverAction(
+  value: unknown,
+): value is ShortcutObserverAction {
+  return (
+    isRecord(value) &&
+    typeof value.action === 'string' &&
+    OBSERVER_ACTION_TYPES.has(value.action) &&
+    isEntityId(value.id) &&
+    isNonEmptyString(value.entity_type) &&
+    isNonEmptyString(value.global_id) &&
+    (value.changes === undefined || Array.isArray(value.changes))
+  );
+}
+
+function isShortcutInteractionTrigger(
+  value: unknown,
+): value is ShortcutInteractionTrigger {
+  if (
+    !isRecord(value) ||
+    typeof value.type !== 'string' ||
+    !INTERACTION_TRIGGER_TYPES.has(value.type) ||
+    !isNonEmptyString(value.entity_type) ||
+    !isNonEmptyString(value.entity_id)
+  ) {
+    return false;
+  }
+  switch (value.type) {
+    case 'comment-reply':
+      return (
+        isNonEmptyString(value.comment_id) &&
+        isNonEmptyString(value.parent_comment_id)
+      );
+    case 'mentioned':
+      return value.context === 'comment' || value.context === 'description';
+    default:
+      return true;
+  }
+}
+
+export function isShortcutValidationPayload(
+  payload: unknown,
+): payload is ShortcutValidationPayload {
+  return isRecord(payload) && payload.type === 'validation';
+}
+
+/** True for a delivery with the full envelope and a well-formed `actions` list. */
+export function isShortcutObserverPayload(
+  payload: unknown,
+): payload is ShortcutObserverPayload {
+  return (
+    hasShortcutWebhookEnvelope(payload) &&
+    Array.isArray(payload.actions) &&
+    payload.actions.every(isShortcutObserverAction)
+  );
+}
+
+/** True for a delivery with the full envelope and a recognized `trigger`. */
+export function isShortcutInteractionPayload(
+  payload: unknown,
+): payload is ShortcutInteractionPayload {
+  return (
+    hasShortcutWebhookEnvelope(payload) &&
+    isShortcutInteractionTrigger(payload.trigger)
   );
 }
 
 /** Which event-type name a payload dispatches under. */
 export function shortcutWebhookEventType(
-  payload: ShortcutWebhookPayload,
+  payload: unknown,
 ): ShortcutWebhookEventType | undefined {
   if (isShortcutValidationPayload(payload)) return 'validation';
   if (isShortcutInteractionPayload(payload)) return 'interaction';
