@@ -48,7 +48,7 @@
     "build:add-typedoc-comments": "npx jscodeshift -t scripts/add-typedoc-comments.ts --extensions=ts --parser=ts src/generated/** src/v4/generated/**",
     "build:client": "swagger-typescript-api generate --path ./schema/shortcut.swagger.json --output ./src/generated --clean-output --axios --modular --templates ./templates",
     "build:client:v4": "swagger-typescript-api generate --path ./schema/shortcut.v4.openapi.json --output ./src/v4/generated --clean-output --modular --extract-request-body --unwrap-response-data --templates ./templates/v4",
-    "build:docs": "typedoc ./src --exclude 'src/__tests__/**'",
+    "build:docs": "yarn build:client && yarn build:client:v4 && yarn build:add-typedoc-comments && typedoc && node scripts/finalize-docs.mts",
     "check-exports": "attw --pack . && node scripts/check-package-types.mts",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
