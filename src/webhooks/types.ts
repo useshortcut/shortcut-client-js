@@ -144,11 +144,6 @@ const OBSERVER_ACTION_TYPES: ReadonlySet<string> = new Set([
   'update',
   'delete',
 ]);
-const INTERACTION_TRIGGER_TYPES: ReadonlySet<string> = new Set([
-  'assigned',
-  'comment-reply',
-  'mentioned',
-]);
 
 /**
  * The fields every observer and interaction delivery carries. Validation
@@ -201,13 +196,14 @@ function isShortcutInteractionTrigger(
   if (
     !isRecord(value) ||
     typeof value.type !== 'string' ||
-    !INTERACTION_TRIGGER_TYPES.has(value.type) ||
     !isNonEmptyString(value.entity_type) ||
     !isNonEmptyString(value.entity_id)
   ) {
     return false;
   }
   switch (value.type) {
+    case 'assigned':
+      return true;
     case 'comment-reply':
       return (
         isNonEmptyString(value.comment_id) &&
@@ -216,7 +212,7 @@ function isShortcutInteractionTrigger(
     case 'mentioned':
       return value.context === 'comment' || value.context === 'description';
     default:
-      return true;
+      return false;
   }
 }
 

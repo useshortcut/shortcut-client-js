@@ -58,14 +58,12 @@ schemas.ApiError = {
 const originalResponses = structuredClone(responses);
 const normalizedResponses = new Set<string>();
 const replacedSchemas = new Set<string>();
-for (const pathItem of Object.values(doc.paths as Json)) {
-  for (const operation of Object.values(pathItem as Json)) {
-    for (const [status, reference] of Object.entries(
-      (operation as Json)?.responses ?? {},
+for (const pathItem of Object.values<Json>(doc.paths)) {
+  for (const operation of Object.values<Json>(pathItem)) {
+    for (const [status, reference] of Object.entries<Json>(
+      operation?.responses ?? {},
     )) {
-      const name = (reference as Json).$ref
-        ? refName((reference as Json).$ref)
-        : undefined;
+      const name = reference.$ref ? refName(reference.$ref) : undefined;
       const response = structuredClone(
         name ? originalResponses[name] : reference,
       ) as Json;
@@ -113,12 +111,12 @@ for (const pathItem of Object.values(doc.paths as Json)) {
         normalizedResponses.add(target);
         // The generator treats a bodyless response $ref as `any`; an inline
         // response with no content correctly produces `void`.
-        (operation as Json).responses[status] =
+        operation.responses[status] =
           response.content === undefined
             ? response
             : { $ref: `#/components/responses/${target}` };
       } else {
-        (operation as Json).responses[status] = response;
+        operation.responses[status] = response;
       }
     }
   }
@@ -146,12 +144,12 @@ for (const name of replacedSchemas) {
 // 2. Request bodies: name after the operation that uses them.
 const pascal = (id: string) =>
   id.replace(/(^|[^a-zA-Z0-9])([a-z0-9])/g, (_, __, c) => c.toUpperCase());
-for (const pathItem of Object.values(doc.paths as Json)) {
-  for (const operation of Object.values(pathItem as Json)) {
-    const ref = (operation as Json)?.requestBody?.$ref;
-    if (!ref || !(operation as Json).operationId) continue;
+for (const pathItem of Object.values<Json>(doc.paths)) {
+  for (const operation of Object.values<Json>(pathItem)) {
+    const ref = operation?.requestBody?.$ref;
+    if (!ref || !operation.operationId) continue;
     const oldName = refName(ref);
-    const newName = `${pascal((operation as Json).operationId)}Params`;
+    const newName = `${pascal(operation.operationId)}Params`;
     const body = requestBodies[oldName];
     const mediaType =
       body?.content &&
@@ -162,16 +160,14 @@ for (const pathItem of Object.values(doc.paths as Json)) {
     // The document often already has a named copy of the body schema. Reuse it
     // when identical; otherwise keep both apart with a `Body` suffix.
     let target = newName;
-    if (schemas[newName] && newName !== oldSchema) {
-      if (
-        JSON.stringify(schemas[newName]) !== JSON.stringify(schemas[oldSchema])
-      ) {
-        target = `${pascal((operation as Json).operationId)}Body`;
-        if (schemas[target])
-          throw new Error(
-            `Cannot rename ${oldSchema}: ${target} already exists`,
-          );
-      }
+    if (
+      schemas[newName] &&
+      newName !== oldSchema &&
+      JSON.stringify(schemas[newName]) !== JSON.stringify(schemas[oldSchema])
+    ) {
+      target = `${pascal(operation.operationId)}Body`;
+      if (schemas[target])
+        throw new Error(`Cannot rename ${oldSchema}: ${target} already exists`);
     }
     if (target !== oldSchema) {
       if (!schemas[target]) schemas[target] = schemas[oldSchema];
@@ -182,7 +178,7 @@ for (const pathItem of Object.values(doc.paths as Json)) {
     // `components/requestBodies` is not resolved by swagger-typescript-api,
     // which then emits no `type` and the client sends JSON as text/plain and
     // multipart uploads as JSON.
-    (operation as Json).requestBody = body;
+    operation.requestBody = body;
     delete requestBodies[oldName];
     inlined += 1;
     renames.set(oldName, target);

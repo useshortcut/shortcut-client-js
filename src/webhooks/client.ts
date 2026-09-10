@@ -64,7 +64,7 @@ export type ShortcutWebhookEventPayloadMap = {
   observer: ShortcutObserverPayload;
   interaction: ShortcutInteractionPayload;
   validation: ShortcutValidationPayload;
-  assigned: Extract<ShortcutInteractionPayload, object> & {
+  assigned: ShortcutInteractionPayload & {
     trigger: { type: 'assigned' };
   };
   mentioned: ShortcutInteractionPayload & { trigger: { type: 'mentioned' } };
@@ -347,15 +347,10 @@ export class ShortcutWebhookClient {
         return concat(chunks, total);
       },
       send: (status, body) =>
-        new Response(
-          JSON.stringify({
-            [status < 400 ? 'ok' : 'error']: status < 400 ? true : body,
-          }),
-          {
-            status,
-            headers: { 'content-type': 'application/json' },
-          },
-        ),
+        new Response(serializeResponse(status, body), {
+          status,
+          headers: { 'content-type': 'application/json' },
+        }),
     };
   }
 
@@ -392,14 +387,14 @@ export class ShortcutWebhookClient {
       send: (status, body) => {
         response.statusCode = status;
         response.setHeader('content-type', 'application/json');
-        response.end(
-          JSON.stringify({
-            [status < 400 ? 'ok' : 'error']: status < 400 ? true : body,
-          }),
-        );
+        response.end(serializeResponse(status, body));
       },
     };
   }
+}
+
+function serializeResponse(status: number, message: string): string {
+  return JSON.stringify(status < 400 ? { ok: true } : { error: message });
 }
 
 function concat(chunks: Uint8Array[], total: number): Uint8Array {

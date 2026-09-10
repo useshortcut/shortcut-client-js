@@ -115,12 +115,7 @@ export class ShortcutV4Client extends Api<string> {
         const cached = members.get(property);
         if (cached?.source === value) return cached.member;
         const member = workspaceOperations.has(property as WorkspaceOperation)
-          ? (...rest: unknown[]) =>
-              (value as (...args: unknown[]) => unknown).call(
-                target,
-                encoded,
-                ...rest,
-              )
+          ? (...rest: unknown[]) => value.call(target, encoded, ...rest)
           : value.bind(target);
         members.set(property, { source: value, member });
         return member;

@@ -404,38 +404,45 @@ describe('ShortcutWebhookClient.createHandler', () => {
     expect(failures).toBe(1);
   });
 
-  it('serves Node.js HTTP requests and responses', async () => {
-    const handler = new ShortcutWebhookClient(secret).createHandler();
-    const received: unknown[] = [];
-    handler.on('observer', (payload) => {
-      received.push(payload.id);
-    });
-    const text = JSON.stringify(observer);
-    const message = Object.assign(new EventEmitter(), {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'payload-signature': await signShortcutWebhookBody(secret, text),
-      },
-      destroy() {},
-      async *[Symbol.asyncIterator]() {
-        yield Buffer.from(text);
-      },
-    });
-    const response = {
-      statusCode: 0,
-      headers: {} as Record<string, string>,
-      body: '',
-      setHeader(name: string, value: string) {
-        this.headers[name] = value;
-      },
-      end(body: string) {
-        this.body = body;
-      },
-    };
-    await handler(message as never, response as never);
-    expect(response.statusCode).toBe(200);
-    expect(JSON.parse(response.body)).toEqual({ ok: true });
-    expect(received).toEqual(['delivery-1']);
-  });
+  it.each([200, 500])(
+    'serves Node.js HTTP requests with a %i response',
+    async (status) => {
+      const handler = new ShortcutWebhookClient(secret).createHandler();
+      const received: unknown[] = [];
+      handler.on('observer', (payload) => {
+        received.push(payload.id);
+        if (status === 500) throw new Error('handler failure');
+      });
+      const text = JSON.stringify(observer);
+      const message = Object.assign(new EventEmitter(), {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'payload-signature': await signShortcutWebhookBody(secret, text),
+        },
+        destroy() {},
+        async *[Symbol.asyncIterator]() {
+          yield Buffer.from(text);
+        },
+      });
+      const response = {
+        statusCode: 0,
+        headers: {} as Record<string, string>,
+        body: '',
+        setHeader(name: string, value: string) {
+          this.headers[name] = value;
+        },
+        end(body: string) {
+          this.body = body;
+        },
+      };
+      await handler(message as never, response as never);
+      expect(response.statusCode).toBe(status);
+      expect(response.headers['content-type']).toBe('application/json');
+      expect(JSON.parse(response.body)).toEqual(
+        status === 200 ? { ok: true } : { error: 'handler_failed' },
+      );
+      expect(received).toEqual(['delivery-1']);
+    },
+  );
 });
