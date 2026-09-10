@@ -1,9 +1,10 @@
-import { Api } from './generated/Api';
+import { Api, workspaceOperations } from './generated/Api';
 import type { ApiError } from './generated/data-contracts';
 import type {
   ApiConfig,
   FullRequestParams,
   HttpResponse,
+  HttpClient,
 } from './generated/http-client';
 
 export const SHORTCUT_V4_BASE_URL = 'https://api.app.shortcut.com';
@@ -36,14 +37,14 @@ type BindSlug<F> = F extends (
   ? (...rest: R) => T
   : never;
 
-/** Every `Api` method that takes the workspace slug first, with the slug pre-applied. */
+/** Workspace operations have their slug pre-applied; other API members keep their signatures. */
 export type ShortcutWorkspaceApi = {
-  [K in Exclude<keyof Api, 'getWhoami' | 'getSchema'> as Api[K] extends (
-    workspaceSlug: string,
-    ...rest: any[]
-  ) => any
-    ? K
-    : never]: BindSlug<Api[K]>;
+  [K in keyof Api<string>]: K extends
+    | keyof HttpClient<string>
+    | 'getWhoami'
+    | 'getSchema'
+    ? Api<string>[K]
+    : BindSlug<Api<string>[K]>;
 };
 
 /** The rejection value of a failed v4 request: the `Response`, with the parsed error body on `error`. */
@@ -104,12 +105,9 @@ export class ShortcutV4Client extends Api<string> {
     return new Proxy(this, {
       get: (target, property) => {
         const value = Reflect.get(target, property) as unknown;
-        if (
-          typeof value !== 'function' ||
-          property === 'getWhoami' ||
-          property === 'getSchema'
-        )
-          return value;
+        if (typeof value !== 'function') return value;
+        if (!workspaceOperations.has(property as keyof Api))
+          return value.bind(target);
         return (...rest: unknown[]) =>
           (value as (...args: unknown[]) => unknown).call(
             target,

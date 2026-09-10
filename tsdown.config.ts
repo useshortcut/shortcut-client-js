@@ -9,8 +9,8 @@ export default defineConfig({
   },
   outDir: 'lib',
   format: ['esm', 'cjs'],
-  // One set of declarations for both formats. tsdown writes the CJS stubs as
-  // `export type *`, which scripts/fix-cjs-dts.mts turns into value re-exports.
+  // Emit one declaration graph. scripts/fix-cjs-dts.mts moves it to CommonJS
+  // and creates ESM wrappers, preserving defaults and node16 compatibility.
   dts: { cjsReexport: true },
   clean: true,
   unbundle: true,

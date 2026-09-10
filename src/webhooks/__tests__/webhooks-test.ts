@@ -331,6 +331,28 @@ describe('ShortcutWebhookClient.verify', () => {
 });
 
 describe('ShortcutWebhookClient.createHandler', () => {
+  it('captures mixed asynchronous and synchronous listener failures', async () => {
+    const handler = new ShortcutWebhookClient(secret).createHandler();
+    const seen: string[] = [];
+    handler.on('observer', async () => {
+      seen.push('async');
+      throw new Error('async failure');
+    });
+    handler.on('observer', () => {
+      seen.push('sync');
+      throw new Error('sync failure');
+    });
+    handler.on('observer', () => {
+      seen.push('last');
+    });
+    const response = await handler(await signed(observer));
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: 'handler_failed' });
+    expect(seen).toEqual(['async', 'sync', 'last']);
+    // Let unhandled rejections surface to Vitest before completing the test.
+    await new Promise<void>((resolve) => setImmediate(resolve));
+  });
+
   it('dispatches by payload kind and trigger type on Fetch runtimes', async () => {
     const handler = new ShortcutWebhookClient(secret).createHandler();
     const seen: string[] = [];

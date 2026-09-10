@@ -26,3 +26,12 @@ export class <%= apiClassName %><SecurityDataType = unknown><% if (!config.singl
         <%~ includeFile('./procedure-call.ejs', { ...it, route }) %>
     <% } %>
 }
+
+/** Generated workspace operations; client utilities must never receive a slug. */
+export const workspaceOperations: ReadonlySet<keyof <%= apiClassName %>> = new Set([
+<% for (const route of routes) { %>
+<% if (_.values(route.request.parameters)[0]?.name === 'workspaceSlug') { %>
+  <%~ JSON.stringify(route.routeName.usage) %>,
+<% } %>
+<% } %>
+]);

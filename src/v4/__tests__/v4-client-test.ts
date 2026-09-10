@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { workspaceOperations } from '../generated/Api';
 import {
   ShortcutOAuth,
   ShortcutOAuthError,
@@ -28,6 +29,24 @@ function client(
 }
 
 describe('ShortcutV4Client', () => {
+  it('binds exactly the workspace operations declared in the schema', () => {
+    const schema = JSON.parse(
+      readFileSync(
+        new URL('../../../schema/shortcut.v4.openapi.json', import.meta.url),
+        'utf8',
+      ),
+    );
+    const operations = Object.entries(schema.paths)
+      .filter(([path]) => path.includes('{workspace-slug}'))
+      .flatMap(([, item]) =>
+        Object.values(item as Record<string, { operationId?: string }>),
+      )
+      .flatMap((operation) =>
+        operation.operationId ? [operation.operationId] : [],
+      );
+    expect([...workspaceOperations].sort()).toEqual(operations.sort());
+  });
+
   it('sends a bearer token, encodes the workspace slug, and unwraps JSON', async () => {
     const { calls, client: c } = client(() =>
       Response.json({ entity: { id: 123, name: 'Story' } }),
@@ -48,6 +67,36 @@ describe('ShortcutV4Client', () => {
     const { calls, client: c } = client(() => Response.json({ id: 'me' }));
     await c.workspace('acme').getWhoami();
     expect(calls[0].url).toBe('https://api.example.com/api/v4/whoami');
+    await c.workspace('acme').getSchema('story');
+    expect(calls[1].url).toBe('https://api.example.com/api/v4/schemas/story');
+  });
+
+  it('preserves security data and cancellation arguments on the workspace facade', async () => {
+    const { calls, client: c } = client((_url, init) => {
+      expect(init.signal?.aborted).toBe(false);
+      c.workspace('acme').abortRequest('request-1');
+      expect(init.signal?.aborted).toBe(true);
+      return Response.json({ entity: { id: 1 } });
+    });
+    const workspace = c.workspace('acme');
+    workspace.setSecurityData('rotated');
+    await workspace.getStory(1, undefined, { cancelToken: 'request-1' });
+    expect(
+      (calls[0].init.headers as Record<string, string>).Authorization,
+    ).toBe('Bearer rotated');
+  });
+
+  it('returns null for a bodyless delete and arbitrary JSON for a schema', async () => {
+    const schema = { type: 'object', properties: { name: { type: 'string' } } };
+    const { client: c } = client((_url, init) =>
+      init.method === 'DELETE'
+        ? new Response(null, { status: 204 })
+        : Response.json(schema),
+    );
+    await expect(c.workspace('acme').deleteStory(1)).resolves.toBeNull();
+    await expect(c.workspace('acme').getSchema('story')).resolves.toEqual(
+      schema,
+    );
   });
 
   it('rotates the token with setToken', async () => {

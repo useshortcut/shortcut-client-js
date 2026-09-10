@@ -265,7 +265,7 @@ export class Api<
    * @secure
    */
   getSchema = (schemaName: string, params: RequestParams = {}) =>
-    this.request<ApiError, ApiError>({
+    this.request<Record<string, any>, ApiError>({
       path: `/api/v4/schemas/${schemaName}`,
       method: "GET",
       secure: true,
@@ -322,7 +322,7 @@ export class Api<
     tokenPublicId: string,
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/admin/tokens/${tokenPublicId}`,
       method: "DELETE",
       secure: true,
@@ -545,7 +545,7 @@ export class Api<
     data: BulkDeleteCategoriesParams,
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/categories/bulk`,
       method: "DELETE",
       body: data,
@@ -648,7 +648,7 @@ export class Api<
     categoryPublicId: number,
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/categories/${categoryPublicId}`,
       method: "DELETE",
       secure: true,
@@ -873,7 +873,7 @@ export class Api<
     },
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError | DisabledFeatureError>({
+    this.request<void, ApiError | DisabledFeatureError>({
       path: `/api/v4/${workspaceSlug}/collections/${collectionPublicId}/favorite`,
       method: "DELETE",
       query: query,
@@ -1032,7 +1032,7 @@ export class Api<
     data: BulkDeleteCustomFieldsParams,
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/custom-fields/bulk`,
       method: "DELETE",
       body: data,
@@ -1094,7 +1094,7 @@ export class Api<
     customFieldPublicId: string,
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/custom-fields/${customFieldPublicId}`,
       method: "DELETE",
       secure: true,
@@ -1484,7 +1484,7 @@ export class Api<
     collectionPublicId: string,
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError | DisabledFeatureError>({
+    this.request<void, ApiError | DisabledFeatureError>({
       path: `/api/v4/${workspaceSlug}/documents/${docPublicId}/collections/${collectionPublicId}`,
       method: "DELETE",
       secure: true,
@@ -1567,7 +1567,7 @@ export class Api<
     data: BulkDeleteEntityTemplatesParams,
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/entity-templates/bulk`,
       method: "DELETE",
       body: data,
@@ -1670,7 +1670,7 @@ export class Api<
     entityTemplatePublicId: string,
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/entity-templates/${entityTemplatePublicId}`,
       method: "DELETE",
       secure: true,
@@ -1869,7 +1869,7 @@ export class Api<
     },
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/epics/bulk`,
       method: "DELETE",
       query: query,
@@ -2014,7 +2014,7 @@ export class Api<
     },
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}`,
       method: "DELETE",
       query: query,
@@ -2473,7 +2473,7 @@ export class Api<
     data: BulkDeleteEpicCommentsParams,
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}/comments/bulk`,
       method: "DELETE",
       body: data,
@@ -2661,7 +2661,7 @@ export class Api<
     },
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}/comments/${commentPublicId}`,
       method: "DELETE",
       query: query,
@@ -2938,7 +2938,7 @@ export class Api<
     data: BulkDeleteFilesParams,
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/files/bulk`,
       method: "DELETE",
       body: data,
@@ -2959,7 +2959,7 @@ export class Api<
     filePublicId: number,
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/files/${filePublicId}`,
       method: "DELETE",
       secure: true,
@@ -3183,7 +3183,7 @@ export class Api<
     data: BulkDeleteIterationsParams,
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/iterations/bulk`,
       method: "DELETE",
       body: data,
@@ -3361,7 +3361,7 @@ export class Api<
     iterationPublicId: number,
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/iterations/${iterationPublicId}`,
       method: "DELETE",
       secure: true,
@@ -3857,7 +3857,7 @@ export class Api<
     data: BulkDeleteLabelsParams,
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/labels/bulk`,
       method: "DELETE",
       body: data,
@@ -3960,7 +3960,7 @@ export class Api<
     labelPublicId: number,
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/labels/${labelPublicId}`,
       method: "DELETE",
       secure: true,
@@ -4172,7 +4172,7 @@ export class Api<
     data: BulkDeleteLinkedFilesParams,
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/linked-files/bulk`,
       method: "DELETE",
       body: data,
@@ -4275,7 +4275,7 @@ export class Api<
     linkedFilePublicId: number,
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/linked-files/${linkedFilePublicId}`,
       method: "DELETE",
       secure: true,
@@ -4734,7 +4734,7 @@ export class Api<
     data: BulkDeleteObjectivesParams,
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/objectives/bulk`,
       method: "DELETE",
       body: data,
@@ -4874,7 +4874,7 @@ export class Api<
     objectivePublicId: number,
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/objectives/${objectivePublicId}`,
       method: "DELETE",
       secure: true,
@@ -5297,7 +5297,7 @@ export class Api<
     projectPublicId: number,
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/projects/${projectPublicId}`,
       method: "DELETE",
       secure: true,
@@ -5839,7 +5839,7 @@ export class Api<
     },
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/stories/bulk`,
       method: "DELETE",
       query: query,
@@ -6020,7 +6020,7 @@ export class Api<
     },
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}`,
       method: "DELETE",
       query: query,
@@ -6546,7 +6546,7 @@ export class Api<
     data: BulkDeleteStoryCommentsParams,
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/comments/bulk`,
       method: "DELETE",
       body: data,
@@ -6954,7 +6954,7 @@ export class Api<
     data: BulkDeleteStoryChecklistItemsParams,
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/checklist-items/bulk`,
       method: "DELETE",
       body: data,
@@ -7064,7 +7064,7 @@ export class Api<
     },
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/comments/${commentPublicId}`,
       method: "DELETE",
       query: query,
@@ -7250,7 +7250,7 @@ export class Api<
     },
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/checklist-items/${checklistItemPublicId}`,
       method: "DELETE",
       query: query,
@@ -7445,7 +7445,7 @@ export class Api<
     reactionPublicId: string,
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/comments/${commentPublicId}/reactions/${reactionPublicId}`,
       method: "DELETE",
       secure: true,
@@ -7563,7 +7563,7 @@ export class Api<
     data: BulkDeleteStoryLinksParams,
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/story-links/bulk`,
       method: "DELETE",
       body: data,
@@ -7666,7 +7666,7 @@ export class Api<
     storyLinkPublicId: number,
     params: RequestParams = {},
   ) =>
-    this.request<ApiError, ApiError>({
+    this.request<void, ApiError>({
       path: `/api/v4/${workspaceSlug}/story-links/${storyLinkPublicId}`,
       method: "DELETE",
       secure: true,
@@ -8348,3 +8348,252 @@ export class Api<
       ...params,
     });
 }
+
+/** Generated workspace operations; client utilities must never receive a slug. */
+export const workspaceOperations: ReadonlySet<keyof Api> = new Set([
+  "listWorkspaceTokens",
+  "deleteWorkspaceToken",
+  "listBranches",
+  "getBranch",
+  "listBranchStories",
+  "listBranchPullRequests",
+  "listCategories",
+  "createCategory",
+  "bulkDeleteCategories",
+  "bulkUpdateCategories",
+  "bulkCreateCategories",
+  "deleteCategory",
+  "getCategory",
+  "updateCategory",
+  "listCategoryObjectives",
+  "listCollections",
+  "createCollection",
+  "getCollection",
+  "favoriteCollection",
+  "unfavoriteCollection",
+  "listCommits",
+  "getCommit",
+  "listCommitStories",
+  "listCustomFields",
+  "bulkDeleteCustomFields",
+  "bulkUpdateCustomFields",
+  "deleteCustomField",
+  "getCustomField",
+  "updateCustomField",
+  "listCustomFieldStories",
+  "listDocs",
+  "createDoc",
+  "bulkCreateDocs",
+  "searchDocs",
+  "getDoc",
+  "listDocFollowers",
+  "listDocCollections",
+  "addDocToCollection",
+  "removeDocFromCollection",
+  "listEntityTemplates",
+  "createEntityTemplate",
+  "bulkDeleteEntityTemplates",
+  "bulkUpdateEntityTemplates",
+  "bulkCreateEntityTemplates",
+  "deleteEntityTemplate",
+  "getEntityTemplate",
+  "updateEntityTemplate",
+  "getEpicWorkflow",
+  "listEpicWorkflowStates",
+  "listEpics",
+  "createEpic",
+  "bulkDeleteEpics",
+  "bulkUpdateEpics",
+  "bulkCreateEpics",
+  "searchEpics",
+  "deleteEpic",
+  "getEpic",
+  "updateEpic",
+  "getEpicStats",
+  "listEpicTeams",
+  "listEpicLabels",
+  "listEpicOwners",
+  "listEpicStories",
+  "listEpicComments",
+  "createEpicComment",
+  "listEpicFollowers",
+  "listEpicObjectives",
+  "listEpicHealths",
+  "createEpicHealth",
+  "bulkDeleteEpicComments",
+  "bulkUpdateEpicComments",
+  "bulkCreateEpicComments",
+  "listEpicMentionedTeams",
+  "listEpicMentionedMembers",
+  "deleteEpicComment",
+  "getEpicComment",
+  "updateEpicComment",
+  "getEpicHealth",
+  "listEpicCommentComments",
+  "listEpicCommentMentionedTeams",
+  "listEpicCommentMentionedMembers",
+  "listFiles",
+  "uploadFiles",
+  "bulkDeleteFiles",
+  "deleteFile",
+  "getFile",
+  "listFileStories",
+  "listFileMentionedTeams",
+  "listFileMentionedMembers",
+  "listIterations",
+  "createIteration",
+  "bulkDeleteIterations",
+  "bulkUpdateIterations",
+  "bulkCreateIterations",
+  "searchIterations",
+  "getCurrentIterations",
+  "deleteIteration",
+  "getIteration",
+  "updateIteration",
+  "listIterationTeams",
+  "listIterationLabels",
+  "listIterationStories",
+  "listIterationFollowers",
+  "listIterationMentionedTeams",
+  "listIterationAssociatedTeams",
+  "listIterationMentionedMembers",
+  "listKeyResults",
+  "getKeyResult",
+  "updateKeyResult",
+  "listLabels",
+  "createLabel",
+  "bulkDeleteLabels",
+  "bulkUpdateLabels",
+  "bulkCreateLabels",
+  "deleteLabel",
+  "getLabel",
+  "updateLabel",
+  "listLabelEpics",
+  "listLabelStories",
+  "listLinkedFiles",
+  "createLinkedFile",
+  "bulkDeleteLinkedFiles",
+  "bulkUpdateLinkedFiles",
+  "bulkCreateLinkedFiles",
+  "deleteLinkedFile",
+  "getLinkedFile",
+  "updateLinkedFile",
+  "listLinkedFileStories",
+  "listLinkedFileMentionedTeams",
+  "listLinkedFileMentionedMembers",
+  "listMembers",
+  "bulkUpdateMembers",
+  "getMember",
+  "updateMember",
+  "listMemberTeams",
+  "listMemberStories",
+  "listObjectives",
+  "createObjective",
+  "bulkDeleteObjectives",
+  "bulkUpdateObjectives",
+  "bulkCreateObjectives",
+  "searchObjectives",
+  "deleteObjective",
+  "getObjective",
+  "updateObjective",
+  "listObjectiveEpics",
+  "listObjectiveTeams",
+  "listObjectiveOwners",
+  "listObjectiveCategories",
+  "listObjectiveKeyResults",
+  "listObjectiveHealths",
+  "createObjectiveHealth",
+  "getObjectiveHealth",
+  "listProjects",
+  "createProject",
+  "deleteProject",
+  "getProject",
+  "updateProject",
+  "listProjectStories",
+  "listProjectFollowers",
+  "listPullRequests",
+  "getPullRequest",
+  "listPullRequestStories",
+  "listRepositories",
+  "getRepository",
+  "listRepositoryCommits",
+  "listRepositoryBranches",
+  "listRepositoryPullRequests",
+  "search",
+  "listStories",
+  "createStory",
+  "bulkDeleteStories",
+  "bulkUpdateStories",
+  "bulkCreateStories",
+  "searchStories",
+  "getMultipleStoriesHistory",
+  "deleteStory",
+  "getStory",
+  "updateStory",
+  "listStoryFiles",
+  "listStoryLabels",
+  "listStoryOwners",
+  "listStoryCommits",
+  "getStoryHistory",
+  "listStoryBranches",
+  "listStoryComments",
+  "createStoryComment",
+  "listStoryFollowers",
+  "listStoryIterations",
+  "listStoryStoryLinks",
+  "listStoryLinkedFiles",
+  "bulkDeleteStoryComments",
+  "bulkUpdateStoryComments",
+  "bulkCreateStoryComments",
+  "listStoryPullRequests",
+  "listStoryExternalLinks",
+  "listStoryChecklistItems",
+  "createStoryChecklistItem",
+  "listStoryMentionedTeams",
+  "listStorySubTaskStories",
+  "listStoryMentionedMembers",
+  "listStoryCustomFieldValues",
+  "bulkDeleteStoryChecklistItems",
+  "bulkUpdateStoryChecklistItems",
+  "bulkCreateStoryChecklistItems",
+  "deleteStoryComment",
+  "getStoryComment",
+  "updateStoryComment",
+  "listStoryCommentComments",
+  "listStoryCommentReactions",
+  "createStoryCommentReaction",
+  "deleteStoryChecklistItem",
+  "getStoryChecklistItem",
+  "updateStoryChecklistItem",
+  "listStoryCommentMentionedTeams",
+  "listStoryCommentMentionedMembers",
+  "listStoryChecklistItemMentionedTeams",
+  "deleteStoryCommentReaction",
+  "listStoryChecklistItemMentionedMembers",
+  "listStoryLinks",
+  "createStoryLink",
+  "bulkDeleteStoryLinks",
+  "bulkUpdateStoryLinks",
+  "bulkCreateStoryLinks",
+  "deleteStoryLink",
+  "getStoryLink",
+  "updateStoryLink",
+  "listTeams",
+  "createTeam",
+  "bulkUpdateTeams",
+  "bulkCreateTeams",
+  "getTeam",
+  "updateTeam",
+  "listTeamMembers",
+  "listTeamStories",
+  "listTeamWorkflows",
+  "listWorkflowStates",
+  "getWorkflowState",
+  "listWorkflowStateStories",
+  "listWorkflows",
+  "getWorkflow",
+  "listWorkflowTeams",
+  "listWorkflowStatesWithinAWorkflow",
+  "listWorkflowStories",
+  "listWorkflowProjects",
+]);

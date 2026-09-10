@@ -243,7 +243,7 @@ export class ShortcutWebhookClient {
         await Promise.all(
           this.eventsFor(delivery.payload)
             .flatMap((event) => listeners.get(event) ?? [])
-            .map((listener) => listener(delivery.payload, delivery)),
+            .map(async (listener) => listener(delivery.payload, delivery)),
         );
       } catch {
         return adapter.send(500, 'handler_failed');

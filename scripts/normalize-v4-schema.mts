@@ -53,21 +53,94 @@ schemas.ApiError = {
   required: ['message'],
   additionalProperties: true,
 };
-for (const [name, response] of Object.entries(responses)) {
-  const content = (response as Json).content?.['application/json'];
-  const ref = content?.schema?.$ref;
-  if (!ref) continue;
-  const schema = schemas[refName(ref)];
-  const props = schema?.properties ?? {};
-  const keys = Object.keys(props);
-  if (keys.length === 1 && keys[0] === 'schema' && props.schema.$ref) {
-    content.schema = { $ref: props.schema.$ref };
-    delete schemas[refName(ref)];
-  } else if (keys.length === 0) {
-    content.schema = { $ref: '#/components/schemas/ApiError' };
-    delete schemas[refName(ref)];
+// Resolve from an immutable copy: a component can be shared by success and
+// error status codes, which must not overwrite each other's response shapes.
+const originalResponses = structuredClone(responses);
+const normalizedResponses = new Set<string>();
+const replacedSchemas = new Set<string>();
+for (const pathItem of Object.values(doc.paths as Json)) {
+  for (const operation of Object.values(pathItem as Json)) {
+    for (const [status, reference] of Object.entries(
+      (operation as Json)?.responses ?? {},
+    )) {
+      const name = (reference as Json).$ref
+        ? refName((reference as Json).$ref)
+        : undefined;
+      const response = structuredClone(
+        name ? originalResponses[name] : reference,
+      ) as Json;
+      if (!response) continue;
+      const content = response.content?.['application/json'];
+      const ref = content?.schema?.$ref;
+      const schema = ref ? schemas[refName(ref)] : content?.schema;
+      const props = schema?.properties ?? {};
+      const keys = Object.keys(props);
+      if (status === '204' || status === '205') {
+        delete response.content;
+      } else if (
+        keys.length === 1 &&
+        keys[0] === 'schema' &&
+        props.schema.$ref
+      ) {
+        content.schema = { $ref: props.schema.$ref };
+      } else if (
+        schema?.type === 'object' &&
+        keys.length === 0 &&
+        !schema.additionalProperties
+      ) {
+        if (/^[45](?:\d{2}|XX)$/i.test(status) || status === 'default') {
+          content.schema = { $ref: '#/components/schemas/ApiError' };
+        } else if (/^2(?:\d{2}|XX)$/i.test(status)) {
+          // The published empty success placeholder describes an arbitrary
+          // JSON object (getSchema), not an error or an object with no keys.
+          content.schema = { ...schema, additionalProperties: true };
+        }
+      }
+      if (
+        ref &&
+        (response.content === undefined || content.schema.$ref !== ref)
+      )
+        replacedSchemas.add(refName(ref));
+      if (name) {
+        let target = name;
+        if (
+          normalizedResponses.has(name) &&
+          JSON.stringify(responses[name]) !== JSON.stringify(response)
+        ) {
+          target = `${name}Status${status}`;
+        }
+        responses[target] = response;
+        normalizedResponses.add(target);
+        // The generator treats a bodyless response $ref as `any`; an inline
+        // response with no content correctly produces `void`.
+        (operation as Json).responses[status] =
+          response.content === undefined
+            ? response
+            : { $ref: `#/components/responses/${target}` };
+      } else {
+        (operation as Json).responses[status] = response;
+      }
+    }
   }
-  void name;
+}
+// Keep schemas still referenced elsewhere, including a component shared with
+// a successful response. Only remove wrappers made obsolete above.
+const referencedSchemas = new Set<string>();
+const collectRefs = (node: unknown): void => {
+  if (!node || typeof node !== 'object') return;
+  for (const [key, value] of Object.entries(node)) {
+    if (
+      key === '$ref' &&
+      typeof value === 'string' &&
+      value.startsWith('#/components/schemas/')
+    )
+      referencedSchemas.add(refName(value));
+    else collectRefs(value);
+  }
+};
+collectRefs(doc);
+for (const name of replacedSchemas) {
+  if (!referencedSchemas.has(name)) delete schemas[name];
 }
 
 // 2. Request bodies: name after the operation that uses them.
