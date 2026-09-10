@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   ShortcutOAuth,
@@ -168,6 +169,57 @@ describe('ShortcutV4Client', () => {
         for await (const _ of c.paginate({ nope: true } as never)) void _;
       })(),
     ).rejects.toThrow(/no entities/);
+  });
+
+  it('sends JSON bodies with a JSON content type', async () => {
+    const { calls, client: c } = client(() =>
+      Response.json({ entity: { id: 7, text: 'Hello' } }),
+    );
+    await c.workspace('acme').createStoryComment(123, { text: 'Hello' });
+    const { init } = calls[0];
+    expect(init.method).toBe('POST');
+    expect((init.headers as Record<string, string>)['Content-Type']).toBe(
+      'application/json',
+    );
+    expect(init.body).toBe(JSON.stringify({ text: 'Hello' }));
+  });
+
+  it('uploads files as multipart form data with their contents intact', async () => {
+    const { calls, client: c } = client(() =>
+      Response.json({ entities: [{ id: 1 }] }),
+    );
+    const file = new File(['hello, world'], 'hello.txt', {
+      type: 'text/plain',
+    });
+    await c.workspace('acme').uploadFiles({ story_id: 123, file });
+    const { init } = calls[0];
+    expect(init.method).toBe('POST');
+    // The runtime must set the multipart boundary itself.
+    expect(init.headers).not.toHaveProperty('Content-Type');
+    expect(init.body).toBeInstanceOf(FormData);
+    const form = init.body as FormData;
+    expect(form.get('story_id')).toBe('123');
+    const sent = form.get('file');
+    expect(sent).toBeInstanceOf(Blob);
+    expect((sent as File).name).toBe('hello.txt');
+    expect(await (sent as Blob).text()).toBe('hello, world');
+  });
+
+  it('declares a media type on every generated operation that sends a body', () => {
+    // A request body referenced from `components/requestBodies` is not
+    // resolved by the generator, which then omits `type`; the client would
+    // send JSON as text/plain and multipart uploads as JSON.
+    const source = readFileSync(
+      new URL('../generated/Api.ts', import.meta.url),
+      'utf8',
+    );
+    const calls = source.split('this.request<').slice(1);
+    const withBody = calls.filter((call) => /^\s*body:/m.test(call));
+    expect(withBody.length).toBeGreaterThan(0);
+    const untyped = withBody.filter(
+      (call) => !/^\s*type: ContentType\./m.test(call),
+    );
+    expect(untyped.map((call) => call.split('\n')[1]?.trim())).toEqual([]);
   });
 
   it('requires a token and a slug', () => {

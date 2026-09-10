@@ -10,7 +10,8 @@
  *   (`StoryEntityWrapper`) and drops the numeric wrapper;
  * - collapses the empty error-response schemas into one shared `ApiError`;
  * - renames each request body after its operation
- *   (`Body1631589` -> `CreateStoryCommentParams`).
+ *   (`Body1631589` -> `CreateStoryCommentParams`) and inlines it into the
+ *   operation so the generator preserves its media type.
  *
  * Usage: node scripts/normalize-v4-schema.mts <input.json> <output.json>
  */
@@ -31,6 +32,7 @@ const requestBodies: Json = doc.components.requestBodies ?? {};
 const refName = (ref: string) => ref.split('/').pop() as string;
 const renames = new Map<string, string>();
 const suffixed: string[] = [];
+let inlined = 0;
 
 // 1. Success responses: unwrap `{ schema: $ref }`; errors: share one schema.
 schemas.ApiError = {
@@ -103,16 +105,20 @@ for (const pathItem of Object.values(doc.paths as Json)) {
       delete schemas[oldSchema];
     }
     (mediaType as Json).schema = { $ref: `#/components/schemas/${target}` };
-    requestBodies[target] = body;
+    // Inline the body so the generator sees its media type. A `$ref` into
+    // `components/requestBodies` is not resolved by swagger-typescript-api,
+    // which then emits no `type` and the client sends JSON as text/plain and
+    // multipart uploads as JSON.
+    (operation as Json).requestBody = body;
     delete requestBodies[oldName];
-    (operation as Json).requestBody = {
-      $ref: `#/components/requestBodies/${target}`,
-    };
+    inlined += 1;
     renames.set(oldName, target);
     renames.set(oldSchema, target);
     if (target !== newName) suffixed.push(target);
   }
 }
+if (Object.keys(requestBodies).length === 0)
+  delete doc.components.requestBodies;
 
 // 3. Nested numerically named schemas (position anchors inside bodies): merge
 // identical shapes and name them by their descriptive suffix.
@@ -167,5 +173,5 @@ rewrite(doc);
 
 writeFileSync(output, `${JSON.stringify(doc, null, 2)}\n`);
 console.log(
-  `normalized ${input} -> ${output}: ${Object.keys(requestBodies).length} request bodies named after operations (${suffixed.length} kept apart with a Body suffix), ${groups.size} nested shapes merged, ${Object.keys(schemas).length} schemas`,
+  `normalized ${input} -> ${output}: ${inlined} request bodies named after operations (${suffixed.length} kept apart with a Body suffix), ${groups.size} nested shapes merged, ${Object.keys(schemas).length} schemas`,
 );

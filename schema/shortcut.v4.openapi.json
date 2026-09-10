@@ -718,7 +718,13 @@
         },
         "operationId": "createCategory",
         "requestBody": {
-          "$ref": "#/components/requestBodies/CreateCategoryParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryParams"
+              }
+            }
+          }
         },
         "description": "Create Category allows you to create a new Category in Shortcut.",
         "summary": "Create Category"
@@ -753,7 +759,13 @@
         },
         "operationId": "bulkDeleteCategories",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkDeleteCategoriesParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkDeleteCategoriesParams"
+              }
+            }
+          }
         },
         "description": "Bulk Delete Categories deletes multiple Categories.",
         "summary": "Bulk Delete Categories"
@@ -855,7 +867,13 @@
         },
         "operationId": "bulkUpdateCategories",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkUpdateCategoriesParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkUpdateCategoriesParams"
+              }
+            }
+          }
         },
         "description": "Bulk Update Categories updates multiple Categories, and returns a paginated list of the updated Categories.",
         "summary": "Bulk Update Categories"
@@ -957,7 +975,13 @@
         },
         "operationId": "bulkCreateCategories",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkCreateCategoriesParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkCreateCategoriesParams"
+              }
+            }
+          }
         },
         "description": "Bulk Create Categories creates multiple Categories, and returns a paginated list of the created Categories.",
         "summary": "Bulk Create Categories"
@@ -1100,7 +1124,13 @@
         },
         "operationId": "updateCategory",
         "requestBody": {
-          "$ref": "#/components/requestBodies/UpdateCategoryParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCategoryParams"
+              }
+            }
+          }
         },
         "description": "Update Category allows you to modify a Category in your Shortcut Workspace.",
         "summary": "Update Category"
@@ -1360,7 +1390,13 @@
         },
         "operationId": "createCollection",
         "requestBody": {
-          "$ref": "#/components/requestBodies/CreateCollectionParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCollectionParams"
+              }
+            }
+          }
         },
         "description": "Create Collection allows you to create a new Collection in the Workspace.",
         "summary": "Create Collection"
@@ -1917,7 +1953,13 @@
         },
         "operationId": "bulkDeleteCustomFields",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkDeleteCustomFieldsParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkDeleteCustomFieldsParams"
+              }
+            }
+          }
         },
         "description": "Bulk Delete Custom Fields removes multiple Custom Fields from the Workspace.",
         "summary": "Bulk Delete Custom Fields"
@@ -2018,7 +2060,13 @@
         },
         "operationId": "bulkUpdateCustomFields",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkUpdateCustomFieldsParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkUpdateCustomFieldsParams"
+              }
+            }
+          }
         },
         "description": "Bulk Update Custom Fields updates multiple Custom Fields, and returns a paginated list of the updated Custom Fields.",
         "summary": "Bulk Update Custom Fields"
@@ -2161,7 +2209,13 @@
         },
         "operationId": "updateCustomField",
         "requestBody": {
-          "$ref": "#/components/requestBodies/UpdateCustomFieldParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCustomFieldParams"
+              }
+            }
+          }
         },
         "description": "Update Custom Field allows you to modify a Custom Field definition in your Shortcut Workspace.",
         "summary": "Update Custom Field"
@@ -2422,7 +2476,13 @@
         },
         "operationId": "createDoc",
         "requestBody": {
-          "$ref": "#/components/requestBodies/CreateDocBody"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDocBody"
+              }
+            }
+          }
         },
         "description": "Create Doc allows you to create a new Doc in the Workspace.",
         "summary": "Create Doc"
@@ -2529,7 +2589,13 @@
         },
         "operationId": "bulkCreateDocs",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkCreateDocsParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkCreateDocsParams"
+              }
+            }
+          }
         },
         "description": "Bulk Create Docs creates multiple Docs, and returns a paginated list of the created Docs.",
         "summary": "Bulk Create Docs"
@@ -3171,7 +3237,13 @@
         },
         "operationId": "createEntityTemplate",
         "requestBody": {
-          "$ref": "#/components/requestBodies/CreateEntityTemplateParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEntityTemplateParams"
+              }
+            }
+          }
         },
         "description": "Create Entity Template creates a new Entity Template in your Shortcut Workspace.",
         "summary": "Create Entity Template"
@@ -3206,7 +3278,13 @@
         },
         "operationId": "bulkDeleteEntityTemplates",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkDeleteEntityTemplatesParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkDeleteEntityTemplatesParams"
+              }
+            }
+          }
         },
         "description": "Bulk Delete Entity Templates removes multiple Entity Templates from the Workspace.",
         "summary": "Bulk Delete Entity Templates"
@@ -3306,7 +3384,13 @@
         },
         "operationId": "bulkUpdateEntityTemplates",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkUpdateEntityTemplatesParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkUpdateEntityTemplatesParams"
+              }
+            }
+          }
         },
         "description": "Bulk Update Entity Templates updates multiple Entity Templates, and returns a paginated list of the updated Entity Templates.",
         "summary": "Bulk Update Entity Templates"
@@ -3406,7 +3490,13 @@
         },
         "operationId": "bulkCreateEntityTemplates",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkCreateEntityTemplatesParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkCreateEntityTemplatesParams"
+              }
+            }
+          }
         },
         "description": "Bulk Create Entity Templates creates multiple Entity Templates, and returns a paginated list of the created Entity Templates.",
         "summary": "Bulk Create Entity Templates"
@@ -3549,7 +3639,13 @@
         },
         "operationId": "updateEntityTemplate",
         "requestBody": {
-          "$ref": "#/components/requestBodies/UpdateEntityTemplateParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEntityTemplateParams"
+              }
+            }
+          }
         },
         "description": "Update Entity Template updates an existing Entity Template in your Shortcut Workspace.",
         "summary": "Update Entity Template"
@@ -3831,7 +3927,13 @@
         },
         "operationId": "createEpic",
         "requestBody": {
-          "$ref": "#/components/requestBodies/CreateEpicParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEpicParams"
+              }
+            }
+          }
         },
         "description": "Create Epic is used to create a new Epic in your Shortcut Workspace.",
         "summary": "Create Epic"
@@ -3875,7 +3977,13 @@
         },
         "operationId": "bulkDeleteEpics",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkDeleteEpicsParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkDeleteEpicsParams"
+              }
+            }
+          }
         },
         "description": "Bulk Delete Epics deletes multiple Epics. The Epics must be archived unless `force` is set.",
         "summary": "Bulk Delete Epics"
@@ -3976,7 +4084,13 @@
         },
         "operationId": "bulkUpdateEpics",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkUpdateEpicsParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkUpdateEpicsParams"
+              }
+            }
+          }
         },
         "description": "Bulk Update Epics updates multiple Epics, and returns a paginated list of the updated Epics.",
         "summary": "Bulk Update Epics"
@@ -4077,7 +4191,13 @@
         },
         "operationId": "bulkCreateEpics",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkCreateEpicsParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkCreateEpicsParams"
+              }
+            }
+          }
         },
         "description": "Bulk Create Epics creates multiple Epics, and returns a paginated list of the created Epics.",
         "summary": "Bulk Create Epics"
@@ -4301,7 +4421,13 @@
         },
         "operationId": "updateEpic",
         "requestBody": {
-          "$ref": "#/components/requestBodies/UpdateEpicParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEpicParams"
+              }
+            }
+          }
         },
         "description": "Update Epic is used to modify an Epic in your Shortcut Workspace.",
         "summary": "Update Epic"
@@ -4959,7 +5085,13 @@
         },
         "operationId": "createEpicComment",
         "requestBody": {
-          "$ref": "#/components/requestBodies/CreateEpicCommentParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEpicCommentParams"
+              }
+            }
+          }
         },
         "description": "Create Epic Comment is used to add a new Comment to an Epic. To reply to an existing Comment, provide a parent_comment_id.",
         "summary": "Create Epic Comment"
@@ -5341,7 +5473,13 @@
         },
         "operationId": "createEpicHealth",
         "requestBody": {
-          "$ref": "#/components/requestBodies/CreateEpicHealthParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEpicHealthParams"
+              }
+            }
+          }
         },
         "description": "Creates a new Health update for the specified Epic.",
         "summary": "Create Epic Health"
@@ -5386,7 +5524,13 @@
         },
         "operationId": "bulkDeleteEpicComments",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkDeleteEpicCommentsParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkDeleteEpicCommentsParams"
+              }
+            }
+          }
         },
         "description": "Bulk Delete Epic Comments deletes multiple Comments from an Epic.",
         "summary": "Bulk Delete Epic Comments"
@@ -5497,7 +5641,13 @@
         },
         "operationId": "bulkUpdateEpicComments",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkUpdateEpicCommentsParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkUpdateEpicCommentsParams"
+              }
+            }
+          }
         },
         "description": "Bulk Update Epic Comments updates multiple Comments on an Epic, and returns a paginated list of the updated Comments.",
         "summary": "Bulk Update Epic Comments"
@@ -5608,7 +5758,13 @@
         },
         "operationId": "bulkCreateEpicComments",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkCreateEpicCommentsParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkCreateEpicCommentsParams"
+              }
+            }
+          }
         },
         "description": "Bulk Create Epic Comments creates multiple Comments on an Epic, and returns a paginated list of the created Comments.",
         "summary": "Bulk Create Epic Comments"
@@ -6011,7 +6167,13 @@
         },
         "operationId": "updateEpicComment",
         "requestBody": {
-          "$ref": "#/components/requestBodies/UpdateEpicCommentParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEpicCommentParams"
+              }
+            }
+          }
         },
         "description": "Update Epic Comment is used to modify an existing Epic Comment.",
         "summary": "Update Epic Comment"
@@ -6565,7 +6727,13 @@
         },
         "operationId": "uploadFiles",
         "requestBody": {
-          "$ref": "#/components/requestBodies/UploadFilesParams"
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadFilesParams"
+              }
+            }
+          }
         },
         "description": "Upload Files uploads one or more files and optionally associates them with a Story.\n   Use the multipart/form-data content-type to upload.\n   Each `file` key should contain a separate file.",
         "summary": "Upload Files"
@@ -6600,7 +6768,13 @@
         },
         "operationId": "bulkDeleteFiles",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkDeleteFilesParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkDeleteFilesParams"
+              }
+            }
+          }
         },
         "description": "Bulk Delete Files deletes multiple Files from the Workspace.",
         "summary": "Bulk Delete Files"
@@ -7166,7 +7340,13 @@
         },
         "operationId": "createIteration",
         "requestBody": {
-          "$ref": "#/components/requestBodies/CreateIterationParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateIterationParams"
+              }
+            }
+          }
         },
         "description": "Create Iteration is used to create a new Iteration in your Shortcut Workspace.",
         "summary": "Create Iteration"
@@ -7201,7 +7381,13 @@
         },
         "operationId": "bulkDeleteIterations",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkDeleteIterationsParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkDeleteIterationsParams"
+              }
+            }
+          }
         },
         "description": "Bulk Delete Iterations deletes multiple Iterations.",
         "summary": "Bulk Delete Iterations"
@@ -7302,7 +7488,13 @@
         },
         "operationId": "bulkUpdateIterations",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkUpdateIterationsParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkUpdateIterationsParams"
+              }
+            }
+          }
         },
         "description": "Bulk Update Iterations updates multiple Iterations, and returns a paginated list of the updated Iterations.",
         "summary": "Bulk Update Iterations"
@@ -7403,7 +7595,13 @@
         },
         "operationId": "bulkCreateIterations",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkCreateIterationsParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkCreateIterationsParams"
+              }
+            }
+          }
         },
         "description": "Bulk Create Iterations creates multiple Iterations, and returns a paginated list of the created Iterations.",
         "summary": "Bulk Create Iterations"
@@ -7718,7 +7916,13 @@
         },
         "operationId": "updateIteration",
         "requestBody": {
-          "$ref": "#/components/requestBodies/UpdateIterationParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateIterationParams"
+              }
+            }
+          }
         },
         "description": "Update Iteration is used to modify an Iteration in your Shortcut Workspace.",
         "summary": "Update Iteration"
@@ -8697,7 +8901,13 @@
         },
         "operationId": "updateKeyResult",
         "requestBody": {
-          "$ref": "#/components/requestBodies/UpdateKeyResultParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateKeyResultParams"
+              }
+            }
+          }
         },
         "description": "Updates the specified Key Result.",
         "summary": "Update Key Result"
@@ -8841,7 +9051,13 @@
         },
         "operationId": "createLabel",
         "requestBody": {
-          "$ref": "#/components/requestBodies/CreateLabelParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLabelParams"
+              }
+            }
+          }
         },
         "description": "Create Label allows you to create a new Label in Shortcut.",
         "summary": "Create Label"
@@ -8876,7 +9092,13 @@
         },
         "operationId": "bulkDeleteLabels",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkDeleteLabelsParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkDeleteLabelsParams"
+              }
+            }
+          }
         },
         "description": "Bulk Delete Labels deletes multiple Labels.",
         "summary": "Bulk Delete Labels"
@@ -8979,7 +9201,13 @@
         },
         "operationId": "bulkUpdateLabels",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkUpdateLabelsParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkUpdateLabelsParams"
+              }
+            }
+          }
         },
         "description": "Bulk Update Labels updates multiple Labels, and returns a paginated list of the updated Labels.",
         "summary": "Bulk Update Labels"
@@ -9082,7 +9310,13 @@
         },
         "operationId": "bulkCreateLabels",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkCreateLabelsParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkCreateLabelsParams"
+              }
+            }
+          }
         },
         "description": "Bulk Create Labels creates multiple Labels, and returns a paginated list of the created Labels.",
         "summary": "Bulk Create Labels"
@@ -9225,7 +9459,13 @@
         },
         "operationId": "updateLabel",
         "requestBody": {
-          "$ref": "#/components/requestBodies/UpdateLabelParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLabelParams"
+              }
+            }
+          }
         },
         "description": "Update Label allows you to modify a Label in your Shortcut Workspace.",
         "summary": "Update Label"
@@ -9588,7 +9828,13 @@
         },
         "operationId": "createLinkedFile",
         "requestBody": {
-          "$ref": "#/components/requestBodies/CreateLinkedFileParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLinkedFileParams"
+              }
+            }
+          }
         },
         "description": "Create Linked File is used to add a new Linked File to your Shortcut Workspace.",
         "summary": "Create Linked File"
@@ -9623,7 +9869,13 @@
         },
         "operationId": "bulkDeleteLinkedFiles",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkDeleteLinkedFilesParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkDeleteLinkedFilesParams"
+              }
+            }
+          }
         },
         "description": "Bulk Delete Linked Files deletes multiple Linked Files.",
         "summary": "Bulk Delete Linked Files"
@@ -9723,7 +9975,13 @@
         },
         "operationId": "bulkUpdateLinkedFiles",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkUpdateLinkedFilesParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkUpdateLinkedFilesParams"
+              }
+            }
+          }
         },
         "description": "Bulk Update Linked Files updates multiple Linked Files, and returns a paginated list of the updated Linked Files.",
         "summary": "Bulk Update Linked Files"
@@ -9823,7 +10081,13 @@
         },
         "operationId": "bulkCreateLinkedFiles",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkCreateLinkedFilesParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkCreateLinkedFilesParams"
+              }
+            }
+          }
         },
         "description": "Bulk Create Linked Files creates multiple Linked Files, and returns a paginated list of the created Linked Files.",
         "summary": "Bulk Create Linked Files"
@@ -9966,7 +10230,13 @@
         },
         "operationId": "updateLinkedFile",
         "requestBody": {
-          "$ref": "#/components/requestBodies/UpdateLinkedFileParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLinkedFileParams"
+              }
+            }
+          }
         },
         "description": "Update Linked File is used to update an existing Linked File in your Shortcut Workspace.",
         "summary": "Update Linked File"
@@ -10505,7 +10775,13 @@
         },
         "operationId": "bulkUpdateMembers",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkUpdateMembersParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkUpdateMembersParams"
+              }
+            }
+          }
         },
         "description": "Bulk Update Members updates multiple Members and returns a paginated list of the updated Members.",
         "summary": "Bulk Update Members"
@@ -10611,7 +10887,13 @@
         },
         "operationId": "updateMember",
         "requestBody": {
-          "$ref": "#/components/requestBodies/UpdateMemberParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMemberParams"
+              }
+            }
+          }
         },
         "description": "Update Member modifies a Member's role or disabled status in the Workspace.",
         "summary": "Update Member"
@@ -10976,7 +11258,13 @@
         },
         "operationId": "createObjective",
         "requestBody": {
-          "$ref": "#/components/requestBodies/CreateObjectiveParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateObjectiveParams"
+              }
+            }
+          }
         },
         "description": "Create Objective is used to create a new Objective in your Shortcut Workspace.",
         "summary": "Create Objective"
@@ -11011,7 +11299,13 @@
         },
         "operationId": "bulkDeleteObjectives",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkDeleteObjectivesParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkDeleteObjectivesParams"
+              }
+            }
+          }
         },
         "description": "Bulk Delete Objectives deletes multiple Objectives.",
         "summary": "Bulk Delete Objectives"
@@ -11112,7 +11406,13 @@
         },
         "operationId": "bulkUpdateObjectives",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkUpdateObjectivesParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkUpdateObjectivesParams"
+              }
+            }
+          }
         },
         "description": "Bulk Update Objectives updates multiple Objectives, and returns a paginated list of the updated Objectives.",
         "summary": "Bulk Update Objectives"
@@ -11213,7 +11513,13 @@
         },
         "operationId": "bulkCreateObjectives",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkCreateObjectivesParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkCreateObjectivesParams"
+              }
+            }
+          }
         },
         "description": "Bulk Create Objectives creates multiple Objectives, and returns a paginated list of the created Objectives.",
         "summary": "Bulk Create Objectives"
@@ -11428,7 +11734,13 @@
         },
         "operationId": "updateObjective",
         "requestBody": {
-          "$ref": "#/components/requestBodies/UpdateObjectiveParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateObjectiveParams"
+              }
+            }
+          }
         },
         "description": "Update Objective is used to modify an Objective in your Shortcut Workspace.",
         "summary": "Update Objective"
@@ -12141,7 +12453,13 @@
         },
         "operationId": "createObjectiveHealth",
         "requestBody": {
-          "$ref": "#/components/requestBodies/CreateObjectiveHealthParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateObjectiveHealthParams"
+              }
+            }
+          }
         },
         "description": "Creates a new Health update for the specified Objective.",
         "summary": "Create Objective Health"
@@ -12311,7 +12629,13 @@
       "post": {
         "description": "Create Project allows you to create a new Project in Shortcut. Projects are a deprecated feature.",
         "requestBody": {
-          "$ref": "#/components/requestBodies/CreateProjectParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectParams"
+              }
+            }
+          }
         },
         "summary": "Create Project",
         "deprecated": true,
@@ -12447,7 +12771,13 @@
       "patch": {
         "description": "Update Project can be used to update Project properties. Projects are a deprecated feature.",
         "requestBody": {
-          "$ref": "#/components/requestBodies/UpdateProjectParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectParams"
+              }
+            }
+          }
         },
         "summary": "Update Project",
         "deprecated": true,
@@ -13688,7 +14018,13 @@
         },
         "operationId": "createStory",
         "requestBody": {
-          "$ref": "#/components/requestBodies/CreateStoryBody"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStoryBody"
+              }
+            }
+          }
         },
         "description": "Create Story is used to add a new Story to your Shortcut Workspace.",
         "summary": "Create Story"
@@ -13732,7 +14068,13 @@
         },
         "operationId": "bulkDeleteStories",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkDeleteStoriesParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkDeleteStoriesParams"
+              }
+            }
+          }
         },
         "description": "Bulk Delete Stories deletes multiple Stories. The Stories must be archived unless `force` is set.",
         "summary": "Bulk Delete Stories"
@@ -13835,7 +14177,13 @@
         },
         "operationId": "bulkUpdateStories",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkUpdateStoriesParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkUpdateStoriesParams"
+              }
+            }
+          }
         },
         "description": "Bulk Update Stories updates multiple Stories, and returns a paginated list of the updated Stories.",
         "summary": "Bulk Update Stories"
@@ -13938,7 +14286,13 @@
         },
         "operationId": "bulkCreateStories",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkCreateStoriesParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkCreateStoriesParams"
+              }
+            }
+          }
         },
         "description": "Bulk Create Stories creates multiple Stories, and returns a paginated list of the created Stories.",
         "summary": "Bulk Create Stories"
@@ -14246,7 +14600,13 @@
         },
         "operationId": "updateStory",
         "requestBody": {
-          "$ref": "#/components/requestBodies/UpdateStoryParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStoryParams"
+              }
+            }
+          }
         },
         "description": "Update Story is used to modify a Story in your Shortcut Workspace.",
         "summary": "Update Story"
@@ -15052,7 +15412,13 @@
         },
         "operationId": "createStoryComment",
         "requestBody": {
-          "$ref": "#/components/requestBodies/CreateStoryCommentParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStoryCommentParams"
+              }
+            }
+          }
         },
         "description": "Create Story is used to add a new Comment to a Story.",
         "summary": "Create Story Comment"
@@ -15535,7 +15901,13 @@
         },
         "operationId": "bulkDeleteStoryComments",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkDeleteStoryCommentsParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkDeleteStoryCommentsParams"
+              }
+            }
+          }
         },
         "description": "Bulk Delete Story Comments deletes multiple Comments from a Story.",
         "summary": "Bulk Delete Story Comments"
@@ -15645,7 +16017,13 @@
         },
         "operationId": "bulkUpdateStoryComments",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkUpdateStoryCommentsParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkUpdateStoryCommentsParams"
+              }
+            }
+          }
         },
         "description": "Bulk Update Story Comments updates multiple Comments on a Story, and returns a paginated list of the updated Comments.",
         "summary": "Bulk Update Story Comments"
@@ -15755,7 +16133,13 @@
         },
         "operationId": "bulkCreateStoryComments",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkCreateStoryCommentsParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkCreateStoryCommentsParams"
+              }
+            }
+          }
         },
         "description": "Bulk Create Story Comments creates multiple Comments on a Story, and returns a paginated list of the created Comments.",
         "summary": "Bulk Create Story Comments"
@@ -16145,7 +16529,13 @@
         },
         "operationId": "createStoryChecklistItem",
         "requestBody": {
-          "$ref": "#/components/requestBodies/CreateStoryChecklistItemBody"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStoryChecklistItemBody"
+              }
+            }
+          }
         },
         "description": "Create Story Checklist Item is used to add a new Checklist Item to a Story.",
         "summary": "Create Story Checklist Item"
@@ -16632,7 +17022,13 @@
         },
         "operationId": "bulkDeleteStoryChecklistItems",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkDeleteStoryChecklistItemsParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkDeleteStoryChecklistItemsParams"
+              }
+            }
+          }
         },
         "description": "Bulk Delete Story Checklist Items deletes multiple Checklist Items from a Story.",
         "summary": "Bulk Delete Story Checklist Items"
@@ -16742,7 +17138,13 @@
         },
         "operationId": "bulkUpdateStoryChecklistItems",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkUpdateStoryChecklistItemsParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkUpdateStoryChecklistItemsParams"
+              }
+            }
+          }
         },
         "description": "Bulk Update Story Checklist Items updates multiple Checklist Items on a Story, and returns a paginated list of the updated Checklist Items.",
         "summary": "Bulk Update Story Checklist Items"
@@ -16852,7 +17254,13 @@
         },
         "operationId": "bulkCreateStoryChecklistItems",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkCreateStoryChecklistItemsParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkCreateStoryChecklistItemsParams"
+              }
+            }
+          }
         },
         "description": "Bulk Create Story Checklist Items creates multiple Checklist Items on a Story, and returns a paginated list of the created Checklist Items.",
         "summary": "Bulk Create Story Checklist Items"
@@ -17034,7 +17442,13 @@
         },
         "operationId": "updateStoryComment",
         "requestBody": {
-          "$ref": "#/components/requestBodies/UpdateStoryCommentParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStoryCommentParams"
+              }
+            }
+          }
         },
         "description": "Update Story Comment is used to modify a Story Comment.",
         "summary": "Update Story Comment"
@@ -17334,7 +17748,13 @@
         },
         "operationId": "createStoryCommentReaction",
         "requestBody": {
-          "$ref": "#/components/requestBodies/CreateStoryCommentReactionParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStoryCommentReactionParams"
+              }
+            }
+          }
         },
         "description": "Create a Reaction to a Story Comment.",
         "summary": "Create Story Comment Reaction"
@@ -17516,7 +17936,13 @@
         },
         "operationId": "updateStoryChecklistItem",
         "requestBody": {
-          "$ref": "#/components/requestBodies/UpdateStoryChecklistItemParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStoryChecklistItemParams"
+              }
+            }
+          }
         },
         "description": "Update Story Checklist Item is used to modify a Checklist Item on a Story.",
         "summary": "Update Story Checklist Item"
@@ -18192,7 +18618,13 @@
         },
         "operationId": "createStoryLink",
         "requestBody": {
-          "$ref": "#/components/requestBodies/CreateStoryLinkParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStoryLinkParams"
+              }
+            }
+          }
         },
         "description": "Create Story Link is used to create a semantic relationship between two Stories. The subject Story acts on the object Story. For example, \"Story A blocks Story B\".",
         "summary": "Create Story Link"
@@ -18227,7 +18659,13 @@
         },
         "operationId": "bulkDeleteStoryLinks",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkDeleteStoryLinksParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkDeleteStoryLinksParams"
+              }
+            }
+          }
         },
         "description": "Bulk Delete Story Links deletes multiple Story Links.",
         "summary": "Bulk Delete Story Links"
@@ -18327,7 +18765,13 @@
         },
         "operationId": "bulkUpdateStoryLinks",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkUpdateStoryLinksParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkUpdateStoryLinksParams"
+              }
+            }
+          }
         },
         "description": "Bulk Update Story Links updates multiple Story Links, and returns a paginated list of the updated Story Links.",
         "summary": "Bulk Update Story Links"
@@ -18427,7 +18871,13 @@
         },
         "operationId": "bulkCreateStoryLinks",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkCreateStoryLinksParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkCreateStoryLinksParams"
+              }
+            }
+          }
         },
         "description": "Bulk Create Story Links creates multiple Story Links, and returns a paginated list of the created Story Links.",
         "summary": "Bulk Create Story Links"
@@ -18552,7 +19002,13 @@
         },
         "operationId": "updateStoryLink",
         "requestBody": {
-          "$ref": "#/components/requestBodies/UpdateStoryLinkBody"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStoryLinkBody"
+              }
+            }
+          }
         },
         "description": "Update Story Link is used to modify the stories or verb of an existing Story Link.",
         "summary": "Update Story Link"
@@ -18695,7 +19151,13 @@
         },
         "operationId": "createTeam",
         "requestBody": {
-          "$ref": "#/components/requestBodies/CreateTeamParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTeamParams"
+              }
+            }
+          }
         },
         "description": "Creates a new Team in the Workspace.",
         "summary": "Create Team"
@@ -18799,7 +19261,13 @@
         },
         "operationId": "bulkUpdateTeams",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkUpdateTeamsParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkUpdateTeamsParams"
+              }
+            }
+          }
         },
         "description": "Updates multiple Teams and returns a paginated list of the updated Teams.",
         "summary": "Bulk Update Teams"
@@ -18901,7 +19369,13 @@
         },
         "operationId": "bulkCreateTeams",
         "requestBody": {
-          "$ref": "#/components/requestBodies/BulkCreateTeamsParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkCreateTeamsParams"
+              }
+            }
+          }
         },
         "description": "Creates multiple Teams and returns a paginated list of the created Teams.",
         "summary": "Bulk Create Teams"
@@ -19004,7 +19478,13 @@
         },
         "operationId": "updateTeam",
         "requestBody": {
-          "$ref": "#/components/requestBodies/UpdateTeamParams"
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTeamParams"
+              }
+            }
+          }
         },
         "description": "Updates the specified Team.",
         "summary": "Update Team"
@@ -45847,728 +46327,6 @@
           "application/json": {
             "schema": {
               "$ref": "#/components/schemas/ApiError"
-            }
-          }
-        }
-      }
-    },
-    "requestBodies": {
-      "CreateCategoryParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/CreateCategoryParams"
-            }
-          }
-        }
-      },
-      "BulkDeleteCategoriesParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkDeleteCategoriesParams"
-            }
-          }
-        }
-      },
-      "BulkUpdateCategoriesParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkUpdateCategoriesParams"
-            }
-          }
-        }
-      },
-      "BulkCreateCategoriesParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkCreateCategoriesParams"
-            }
-          }
-        }
-      },
-      "UpdateCategoryParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/UpdateCategoryParams"
-            }
-          }
-        }
-      },
-      "CreateCollectionParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/CreateCollectionParams"
-            }
-          }
-        }
-      },
-      "BulkDeleteCustomFieldsParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkDeleteCustomFieldsParams"
-            }
-          }
-        }
-      },
-      "BulkUpdateCustomFieldsParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkUpdateCustomFieldsParams"
-            }
-          }
-        }
-      },
-      "UpdateCustomFieldParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/UpdateCustomFieldParams"
-            }
-          }
-        }
-      },
-      "CreateDocBody": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/CreateDocBody"
-            }
-          }
-        }
-      },
-      "BulkCreateDocsParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkCreateDocsParams"
-            }
-          }
-        }
-      },
-      "CreateEntityTemplateParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/CreateEntityTemplateParams"
-            }
-          }
-        }
-      },
-      "BulkDeleteEntityTemplatesParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkDeleteEntityTemplatesParams"
-            }
-          }
-        }
-      },
-      "BulkUpdateEntityTemplatesParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkUpdateEntityTemplatesParams"
-            }
-          }
-        }
-      },
-      "BulkCreateEntityTemplatesParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkCreateEntityTemplatesParams"
-            }
-          }
-        }
-      },
-      "UpdateEntityTemplateParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/UpdateEntityTemplateParams"
-            }
-          }
-        }
-      },
-      "CreateEpicParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/CreateEpicParams"
-            }
-          }
-        }
-      },
-      "BulkDeleteEpicsParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkDeleteEpicsParams"
-            }
-          }
-        }
-      },
-      "BulkUpdateEpicsParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkUpdateEpicsParams"
-            }
-          }
-        }
-      },
-      "BulkCreateEpicsParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkCreateEpicsParams"
-            }
-          }
-        }
-      },
-      "UpdateEpicParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/UpdateEpicParams"
-            }
-          }
-        }
-      },
-      "CreateEpicCommentParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/CreateEpicCommentParams"
-            }
-          }
-        }
-      },
-      "CreateEpicHealthParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/CreateEpicHealthParams"
-            }
-          }
-        }
-      },
-      "BulkDeleteEpicCommentsParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkDeleteEpicCommentsParams"
-            }
-          }
-        }
-      },
-      "BulkUpdateEpicCommentsParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkUpdateEpicCommentsParams"
-            }
-          }
-        }
-      },
-      "BulkCreateEpicCommentsParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkCreateEpicCommentsParams"
-            }
-          }
-        }
-      },
-      "UpdateEpicCommentParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/UpdateEpicCommentParams"
-            }
-          }
-        }
-      },
-      "UploadFilesParams": {
-        "content": {
-          "multipart/form-data": {
-            "schema": {
-              "$ref": "#/components/schemas/UploadFilesParams"
-            }
-          }
-        }
-      },
-      "BulkDeleteFilesParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkDeleteFilesParams"
-            }
-          }
-        }
-      },
-      "CreateIterationParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/CreateIterationParams"
-            }
-          }
-        }
-      },
-      "BulkDeleteIterationsParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkDeleteIterationsParams"
-            }
-          }
-        }
-      },
-      "BulkUpdateIterationsParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkUpdateIterationsParams"
-            }
-          }
-        }
-      },
-      "BulkCreateIterationsParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkCreateIterationsParams"
-            }
-          }
-        }
-      },
-      "UpdateIterationParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/UpdateIterationParams"
-            }
-          }
-        }
-      },
-      "UpdateKeyResultParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/UpdateKeyResultParams"
-            }
-          }
-        }
-      },
-      "CreateLabelParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/CreateLabelParams"
-            }
-          }
-        }
-      },
-      "BulkDeleteLabelsParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkDeleteLabelsParams"
-            }
-          }
-        }
-      },
-      "BulkUpdateLabelsParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkUpdateLabelsParams"
-            }
-          }
-        }
-      },
-      "BulkCreateLabelsParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkCreateLabelsParams"
-            }
-          }
-        }
-      },
-      "UpdateLabelParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/UpdateLabelParams"
-            }
-          }
-        }
-      },
-      "CreateLinkedFileParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/CreateLinkedFileParams"
-            }
-          }
-        }
-      },
-      "BulkDeleteLinkedFilesParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkDeleteLinkedFilesParams"
-            }
-          }
-        }
-      },
-      "BulkUpdateLinkedFilesParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkUpdateLinkedFilesParams"
-            }
-          }
-        }
-      },
-      "BulkCreateLinkedFilesParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkCreateLinkedFilesParams"
-            }
-          }
-        }
-      },
-      "UpdateLinkedFileParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/UpdateLinkedFileParams"
-            }
-          }
-        }
-      },
-      "BulkUpdateMembersParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkUpdateMembersParams"
-            }
-          }
-        }
-      },
-      "UpdateMemberParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/UpdateMemberParams"
-            }
-          }
-        }
-      },
-      "CreateObjectiveParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/CreateObjectiveParams"
-            }
-          }
-        }
-      },
-      "BulkDeleteObjectivesParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkDeleteObjectivesParams"
-            }
-          }
-        }
-      },
-      "BulkUpdateObjectivesParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkUpdateObjectivesParams"
-            }
-          }
-        }
-      },
-      "BulkCreateObjectivesParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkCreateObjectivesParams"
-            }
-          }
-        }
-      },
-      "UpdateObjectiveParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/UpdateObjectiveParams"
-            }
-          }
-        }
-      },
-      "CreateObjectiveHealthParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/CreateObjectiveHealthParams"
-            }
-          }
-        }
-      },
-      "CreateProjectParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/CreateProjectParams"
-            }
-          }
-        }
-      },
-      "UpdateProjectParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/UpdateProjectParams"
-            }
-          }
-        }
-      },
-      "CreateStoryBody": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/CreateStoryBody"
-            }
-          }
-        }
-      },
-      "BulkDeleteStoriesParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkDeleteStoriesParams"
-            }
-          }
-        }
-      },
-      "BulkUpdateStoriesParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkUpdateStoriesParams"
-            }
-          }
-        }
-      },
-      "BulkCreateStoriesParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkCreateStoriesParams"
-            }
-          }
-        }
-      },
-      "UpdateStoryParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/UpdateStoryParams"
-            }
-          }
-        }
-      },
-      "CreateStoryCommentParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/CreateStoryCommentParams"
-            }
-          }
-        }
-      },
-      "BulkDeleteStoryCommentsParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkDeleteStoryCommentsParams"
-            }
-          }
-        }
-      },
-      "BulkUpdateStoryCommentsParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkUpdateStoryCommentsParams"
-            }
-          }
-        }
-      },
-      "BulkCreateStoryCommentsParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkCreateStoryCommentsParams"
-            }
-          }
-        }
-      },
-      "CreateStoryChecklistItemBody": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/CreateStoryChecklistItemBody"
-            }
-          }
-        }
-      },
-      "BulkDeleteStoryChecklistItemsParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkDeleteStoryChecklistItemsParams"
-            }
-          }
-        }
-      },
-      "BulkUpdateStoryChecklistItemsParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkUpdateStoryChecklistItemsParams"
-            }
-          }
-        }
-      },
-      "BulkCreateStoryChecklistItemsParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkCreateStoryChecklistItemsParams"
-            }
-          }
-        }
-      },
-      "UpdateStoryCommentParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/UpdateStoryCommentParams"
-            }
-          }
-        }
-      },
-      "CreateStoryCommentReactionParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/CreateStoryCommentReactionParams"
-            }
-          }
-        }
-      },
-      "UpdateStoryChecklistItemParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/UpdateStoryChecklistItemParams"
-            }
-          }
-        }
-      },
-      "CreateStoryLinkParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/CreateStoryLinkParams"
-            }
-          }
-        }
-      },
-      "BulkDeleteStoryLinksParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkDeleteStoryLinksParams"
-            }
-          }
-        }
-      },
-      "BulkUpdateStoryLinksParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkUpdateStoryLinksParams"
-            }
-          }
-        }
-      },
-      "BulkCreateStoryLinksParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkCreateStoryLinksParams"
-            }
-          }
-        }
-      },
-      "UpdateStoryLinkBody": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/UpdateStoryLinkBody"
-            }
-          }
-        }
-      },
-      "CreateTeamParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/CreateTeamParams"
-            }
-          }
-        }
-      },
-      "BulkUpdateTeamsParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkUpdateTeamsParams"
-            }
-          }
-        }
-      },
-      "BulkCreateTeamsParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/BulkCreateTeamsParams"
-            }
-          }
-        }
-      },
-      "UpdateTeamParams": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/UpdateTeamParams"
             }
           }
         }

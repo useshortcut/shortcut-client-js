@@ -231,7 +231,7 @@ import type {
   WorkflowTeamEntityListWrapper,
   WorkspaceTokenEntityListWrapper,
 } from "./data-contracts";
-import { HttpClient, type RequestParams } from "./http-client";
+import { ContentType, HttpClient, type RequestParams } from "./http-client";
 
 /** 
  * Please don't use this class directly, instead use the `ShortcutClient` class we provided which is extending this class to add headers for authorization. * @internal
@@ -529,6 +529,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -549,6 +550,7 @@ export class Api<
       method: "DELETE",
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -589,6 +591,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -629,6 +632,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -698,6 +702,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -800,6 +805,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -1031,6 +1037,7 @@ export class Api<
       method: "DELETE",
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -1071,6 +1078,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -1140,6 +1148,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -1242,6 +1251,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -1282,6 +1292,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -1540,6 +1551,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -1560,6 +1572,7 @@ export class Api<
       method: "DELETE",
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -1600,6 +1613,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -1640,6 +1654,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -1709,6 +1724,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -1833,6 +1849,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -1858,6 +1875,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -1898,6 +1916,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -1938,6 +1957,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -2049,6 +2069,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -2291,6 +2312,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -2434,6 +2456,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -2455,6 +2478,7 @@ export class Api<
       method: "DELETE",
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -2496,6 +2520,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -2537,6 +2562,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -2692,6 +2718,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -2895,6 +2922,7 @@ export class Api<
       method: "POST",
       body: data,
       secure: true,
+      type: ContentType.FormData,
       ...params,
     });
   /**
@@ -2915,6 +2943,7 @@ export class Api<
       method: "DELETE",
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -3138,6 +3167,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -3158,6 +3188,7 @@ export class Api<
       method: "DELETE",
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -3198,6 +3229,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -3238,6 +3270,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -3382,6 +3415,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -3743,6 +3777,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -3806,6 +3841,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -3826,6 +3862,7 @@ export class Api<
       method: "DELETE",
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -3866,6 +3903,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -3906,6 +3944,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -3975,6 +4014,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -4116,6 +4156,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -4136,6 +4177,7 @@ export class Api<
       method: "DELETE",
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -4176,6 +4218,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -4216,6 +4259,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -4285,6 +4329,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -4480,6 +4525,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -4530,6 +4576,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -4671,6 +4718,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -4691,6 +4739,7 @@ export class Api<
       method: "DELETE",
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -4731,6 +4780,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -4771,6 +4821,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -4877,6 +4928,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -5137,6 +5189,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -5227,6 +5280,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -5299,6 +5353,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -5764,6 +5819,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -5789,6 +5845,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -5829,6 +5886,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -5869,6 +5927,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -6016,6 +6075,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -6313,6 +6373,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -6490,6 +6551,7 @@ export class Api<
       method: "DELETE",
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -6531,6 +6593,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -6572,6 +6635,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -6717,6 +6781,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -6894,6 +6959,7 @@ export class Api<
       method: "DELETE",
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -6935,6 +7001,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -6976,6 +7043,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -7053,6 +7121,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -7160,6 +7229,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -7237,6 +7307,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -7476,6 +7547,7 @@ export class Api<
       method: "POST",
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -7496,6 +7568,7 @@ export class Api<
       method: "DELETE",
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -7536,6 +7609,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -7576,6 +7650,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -7635,6 +7710,7 @@ export class Api<
       method: "PATCH",
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -7698,6 +7774,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -7738,6 +7815,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -7778,6 +7856,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
@@ -7828,6 +7907,7 @@ export class Api<
       query: query,
       body: data,
       secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**
