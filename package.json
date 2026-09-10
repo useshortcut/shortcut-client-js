@@ -18,7 +18,7 @@
   "sideEffects": false,
   "main": "./lib/index.cjs",
   "module": "./lib/index.mjs",
-  "types": "./lib/index.d.cts",
+  "types": "./lib/index.d.mts",
   "typesVersions": {
     "*": {
       "v4": [
@@ -44,7 +44,7 @@
     }
   },
   "scripts": {
-    "build": "yarn build:client && yarn build:client:v4 && yarn build:add-typedoc-comments && NODE_OPTIONS=\"--no-experimental-strip-types\" tsdown",
+    "build": "yarn build:client && yarn build:client:v4 && yarn build:add-typedoc-comments && NODE_OPTIONS=\"--no-experimental-strip-types\" tsdown && node scripts/fix-cjs-dts.mts lib",
     "build:add-typedoc-comments": "npx jscodeshift -t scripts/add-typedoc-comments.ts --extensions=ts --parser=ts src/generated/** src/v4/generated/**",
     "build:client": "swagger-typescript-api generate --path ./schema/shortcut.swagger.json --output ./src/generated --clean-output --axios --modular --templates ./templates",
     "build:client:v4": "swagger-typescript-api generate --path ./schema/shortcut.v4.openapi.json --output ./src/v4/generated --clean-output --modular --extract-response-body --extract-request-body --unwrap-response-data --templates ./templates/v4",

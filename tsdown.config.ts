@@ -9,7 +9,9 @@ export default defineConfig({
   },
   outDir: 'lib',
   format: ['esm', 'cjs'],
-  dts: true,
+  // One set of declarations for both formats. tsdown writes the CJS stubs as
+  // `export type *`, which scripts/fix-cjs-dts.mts turns into value re-exports.
+  dts: { cjsReexport: true },
   clean: true,
   unbundle: true,
   exports: {

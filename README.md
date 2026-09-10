@@ -71,6 +71,8 @@ shortcut.listProjects().then((response) => console.log(response?.data));
 
 Two additional entrypoints cover the [REST API v4](https://developer.shortcut.com/api/rest/v4) and the webhooks that [Custom Agents](https://developer.shortcut.com/api/rest/v4) receive. Both use the Fetch API, so they run on Node.js 20+, Cloudflare Workers, Deno, and Bun.
 
+v3 and v4 ship together in this package because v4 does not yet cover every v3 endpoint, and agents need both from one install. Each entrypoint is independent, so an application that imports only one never bundles the other. Once v4 reaches parity, the next major version will drop the v3 entrypoint.
+
 ### `@shortcut/client/v4`
 
 v4 is workspace-scoped: every operation takes the workspace slug first, and `workspace(slug)` binds it once. Requests that fail reject with the `Response`, whose `error` carries the parsed body. Lists page by cursor; `paginate()` follows `next_page_url` and only sends the token back to the same API origin.
@@ -119,7 +121,7 @@ const rotated = await oauth.refreshAccessToken(tokens.refresh_token);
 
 ### `@shortcut/client/webhooks`
 
-Deliveries are signed with HMAC-SHA256 over the raw request body; the hex digest arrives in the `Payload-Signature` header. `ShortcutWebhookClient` verifies the signature in constant time, caps the body (2 MiB by default), validates the envelope, and optionally pins deliveries to one workspace or installation. `createHandler()` works as a Fetch handler and as a Node.js `(req, res)` handler, and dispatches typed payloads by kind and by interaction trigger.
+Deliveries are signed with HMAC-SHA256 over the raw request body; the hex digest arrives in the `Payload-Signature` header. `ShortcutWebhookClient` verifies the signature in constant time, caps the body (2 MiB by default), rejects payloads that lack the delivery envelope or carry an unrecognized action or trigger shape, and optionally pins deliveries to one workspace or installation. `createHandler()` works as a Fetch handler and as a Node.js `(req, res)` handler, and dispatches typed payloads by kind and by interaction trigger.
 
 ```ts
 import { ShortcutWebhookClient } from '@shortcut/client/webhooks';
