@@ -27,11 +27,18 @@ export class <%= apiClassName %><SecurityDataType = unknown><% if (!config.singl
     <% } %>
 }
 
-/** Generated workspace operations; client utilities must never receive a slug. */
-export const workspaceOperations: ReadonlySet<keyof <%= apiClassName %>> = new Set([
+const WORKSPACE_OPERATIONS = [
 <% for (const route of routes) { %>
 <% if (_.values(route.request.parameters)[0]?.name === 'workspaceSlug') { %>
   <%~ JSON.stringify(route.routeName.usage) %>,
 <% } %>
 <% } %>
-]);
+] as const satisfies readonly (keyof <%= apiClassName %>)[];
+
+/** Names of the generated operations that take the workspace slug first. */
+export type WorkspaceOperation = (typeof WORKSPACE_OPERATIONS)[number];
+
+/** Generated workspace operations; client utilities must never receive a slug. */
+export const workspaceOperations: ReadonlySet<WorkspaceOperation> = new Set(
+  WORKSPACE_OPERATIONS,
+);

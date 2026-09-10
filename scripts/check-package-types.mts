@@ -15,6 +15,7 @@ const dir = mkdtempSync(join(tmpdir(), 'shortcut-consumer-'));
 const source = `
 import ShortcutClient, { ShortcutClient as NamedV3 } from '@shortcut/client';
 import ShortcutV4Client, { ShortcutV4Client as NamedV4 } from '@shortcut/client/v4';
+import type { ShortcutWorkspaceApi, WorkspaceOperation } from '@shortcut/client/v4';
 import { ShortcutWebhookClient } from '@shortcut/client/webhooks';
 const legacy: ShortcutClient = new ShortcutClient('token');
 new NamedV3('token');
@@ -41,6 +42,14 @@ type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends
 type Assert<T extends true> = T;
 type Deleted = Assert<Equal<Awaited<ReturnType<typeof workspace.deleteStory>>, void>>;
 type Schema = Assert<Equal<Awaited<ReturnType<typeof workspace.getSchema>>, Record<string, any>>>;
+// The facade type is keyed on the generated operation list: bound members
+// drop the slug, everything else keeps the client's signature.
+type Bound = Assert<Equal<Parameters<ShortcutWorkspaceApi['getStory']>[0], number>>;
+type BoundSlug = Assert<Equal<Parameters<ShortcutV4Client['getStory']>[0], string>>;
+type Unbound = Assert<Equal<ShortcutWorkspaceApi['getSchema'], ShortcutV4Client['getSchema']>>;
+type Utility = Assert<Equal<ShortcutWorkspaceApi['setSecurityData'], ShortcutV4Client['setSecurityData']>>;
+type Known = Assert<Equal<Exclude<WorkspaceOperation, keyof ShortcutV4Client>, never>>;
+type Slugless = Assert<Equal<Exclude<'getWhoami' | 'getSchema', WorkspaceOperation>, 'getWhoami' | 'getSchema'>>;
 `;
 try {
   mkdirSync(join(dir, 'node_modules/@shortcut'), { recursive: true });

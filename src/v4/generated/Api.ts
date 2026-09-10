@@ -8349,8 +8349,7 @@ export class Api<
     });
 }
 
-/** Generated workspace operations; client utilities must never receive a slug. */
-export const workspaceOperations: ReadonlySet<keyof Api> = new Set([
+const WORKSPACE_OPERATIONS = [
   "listWorkspaceTokens",
   "deleteWorkspaceToken",
   "listBranches",
@@ -8596,4 +8595,12 @@ export const workspaceOperations: ReadonlySet<keyof Api> = new Set([
   "listWorkflowStatesWithinAWorkflow",
   "listWorkflowStories",
   "listWorkflowProjects",
-]);
+] as const satisfies readonly (keyof Api)[];
+
+/** Names of the generated operations that take the workspace slug first. */
+export type WorkspaceOperation = (typeof WORKSPACE_OPERATIONS)[number];
+
+/** Generated workspace operations; client utilities must never receive a slug. */
+export const workspaceOperations: ReadonlySet<WorkspaceOperation> = new Set(
+  WORKSPACE_OPERATIONS,
+);

@@ -47,6 +47,33 @@ describe('ShortcutV4Client', () => {
     expect([...workspaceOperations].sort()).toEqual(operations.sort());
   });
 
+  it('keeps a stable identity for every member of the workspace facade', () => {
+    const { client: c } = client(() => Response.json({}));
+    const workspace = c.workspace('acme');
+    expect(workspace.getStory).toBe(workspace.getStory);
+    expect(workspace.getWhoami).toBe(workspace.getWhoami);
+    expect(workspace.request).toBe(workspace.request);
+    expect(workspace.getStory).not.toBe(c.workspace('acme').getStory);
+    expect(workspace.baseUrl).toBe('https://api.example.com');
+  });
+
+  it('exposes every client function on the facade and binds only workspace operations', async () => {
+    const { calls, client: c } = client(() => Response.json({}));
+    const workspace = c.workspace('acme') as unknown as Record<string, unknown>;
+    const members = Object.keys(c).filter(
+      (name) =>
+        typeof (c as unknown as Record<string, unknown>)[name] === 'function',
+    );
+    expect(members.length).toBeGreaterThan(100);
+    for (const name of members) expect(typeof workspace[name]).toBe('function');
+    await c.workspace('acme').listStories({ limit: 1 });
+    await c.workspace('acme').getWhoami();
+    expect(calls.map((call) => new URL(call.url).pathname)).toEqual([
+      '/api/v4/acme/stories',
+      '/api/v4/whoami',
+    ]);
+  });
+
   it('sends a bearer token, encodes the workspace slug, and unwraps JSON', async () => {
     const { calls, client: c } = client(() =>
       Response.json({ entity: { id: 123, name: 'Story' } }),

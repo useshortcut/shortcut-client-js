@@ -1,10 +1,13 @@
-import { Api, workspaceOperations } from './generated/Api';
+import {
+  Api,
+  type WorkspaceOperation,
+  workspaceOperations,
+} from './generated/Api';
 import type { ApiError } from './generated/data-contracts';
 import type {
   ApiConfig,
   FullRequestParams,
   HttpResponse,
-  HttpClient,
 } from './generated/http-client';
 
 export const SHORTCUT_V4_BASE_URL = 'https://api.app.shortcut.com';
@@ -39,12 +42,9 @@ type BindSlug<F> = F extends (
 
 /** Workspace operations have their slug pre-applied; other API members keep their signatures. */
 export type ShortcutWorkspaceApi = {
-  [K in keyof Api<string>]: K extends
-    | keyof HttpClient<string>
-    | 'getWhoami'
-    | 'getSchema'
-    ? Api<string>[K]
-    : BindSlug<Api<string>[K]>;
+  [K in keyof Api<string>]: K extends WorkspaceOperation
+    ? BindSlug<Api<string>[K]>
+    : Api<string>[K];
 };
 
 /** The rejection value of a failed v4 request: the `Response`, with the parsed error body on `error`. */
@@ -102,18 +102,25 @@ export class ShortcutV4Client extends Api<string> {
     if (typeof slug !== 'string' || slug.length === 0)
       throw new TypeError('workspace slug is required');
     const encoded = encodeURIComponent(slug);
+    // Generated operations are instance fields that never change, so each
+    // wrapper is created once and the facade keeps a stable identity per member.
+    const members = new Map<PropertyKey, unknown>();
     return new Proxy(this, {
       get: (target, property) => {
         const value = Reflect.get(target, property) as unknown;
         if (typeof value !== 'function') return value;
-        if (!workspaceOperations.has(property as keyof Api))
-          return value.bind(target);
-        return (...rest: unknown[]) =>
-          (value as (...args: unknown[]) => unknown).call(
-            target,
-            encoded,
-            ...rest,
-          );
+        const cached = members.get(property);
+        if (cached) return cached;
+        const member = workspaceOperations.has(property as WorkspaceOperation)
+          ? (...rest: unknown[]) =>
+              (value as (...args: unknown[]) => unknown).call(
+                target,
+                encoded,
+                ...rest,
+              )
+          : value.bind(target);
+        members.set(property, member);
+        return member;
       },
     }) as unknown as ShortcutWorkspaceApi;
   }
