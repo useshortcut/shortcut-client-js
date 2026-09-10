@@ -102,15 +102,18 @@ export class ShortcutV4Client extends Api<string> {
     if (typeof slug !== 'string' || slug.length === 0)
       throw new TypeError('workspace slug is required');
     const encoded = encodeURIComponent(slug);
-    // Generated operations are instance fields that never change, so each
-    // wrapper is created once and the facade keeps a stable identity per member.
-    const members = new Map<PropertyKey, unknown>();
+    // Keep wrappers stable while their source functions are unchanged, and
+    // refresh them when callers replace or restore a method.
+    const members = new Map<
+      PropertyKey,
+      { source: unknown; member: unknown }
+    >();
     return new Proxy(this, {
       get: (target, property) => {
         const value = Reflect.get(target, property) as unknown;
         if (typeof value !== 'function') return value;
         const cached = members.get(property);
-        if (cached) return cached;
+        if (cached?.source === value) return cached.member;
         const member = workspaceOperations.has(property as WorkspaceOperation)
           ? (...rest: unknown[]) =>
               (value as (...args: unknown[]) => unknown).call(
@@ -119,7 +122,7 @@ export class ShortcutV4Client extends Api<string> {
                 ...rest,
               )
           : value.bind(target);
-        members.set(property, member);
+        members.set(property, { source: value, member });
         return member;
       },
     }) as unknown as ShortcutWorkspaceApi;

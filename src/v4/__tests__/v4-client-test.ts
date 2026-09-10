@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { workspaceOperations } from '../generated/Api';
 import {
   ShortcutOAuth,
@@ -55,6 +55,63 @@ describe('ShortcutV4Client', () => {
     expect(workspace.request).toBe(workspace.request);
     expect(workspace.getStory).not.toBe(c.workspace('acme').getStory);
     expect(workspace.baseUrl).toBe('https://api.example.com');
+  });
+
+  it('refreshes cached workspace operations when the client method is replaced or restored', async () => {
+    const { client: c } = client(() => Response.json({ entity: { id: 1 } }));
+    const workspace = c.workspace('my workspace');
+    const original = c.getStory;
+    const initialWrapper = workspace.getStory;
+    const replacement = vi.fn<typeof original>(function (
+      this: ShortcutV4Client,
+      ...args: Parameters<typeof original>
+    ) {
+      expect(this).toBe(c);
+      return original(...args);
+    });
+
+    c.getStory = replacement;
+    await workspace.getStory(1, { fields: 'name' });
+    expect(replacement).toHaveBeenCalledWith('my%20workspace', 1, {
+      fields: 'name',
+    });
+    const replacementWrapper = workspace.getStory;
+    expect(replacementWrapper).not.toBe(initialWrapper);
+    expect(workspace.getStory).toBe(replacementWrapper);
+
+    c.getStory = original;
+    await workspace.getStory(2);
+    expect(replacement).toHaveBeenCalledTimes(1);
+    expect(workspace.getStory).not.toBe(replacementWrapper);
+    expect(workspace.getStory).toBe(workspace.getStory);
+  });
+
+  it('refreshes cached unbound methods when replaced or restored through the facade', async () => {
+    const { client: c } = client(() => Response.json({ entity: { id: 'me' } }));
+    const workspace = c.workspace('acme');
+    const original = c.getWhoami;
+    const initialWrapper = workspace.getWhoami;
+    const replacement = vi.fn<typeof original>(function (
+      this: ShortcutV4Client,
+      ...args: Parameters<typeof original>
+    ) {
+      expect(this).toBe(c);
+      return original(...args);
+    });
+
+    workspace.getWhoami = replacement;
+    const params = { headers: { 'X-Test': 'replacement' } };
+    await workspace.getWhoami(params);
+    expect(replacement).toHaveBeenCalledWith(params);
+    const replacementWrapper = workspace.getWhoami;
+    expect(replacementWrapper).not.toBe(initialWrapper);
+    expect(workspace.getWhoami).toBe(replacementWrapper);
+
+    workspace.getWhoami = original;
+    await workspace.getWhoami();
+    expect(replacement).toHaveBeenCalledTimes(1);
+    expect(workspace.getWhoami).not.toBe(replacementWrapper);
+    expect(workspace.getWhoami).toBe(workspace.getWhoami);
   });
 
   it('exposes every client function on the facade and binds only workspace operations', async () => {
