@@ -67,6 +67,87 @@ shortcut.getCurrentMemberInfo().then((response) => console.log(response?.data));
 shortcut.listProjects().then((response) => console.log(response?.data));
 ```
 
+## API v4 and Custom Agents
+
+Two additional entrypoints cover the [REST API v4](https://developer.shortcut.com/api/rest/v4) and the webhooks that [Custom Agents](https://developer.shortcut.com/api/rest/v4) receive. Both use the Fetch API, so they run on Node.js 20+, Cloudflare Workers, Deno, and Bun.
+
+v3 and v4 ship together in this package because v4 does not yet cover every v3 endpoint, and agents need both from one install. Each entrypoint is independent, so an application that imports only one never bundles the other. Once v4 reaches parity, the next major version will drop the v3 entrypoint.
+
+### `@shortcut/client/v4`
+
+v4 is workspace-scoped: every operation takes the workspace slug first, and `workspace(slug)` binds it once. Requests that fail reject with the `Response`, whose `error` carries the parsed body. Lists page by cursor; `paginate()` follows `next_page_url` and only sends the token back to the same API origin.
+
+```ts
+import {
+  ShortcutV4Client,
+  isShortcutV4RequestError,
+} from '@shortcut/client/v4';
+
+const client = new ShortcutV4Client({ token: process.env.SHORTCUT_TOKEN });
+const acme = client.workspace('acme');
+
+const { entity: story } = await acme.getStory(123, {
+  fields: 'name,team,workflow_state',
+});
+
+for await (const comment of client.paginate(
+  acme.listStoryComments(123, { fields: 'id,author,deleted', limit: 100 }),
+)) {
+  console.log(comment.id);
+}
+
+try {
+  await acme.createStoryComment(
+    123,
+    { text: 'Hello from an agent' },
+    { fields: 'id' },
+  );
+} catch (error) {
+  if (isShortcutV4RequestError(error))
+    console.error(error.status, error.error.message);
+}
+```
+
+Agent apps authenticate with OAuth per workspace. `ShortcutOAuth` completes the authorization-code exchange and refreshes tokens; the response's `permission_id` is the agent's own member id, which deliveries report as `actor.member_id` for changes the agent made.
+
+```ts
+import { ShortcutOAuth } from '@shortcut/client/v4';
+
+const oauth = new ShortcutOAuth({ clientId, clientSecret, redirectUri });
+const tokens = await oauth.exchangeAuthorizationCode(code);
+// later, before tokens.access_token_expires_at:
+const rotated = await oauth.refreshAccessToken(tokens.refresh_token);
+```
+
+### `@shortcut/client/webhooks`
+
+Deliveries are signed with HMAC-SHA256 over the raw request body; the hex digest arrives in the `Payload-Signature` header. `ShortcutWebhookClient` verifies the signature in constant time, caps the body (2 MiB by default), rejects payloads that lack the delivery envelope or carry an unrecognized action or trigger shape, and optionally pins deliveries to one workspace or installation. `createHandler()` works as a Fetch handler and as a Node.js `(req, res)` handler, and dispatches typed payloads by kind and by interaction trigger.
+
+```ts
+import { ShortcutWebhookClient } from '@shortcut/client/webhooks';
+
+const webhooks = new ShortcutWebhookClient(process.env.WEBHOOK_SECRET, {
+  workspaceId: process.env.WORKSPACE_ID, // optional: 403 for any other workspace
+});
+const handler = webhooks.createHandler();
+
+handler.on('mentioned', async (payload) => {
+  // payload.trigger is narrowed to the `mentioned` shape
+});
+handler.on('observer', async (payload) => {
+  for (const action of payload.actions) {
+    // action.changes is present on story updates only; absent means unavailable
+  }
+});
+
+export default { fetch: handler }; // Cloudflare Workers
+// http.createServer(handler);      // Node.js
+```
+
+For frameworks that already read the body, `verify(request)` and `verifyBody(bytes, signature)` return the verified payload or throw a `ShortcutWebhookError` carrying the HTTP status to return. `signShortcutWebhookBody()` produces a valid signature for testing an agent locally.
+
+The v4 client is generated from `schema/shortcut.v4.openapi.json`, which `yarn sync:schema:v4` downloads and normalizes (the published document names responses and request bodies numerically).
+
 ## Play with It
 
 You can play with it in your web browser with this live playground:

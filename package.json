@@ -18,27 +18,48 @@
   "sideEffects": false,
   "main": "./lib/index.cjs",
   "module": "./lib/index.mjs",
-  "types": "./lib/index.d.cts",
+  "types": "./lib/index.d.mts",
+  "typesVersions": {
+    "*": {
+      "v4": [
+        "./lib/v4/index.d.cts"
+      ],
+      "webhooks": [
+        "./lib/webhooks/index.d.cts"
+      ]
+    }
+  },
   "exports": {
     ".": {
       "import": "./lib/index.mjs",
       "require": "./lib/index.cjs"
+    },
+    "./v4": {
+      "import": "./lib/v4/index.mjs",
+      "require": "./lib/v4/index.cjs"
+    },
+    "./webhooks": {
+      "import": "./lib/webhooks/index.mjs",
+      "require": "./lib/webhooks/index.cjs"
     }
   },
   "scripts": {
-    "build": "yarn build:client && yarn build:add-typedoc-comments && NODE_OPTIONS=\"--no-experimental-strip-types\" tsdown",
-    "build:add-typedoc-comments": "npx jscodeshift -t scripts/add-typedoc-comments.ts --extensions=ts --parser=ts src/generated/**",
+    "build": "yarn build:client && yarn build:client:v4 && yarn build:add-typedoc-comments && NODE_OPTIONS=\"--no-experimental-strip-types\" tsdown && node scripts/fix-cjs-dts.mts lib",
+    "build:add-typedoc-comments": "npx jscodeshift -t scripts/add-typedoc-comments.ts --extensions=ts --parser=ts src/generated/** src/v4/generated/**",
     "build:client": "swagger-typescript-api generate --path ./schema/shortcut.swagger.json --output ./src/generated --clean-output --axios --modular --templates ./templates",
+    "build:client:v4": "swagger-typescript-api generate --path ./schema/shortcut.v4.openapi.json --output ./src/v4/generated --clean-output --modular --extract-request-body --unwrap-response-data --templates ./templates/v4",
     "build:docs": "typedoc ./src --exclude 'src/__tests__/**'",
-    "check-exports": "attw --pack .",
+    "check-exports": "attw --pack . && node scripts/check-package-types.mts",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "lint": "oxlint src examples",
     "prepublishOnly": "yarn build",
     "sync:schema": "curl --silent https://developer.shortcut.com/api/rest/v3/shortcut.swagger.json --output ./schema/shortcut.swagger.json && yarn validate:schema",
+    "sync:schema:v4": "curl --silent https://developer.shortcut.com/api/rest/v4/shortcut.openapi.json --output ./schema/shortcut.v4.openapi.raw.json && node scripts/normalize-v4-schema.mts ./schema/shortcut.v4.openapi.raw.json ./schema/shortcut.v4.openapi.json && rm ./schema/shortcut.v4.openapi.raw.json && yarn validate:schema:v4",
     "test": "vitest",
     "validate:examples": "npx tsc --project examples/tsconfig.json",
-    "validate:schema": "swagger-cli validate ./schema/shortcut.swagger.json"
+    "validate:schema": "swagger-cli validate ./schema/shortcut.swagger.json && yarn validate:schema:v4",
+    "validate:schema:v4": "swagger-cli validate ./schema/shortcut.v4.openapi.json"
   },
   "dependencies": {
     "axios": "^1.15.0"

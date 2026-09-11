@@ -4,5 +4,5 @@
   "trailingComma": "all",
   "arrowParens": "always",
   "printWidth": 80,
-  "ignorePatterns": ["/src/generated", "/schema", "/lib"]
+  "ignorePatterns": ["/src/generated", "/schema", "/lib", "/src/v4/generated"]
 }

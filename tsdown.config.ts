@@ -2,10 +2,16 @@ import { defineConfig } from 'tsdown';
 
 export default defineConfig({
   // Find all TypeScript files (excluding tests and type definitions)
-  entry: 'src/index.ts',
+  entry: {
+    index: 'src/index.ts',
+    'v4/index': 'src/v4/index.ts',
+    'webhooks/index': 'src/webhooks/index.ts',
+  },
   outDir: 'lib',
   format: ['esm', 'cjs'],
-  dts: true,
+  // Emit one declaration graph. scripts/fix-cjs-dts.mts moves it to CommonJS
+  // and creates ESM wrappers, preserving defaults and node16 compatibility.
+  dts: { cjsReexport: true },
   clean: true,
   unbundle: true,
   exports: {
