@@ -7,7 +7,8 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { createRequire } from 'node:module';
 import ts from 'typescript';
 
 const packageRoot = resolve(process.argv[2] ?? '.');
@@ -17,7 +18,10 @@ import ShortcutClient, { ShortcutClient as NamedV3 } from '@shortcut/client';
 import ShortcutV4Client, { ShortcutV4Client as NamedV4 } from '@shortcut/client/v4';
 import type { ShortcutWorkspaceApi, WorkspaceOperation } from '@shortcut/client/v4';
 import { ShortcutWebhookClient } from '@shortcut/client/webhooks';
+import axios, { type AxiosInstance } from 'axios';
 const legacy: ShortcutClient = new ShortcutClient('token');
+legacy.instance = axios.create();
+const instance: AxiosInstance = legacy.instance;
 new NamedV3('token');
 new NamedV4({ token: 'token' });
 new ShortcutWebhookClient('secret');
@@ -54,6 +58,14 @@ type Slugless = Assert<Equal<Exclude<'getWhoami' | 'getSchema', WorkspaceOperati
 try {
   mkdirSync(join(dir, 'node_modules/@shortcut'), { recursive: true });
   symlinkSync(packageRoot, join(dir, 'node_modules/@shortcut/client'), 'dir');
+  // Use the consumer's Axios version, including a fresh install's newer
+  // allowed version, rather than implicitly testing only our lockfile.
+  const require = createRequire(join(packageRoot, 'package.json'));
+  symlinkSync(
+    dirname(require.resolve('axios/package.json')),
+    join(dir, 'node_modules/axios'),
+    'dir',
+  );
   const modes = [
     [
       'node10 CJS',

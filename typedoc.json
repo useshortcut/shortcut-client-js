@@ -1,4 +1,6 @@
 {
+  "entryPoints": ["src/index.ts", "src/v4/index.ts", "src/webhooks/index.ts"],
+  "exclude": ["**/__tests__/**"],
   "headings": {
     "readme": false
   }

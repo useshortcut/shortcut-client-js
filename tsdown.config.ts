@@ -11,6 +11,7 @@ export default defineConfig({
   format: ['esm', 'cjs'],
   // Emit one declaration graph. scripts/fix-cjs-dts.mts moves it to CommonJS
   // and creates ESM wrappers, preserving defaults and node16 compatibility.
+  // V3 keeps both graphs to preserve Axios's format-specific type identities.
   dts: { cjsReexport: true },
   clean: true,
   unbundle: true,
