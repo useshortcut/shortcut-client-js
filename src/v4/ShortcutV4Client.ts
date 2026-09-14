@@ -9,6 +9,7 @@ import type {
   FullRequestParams,
   HttpResponse,
 } from './generated/http-client';
+import { resolveTimeoutMs, withTimeout } from './timeout';
 
 export const SHORTCUT_V4_BASE_URL = 'https://api.app.shortcut.com';
 
@@ -19,8 +20,14 @@ export interface ShortcutV4ClientOptions {
   baseUrl?: string;
   /** Replacement for the global `fetch`, e.g. for tests or instrumentation. */
   fetch?: typeof fetch;
-  /** Extra defaults applied to every request (headers, signal, ...). */
+  /** Extra defaults applied to every request (headers, credentials, ...). */
   baseApiParams?: ApiConfig['baseApiParams'];
+  /**
+   * Milliseconds each request, including reading its body, may take before
+   * it is aborted with a `TimeoutError`. Defaults to 30 000; pass `Infinity`
+   * to disable.
+   */
+  timeoutMs?: number;
 }
 
 /** A page of a v4 list endpoint. Requests page with `cursor`, never `page`. */
@@ -71,13 +78,22 @@ export function isShortcutV4RequestError(
 
 const MAX_PAGES = 10_000;
 
+/** The generated client keeps cancel-token controllers in a private map. */
+type CancelTokenRegistry = {
+  abortControllers?: Map<
+    NonNullable<FullRequestParams['cancelToken']>,
+    AbortController
+  >;
+};
+
 /**
  * Shortcut REST API v4 client.
  *
  * Generated operations take the workspace slug as their first argument;
  * `workspace(slug)` returns the same operations with it applied. Requests
  * that fail reject with the `Response`, so `isShortcutV4RequestError` narrows
- * a caught error to one with a typed `.error` body and `.status`.
+ * a caught error to one with a typed `.error` body and `.status`. Every
+ * request is aborted with a `TimeoutError` after `timeoutMs`.
  *
  * ```ts
  * const client = new ShortcutV4Client({ token });
@@ -85,10 +101,13 @@ const MAX_PAGES = 10_000;
  * ```
  */
 export class ShortcutV4Client extends Api<string> {
+  readonly timeoutMs: number;
+
   constructor(options: ShortcutV4ClientOptions) {
     if (typeof options?.token !== 'string' || options.token.length === 0) {
       throw new TypeError('ShortcutV4Client requires a token');
     }
+    const timeoutMs = resolveTimeoutMs(options.timeoutMs, 'ShortcutV4Client');
     super({
       baseUrl: (options.baseUrl ?? SHORTCUT_V4_BASE_URL).replace(/\/+$/, ''),
       ...(options.fetch ? { customFetch: options.fetch } : {}),
@@ -96,7 +115,35 @@ export class ShortcutV4Client extends Api<string> {
       securityWorker: (token) =>
         token ? { headers: { Authorization: `Bearer ${token}` } } : {},
     });
+    this.timeoutMs = timeoutMs;
     this.setSecurityData(options.token);
+
+    // The generated `request` only honours `signal` when no `cancelToken` is
+    // given, so the timeout wraps it: the cancel token's controller is created
+    // here, joined with the caller's signal and the timer, and handed down as
+    // the one signal `fetch` and the body read observe.
+    const base = this.request;
+    this.request = async <T = any>({
+      cancelToken,
+      signal,
+      ...params
+    }: FullRequestParams): Promise<T> => {
+      const cancel =
+        cancelToken === undefined
+          ? signal
+          : this.createAbortSignal(cancelToken);
+      try {
+        return await withTimeout(this.timeoutMs, cancel, (combined) =>
+          base<T>({ ...params, signal: combined }),
+        );
+      } finally {
+        if (cancelToken !== undefined) {
+          (this as unknown as CancelTokenRegistry).abortControllers?.delete(
+            cancelToken,
+          );
+        }
+      }
+    };
   }
 
   /** Replaces the bearer token, e.g. after an OAuth refresh. */

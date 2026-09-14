@@ -1,3 +1,5 @@
+import { resolveTimeoutMs, withTimeout } from './timeout';
+
 export interface ShortcutOAuthOptions {
   clientId: string;
   clientSecret: string;
@@ -6,9 +8,19 @@ export interface ShortcutOAuthOptions {
   /** API origin. Defaults to production. */
   baseUrl?: string;
   fetch?: typeof fetch;
+  /**
+   * Milliseconds each token request, including reading its body, may take
+   * before it is aborted with a `TimeoutError`. Defaults to 30 000; pass
+   * `Infinity` to disable.
+   */
+  timeoutMs?: number;
 }
 
-/** The token endpoint's response. `permission_id` is the agent's own member id in the workspace. */
+/**
+ * The token endpoint's response. `permission_id` is the agent's own member id
+ * in the workspace. A refresh response may omit the workspace and permission
+ * fields; keep the ones from the authorization-code exchange.
+ */
 export interface ShortcutOAuthTokens {
   access_token: string;
   refresh_token: string;
@@ -53,6 +65,7 @@ export function grantedScopes(
 export class ShortcutOAuth {
   private readonly options: ShortcutOAuthOptions;
   private readonly fetch: typeof fetch;
+  readonly timeoutMs: number;
 
   constructor(options: ShortcutOAuthOptions) {
     for (const key of ['clientId', 'clientSecret'] as const) {
@@ -62,6 +75,7 @@ export class ShortcutOAuth {
     }
     this.options = options;
     this.fetch = options.fetch ?? globalThis.fetch.bind(globalThis);
+    this.timeoutMs = resolveTimeoutMs(options.timeoutMs, 'ShortcutOAuth');
   }
 
   get tokenEndpoint(): string {
@@ -77,60 +91,64 @@ export class ShortcutOAuth {
       throw new TypeError('authorization code is required');
     if (typeof redirectUri !== 'string' || redirectUri.length === 0)
       throw new TypeError('redirectUri is required');
-    return this.tokenRequest({
-      grant_type: 'authorization_code',
-      code,
-      redirect_uri: redirectUri,
-    });
+    return this.tokenRequest(
+      { grant_type: 'authorization_code', code, redirect_uri: redirectUri },
+      // The install flow records the workspace, so the exchange must name it.
+      ['access_token', 'workspace2_id'],
+    );
   }
 
-  /** Rotates the tokens. The previous refresh token is invalidated. */
+  /**
+   * Rotates the tokens. The previous refresh token is invalidated. The
+   * response may omit the workspace and permission fields.
+   */
   refreshAccessToken(refreshToken: string): Promise<ShortcutOAuthTokens> {
     if (typeof refreshToken !== 'string' || refreshToken.length === 0)
       throw new TypeError('refreshToken is required');
-    return this.tokenRequest({
-      grant_type: 'refresh_token',
-      refresh_token: refreshToken,
-    });
+    return this.tokenRequest(
+      { grant_type: 'refresh_token', refresh_token: refreshToken },
+      ['access_token', 'refresh_token'],
+    );
   }
 
-  private async tokenRequest(
+  private tokenRequest(
     params: Record<string, string>,
+    required: ReadonlyArray<keyof ShortcutOAuthTokens>,
   ): Promise<ShortcutOAuthTokens> {
-    const response = await this.fetch(this.tokenEndpoint, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/x-www-form-urlencoded',
-        accept: 'application/json',
-      },
-      body: new URLSearchParams({
-        client_id: this.options.clientId,
-        client_secret: this.options.clientSecret,
-        ...params,
-      }),
+    return withTimeout(this.timeoutMs, undefined, async (signal) => {
+      const response = await this.fetch(this.tokenEndpoint, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          accept: 'application/json',
+        },
+        body: new URLSearchParams({
+          client_id: this.options.clientId,
+          client_secret: this.options.clientSecret,
+          ...params,
+        }),
+        signal,
+      });
+      const text = await response.text();
+      let body: Record<string, unknown> = {};
+      try {
+        body = text ? (JSON.parse(text) as Record<string, unknown>) : {};
+      } catch {
+        body = {};
+      }
+      if (!response.ok) {
+        throw new ShortcutOAuthError(
+          response.status,
+          typeof body.error === 'string' ? body.error : 'unknown_error',
+          typeof body.error_description === 'string'
+            ? body.error_description
+            : undefined,
+        );
+      }
+      if (required.some((field) => typeof body[field] !== 'string')) {
+        throw new ShortcutOAuthError(response.status, 'invalid_token_response');
+      }
+      return body as unknown as ShortcutOAuthTokens;
     });
-    const text = await response.text();
-    let body: Record<string, unknown> = {};
-    try {
-      body = text ? (JSON.parse(text) as Record<string, unknown>) : {};
-    } catch {
-      body = {};
-    }
-    if (!response.ok) {
-      throw new ShortcutOAuthError(
-        response.status,
-        typeof body.error === 'string' ? body.error : 'unknown_error',
-        typeof body.error_description === 'string'
-          ? body.error_description
-          : undefined,
-      );
-    }
-    if (
-      typeof body.access_token !== 'string' ||
-      typeof body.workspace2_id !== 'string'
-    ) {
-      throw new ShortcutOAuthError(response.status, 'invalid_token_response');
-    }
-    return body as unknown as ShortcutOAuthTokens;
   }
 }
