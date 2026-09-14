@@ -1,16 +1,18 @@
 import { readFileSync } from 'node:fs';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { workspaceOperations } from '../generated/Api';
 import {
   ShortcutOAuth,
   ShortcutOAuthError,
   ShortcutV4Client,
+  type ShortcutV4ClientOptions,
   grantedScopes,
   isShortcutV4RequestError,
 } from '../index';
 
 function client(
   handler: (url: string, init: RequestInit) => Response | Promise<Response>,
+  options: Partial<ShortcutV4ClientOptions> = {},
 ) {
   const calls: Array<{ url: string; init: RequestInit }> = [];
   const fetchImpl = async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -24,8 +26,64 @@ function client(
       token: 'secret-token',
       baseUrl: 'https://api.example.com/',
       fetch: fetchImpl as typeof fetch,
+      ...options,
     }),
   };
+}
+
+/** A fetch that never settles unless its signal aborts, as a stalled network call would. */
+function stalledUntilAborted(init: RequestInit): Promise<Response> {
+  const { signal } = init;
+  return new Promise<Response>((_resolve, reject) => {
+    if (!signal) return;
+    if (signal.aborted) reject(signal.reason);
+    signal.addEventListener('abort', () => reject(signal.reason), {
+      once: true,
+    });
+  });
+}
+
+/** A JSON response whose body only arrives once `resolve` is called, and errors if `signal` aborts first. */
+function stalledBody(
+  init: RequestInit,
+  release: Promise<unknown>,
+  json: unknown,
+  status = 200,
+): Response {
+  const { signal } = init;
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      signal?.addEventListener('abort', () => controller.error(signal.reason), {
+        once: true,
+      });
+      void release.then(() => {
+        controller.enqueue(new TextEncoder().encode(JSON.stringify(json)));
+        controller.close();
+      });
+    },
+  });
+  return new Response(stream, {
+    status,
+    headers: { 'content-type': 'application/json' },
+  });
+}
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((r) => {
+    resolve = r;
+  });
+  return { promise, resolve };
+}
+
+/** Captures the rejection reason of `promise` so a test can drive timers before inspecting it. */
+function rejectionOf(promise: Promise<unknown>): Promise<unknown> {
+  return promise.then(
+    () => {
+      throw new Error('expected the promise to reject');
+    },
+    (reason: unknown) => reason,
+  );
 }
 
 describe('ShortcutV4Client', () => {
@@ -363,7 +421,236 @@ describe('ShortcutV4Client', () => {
   });
 });
 
+describe('ShortcutV4Client timeouts', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('aborts a stalled request with a TimeoutError after the default 30 s', async () => {
+    vi.useFakeTimers();
+    const { calls, client: c } = client((_url, init) =>
+      stalledUntilAborted(init),
+    );
+    expect(c.timeoutMs).toBe(30_000);
+    const reason = rejectionOf(c.workspace('acme').getStory(1));
+    await vi.advanceTimersByTimeAsync(29_999);
+    expect(calls).toHaveLength(1);
+    expect(calls[0].init.signal?.aborted).toBe(false);
+    expect(vi.getTimerCount()).toBe(1);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(await reason).toHaveProperty('name', 'TimeoutError');
+    expect(calls[0].init.signal?.aborted).toBe(true);
+    expect(calls[0].init.signal?.reason).toMatchObject({
+      name: 'TimeoutError',
+      message: 'Shortcut request timed out after 30000 ms',
+    });
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('honours a custom timeoutMs', async () => {
+    vi.useFakeTimers();
+    const { client: c } = client((_url, init) => stalledUntilAborted(init), {
+      timeoutMs: 250,
+    });
+    const reason = rejectionOf(c.workspace('acme').getStory(1));
+    await vi.advanceTimersByTimeAsync(250);
+    expect(await reason).toHaveProperty('name', 'TimeoutError');
+  });
+
+  it('times out while reading a stalled response body', async () => {
+    vi.useFakeTimers();
+    const body = deferred<void>();
+    const { client: c } = client(
+      (_url, init) => stalledBody(init, body.promise, { entity: { id: 1 } }),
+      { timeoutMs: 1_000 },
+    );
+    const reason = rejectionOf(c.workspace('acme').getStory(1));
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(await reason).toHaveProperty('name', 'TimeoutError');
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('reports a timeout while reading an error response body', async () => {
+    vi.useFakeTimers();
+    const body = deferred<void>();
+    const { calls, client: c } = client(
+      (_url, init) =>
+        stalledBody(init, body.promise, { message: 'Unavailable' }, 503),
+      { timeoutMs: 1_000 },
+    );
+    const reason = rejectionOf(c.workspace('acme').getStory(1));
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(await reason).toHaveProperty('name', 'TimeoutError');
+    expect(await reason).toBe(calls[0].init.signal?.reason);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('does not abort a request that completes in time and leaves no timer behind', async () => {
+    vi.useFakeTimers();
+    const { calls, client: c } = client(() =>
+      Response.json({ entity: { id: 1 } }),
+    );
+    await expect(c.workspace('acme').getStory(1)).resolves.toEqual({
+      entity: { id: 1 },
+    });
+    expect(calls[0].init.signal?.aborted).toBe(false);
+    expect(vi.getTimerCount()).toBe(0);
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(calls[0].init.signal?.aborted).toBe(false);
+  });
+
+  it('never aborts with timeoutMs: Infinity', async () => {
+    vi.useFakeTimers();
+    const response = deferred<Response>();
+    const { calls, client: c } = client(() => response.promise, {
+      timeoutMs: Infinity,
+    });
+    const request = c.workspace('acme').getStory(1);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(calls).toHaveLength(1);
+    expect(vi.getTimerCount()).toBe(0);
+    await vi.advanceTimersByTimeAsync(365 * 24 * 60 * 60 * 1000);
+    expect(calls[0].init.signal).toBeFalsy();
+    response.resolve(Response.json({ entity: { id: 1 } }));
+    await expect(request).resolves.toEqual({ entity: { id: 1 } });
+  });
+
+  it('still aborts through a cancelToken and forgets the token afterwards', async () => {
+    vi.useFakeTimers();
+    const { calls, client: c } = client((_url, init) =>
+      stalledUntilAborted(init),
+    );
+    const reason = rejectionOf(
+      c.workspace('acme').getStory(1, undefined, { cancelToken: 'stalled' }),
+    );
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(calls[0].init.signal?.aborted).toBe(false);
+    c.abortRequest('stalled');
+    expect(calls[0].init.signal?.aborted).toBe(true);
+    expect(await reason).toHaveProperty('name', 'AbortError');
+    expect(vi.getTimerCount()).toBe(0);
+    const registry = c as unknown as {
+      abortControllers: Map<unknown, unknown>;
+    };
+    expect(registry.abortControllers.size).toBe(0);
+  });
+
+  it('forgets a cancelToken once its request completes', async () => {
+    const { client: c } = client(() => Response.json({ entity: { id: 1 } }));
+    await c.workspace('acme').getStory(1, undefined, { cancelToken: 'done' });
+    const registry = c as unknown as {
+      abortControllers: Map<unknown, unknown>;
+    };
+    expect(registry.abortControllers.size).toBe(0);
+  });
+
+  it('still aborts through a caller-provided signal', async () => {
+    vi.useFakeTimers();
+    const { calls, client: c } = client((_url, init) =>
+      stalledUntilAborted(init),
+    );
+    const controller = new AbortController();
+    const cancelled = new Error('caller cancelled');
+    const reason = rejectionOf(
+      c.workspace('acme').getStory(1, undefined, { signal: controller.signal }),
+    );
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(calls[0].init.signal?.aborted).toBe(false);
+    controller.abort(cancelled);
+    expect(calls[0].init.signal?.aborted).toBe(true);
+    expect(await reason).toBe(cancelled);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('combines signals without AbortSignal.any', async () => {
+    vi.useFakeTimers();
+    const any = Object.getOwnPropertyDescriptor(AbortSignal, 'any');
+    Object.defineProperty(AbortSignal, 'any', {
+      value: undefined,
+      configurable: true,
+    });
+    try {
+      const { calls, client: c } = client((_url, init) =>
+        stalledUntilAborted(init),
+      );
+      const controller = new AbortController();
+      const cancelled = new Error('caller cancelled');
+      const reason = rejectionOf(
+        c.workspace('acme').getStory(1, undefined, {
+          signal: controller.signal,
+        }),
+      );
+      await vi.advanceTimersByTimeAsync(1_000);
+      controller.abort(cancelled);
+      expect(calls[0].init.signal?.aborted).toBe(true);
+      expect(calls[0].init.signal?.reason).toBe(cancelled);
+      expect(await reason).toBe(cancelled);
+      expect(vi.getTimerCount()).toBe(0);
+
+      const timedOut = rejectionOf(
+        c.workspace('acme').getStory(2, undefined, {
+          signal: new AbortController().signal,
+        }),
+      );
+      await vi.advanceTimersByTimeAsync(30_000);
+      expect(await timedOut).toHaveProperty('name', 'TimeoutError');
+    } finally {
+      if (any) Object.defineProperty(AbortSignal, 'any', any);
+    }
+  });
+
+  it('applies the timeout to each page of paginate', async () => {
+    vi.useFakeTimers();
+    const { calls, client: c } = client(
+      (url, init) =>
+        new URL(url).searchParams.has('cursor')
+          ? stalledUntilAborted(init)
+          : Response.json({
+              entities: [1, 2],
+              current_page: 1,
+              total_pages: 2,
+              next_page_url:
+                'https://api.example.com/api/v4/acme/stories?cursor=next',
+            }),
+      { timeoutMs: 1_000 },
+    );
+    const seen: number[] = [];
+    const run = (async () => {
+      for await (const item of c.paginate<number>(
+        c.workspace('acme').listStories({ limit: 2 }) as never,
+      ))
+        seen.push(item);
+    })();
+    const reason = rejectionOf(run);
+    await vi.advanceTimersByTimeAsync(999);
+    expect(seen).toEqual([1, 2]);
+    expect(calls).toHaveLength(2);
+    expect(calls[1].init.signal?.aborted).toBe(false);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(await reason).toHaveProperty('name', 'TimeoutError');
+    expect(calls[1].init.signal?.aborted).toBe(true);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it.each([0, -1, NaN, '10', null])(
+    'rejects an invalid timeoutMs from the constructor: %s',
+    (timeoutMs) => {
+      expect(
+        () =>
+          new ShortcutV4Client({
+            token: 't',
+            timeoutMs: timeoutMs as number,
+          }),
+      ).toThrow(TypeError);
+    },
+  );
+});
+
 describe('ShortcutOAuth', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   const tokens = {
     access_token: 'a',
     refresh_token: 'r',
@@ -442,5 +729,68 @@ describe('ShortcutOAuth', () => {
       /redirectUri/,
     );
     expect(() => oauth.refreshAccessToken('')).toThrow(TypeError);
+    expect(oauth.timeoutMs).toBe(30_000);
+    for (const timeoutMs of [0, -1, NaN, '10'])
+      expect(
+        () =>
+          new ShortcutOAuth({
+            clientId: 'i',
+            clientSecret: 's',
+            timeoutMs: timeoutMs as number,
+          }),
+      ).toThrow(TypeError);
+  });
+
+  it('times out a stalled token request', async () => {
+    vi.useFakeTimers();
+    const calls: RequestInit[] = [];
+    const oauth = new ShortcutOAuth({
+      clientId: 'id',
+      clientSecret: 'secret',
+      timeoutMs: 5_000,
+      fetch: (async (_url: RequestInfo | URL, init?: RequestInit) => {
+        calls.push(init ?? {});
+        return stalledUntilAborted(init ?? {});
+      }) as typeof fetch,
+    });
+    const reason = rejectionOf(oauth.refreshAccessToken('r'));
+    await vi.advanceTimersByTimeAsync(4_999);
+    expect(calls[0].signal?.aborted).toBe(false);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(await reason).toHaveProperty('name', 'TimeoutError');
+    expect(calls[0].signal?.aborted).toBe(true);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('accepts a refresh response without workspace fields but not a code exchange', async () => {
+    const rotated = {
+      access_token: 'a2',
+      refresh_token: 'r2',
+      access_token_expires_at: '2099-01-01T00:00:00Z',
+    };
+    const oauth = new ShortcutOAuth({
+      clientId: 'id',
+      clientSecret: 'secret',
+      redirectUri: 'https://agent.example/oauth/callback',
+      fetch: (async () => Response.json(rotated)) as typeof fetch,
+    });
+    await expect(oauth.refreshAccessToken('r')).resolves.toEqual(rotated);
+    const error = await oauth
+      .exchangeAuthorizationCode('code')
+      .catch((caught: unknown) => caught);
+    expect(error).toBeInstanceOf(ShortcutOAuthError);
+    expect((error as ShortcutOAuthError).error).toBe('invalid_token_response');
+  });
+
+  it('rejects a refresh response without a refresh token', async () => {
+    const oauth = new ShortcutOAuth({
+      clientId: 'id',
+      clientSecret: 'secret',
+      fetch: (async () =>
+        Response.json({ access_token: 'a2' })) as typeof fetch,
+    });
+    await expect(oauth.refreshAccessToken('r')).rejects.toMatchObject({
+      error: 'invalid_token_response',
+    });
   });
 });

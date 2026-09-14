@@ -75,7 +75,7 @@ v3 and v4 ship together in this package because v4 does not yet cover every v3 e
 
 ### `@shortcut/client/v4`
 
-v4 is workspace-scoped: every operation takes the workspace slug first, and `workspace(slug)` binds it once. Requests that fail reject with the `Response`, whose `error` carries the parsed body. Lists page by cursor; `paginate()` follows `next_page_url` and only sends the token back to the same API origin.
+v4 is workspace-scoped: every operation takes the workspace slug first, and `workspace(slug)` binds it once. Requests that fail reject with the `Response`, whose `error` carries the parsed body. Lists page by cursor; `paginate()` follows `next_page_url` and only sends the token back to the same API origin. Every request, including reading its body, is aborted with a `TimeoutError` after `timeoutMs` (30 s by default; `Infinity` disables it), which composes with a per-request `signal` or `cancelToken`.
 
 ```ts
 import {
@@ -108,7 +108,7 @@ try {
 }
 ```
 
-Agent apps authenticate with OAuth per workspace. `ShortcutOAuth` completes the authorization-code exchange and refreshes tokens; the response's `permission_id` is the agent's own member id, which deliveries report as `actor.member_id` for changes the agent made.
+Agent apps authenticate with OAuth per workspace. `ShortcutOAuth` completes the authorization-code exchange and refreshes tokens; the response's `permission_id` is the agent's own member id, which deliveries report as `actor.member_id` for changes the agent made. A refresh response may omit the workspace fields, so keep the ones from the exchange. Token requests share the same `timeoutMs` option (30 s by default, `Infinity` disables it, and it covers reading the body).
 
 ```ts
 import { ShortcutOAuth } from '@shortcut/client/v4';
