@@ -14,8 +14,17 @@ function parseSignature(
   return bytes;
 }
 
+/**
+ * Copies exactly the view's bytes into a fresh `ArrayBuffer`. `bytes.slice()`
+ * is not enough: Node's `Buffer.prototype.slice` is an alias of `subarray`,
+ * so for a pooled `Buffer` (`Buffer.from('short text')`, `http` request
+ * chunks) `.buffer` would be the whole 8 KiB pool. Copying also detaches the
+ * bytes from any `SharedArrayBuffer`, which WebCrypto rejects.
+ */
 function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
-  return bytes.slice().buffer;
+  const copy = new Uint8Array(bytes.byteLength);
+  copy.set(bytes);
+  return copy.buffer;
 }
 
 /**

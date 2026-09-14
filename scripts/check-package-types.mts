@@ -55,6 +55,20 @@ type Utility = Assert<Equal<ShortcutWorkspaceApi['setSecurityData'], ShortcutV4C
 type Known = Assert<Equal<Exclude<WorkspaceOperation, keyof ShortcutV4Client>, never>>;
 type Slugless = Assert<Equal<Exclude<'getWhoami' | 'getSchema', WorkspaceOperation>, 'getWhoami' | 'getSchema'>>;
 `;
+// A Workers-style project: no Node types at all, only the DOM's Fetch API.
+// The webhooks declarations must not reach for `node:http`.
+const workersSource = `
+import { ShortcutV4Client } from '@shortcut/client/v4';
+import { ShortcutWebhookClient } from '@shortcut/client/webhooks';
+const client = new ShortcutV4Client({ token: 'token' });
+client.workspace('acme').getWhoami();
+const webhooks = new ShortcutWebhookClient('s');
+const handler = webhooks.createHandler();
+handler.on('mentioned', async () => {});
+const response: Promise<Response> = handler(new Request('https://x'));
+webhooks.verify(new Request('https://x'));
+export default { fetch: handler };
+`;
 try {
   mkdirSync(join(dir, 'node_modules/@shortcut'), { recursive: true });
   symlinkSync(packageRoot, join(dir, 'node_modules/@shortcut/client'), 'dir');
@@ -130,6 +144,36 @@ try {
       );
     }
     console.log(`Consumer types pass: ${label}`);
+  }
+  {
+    const file = join(dir, 'worker.mts');
+    writeFileSync(file, workersSource);
+    const program = ts.createProgram([file], {
+      module: ts.ModuleKind.ESNext,
+      moduleResolution: ts.ModuleResolutionKind.Bundler,
+      target: ts.ScriptTarget.ES2022,
+      lib: ['lib.es2022.d.ts', 'lib.dom.d.ts', 'lib.dom.iterable.d.ts'],
+      noEmit: true,
+      strict: true,
+      esModuleInterop: true,
+      types: [],
+      typeRoots: [resolve(import.meta.dirname, '../node_modules/@types')],
+      ignoreDeprecations: '6.0',
+    });
+    const diagnostics = ts.getPreEmitDiagnostics(program);
+    if (diagnostics.length) {
+      throw new Error(
+        `workers (no Node types):\n${ts.formatDiagnosticsWithColorAndContext(
+          diagnostics,
+          {
+            getCanonicalFileName: (name) => name,
+            getCurrentDirectory: () => dir,
+            getNewLine: () => '\n',
+          },
+        )}`,
+      );
+    }
+    console.log('Consumer types pass: workers (no Node types)');
   }
 } finally {
   rmSync(dir, { recursive: true, force: true });

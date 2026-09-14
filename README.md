@@ -121,7 +121,7 @@ const rotated = await oauth.refreshAccessToken(tokens.refresh_token);
 
 ### `@shortcut/client/webhooks`
 
-Deliveries are signed with HMAC-SHA256 over the raw request body; the hex digest arrives in the `Payload-Signature` header. `ShortcutWebhookClient` verifies the signature in constant time, caps the body (2 MiB by default), rejects payloads that lack the delivery envelope or carry an unrecognized action or trigger shape, and optionally pins deliveries to one workspace or installation. `createHandler()` works as a Fetch handler and as a Node.js `(req, res)` handler, and dispatches typed payloads by kind and by interaction trigger.
+Deliveries are signed with HMAC-SHA256 over the raw request body; the hex digest arrives in the `Payload-Signature` header. `ShortcutWebhookClient` verifies the signature in constant time, caps the body (2 MiB by default), rejects payloads that lack the delivery envelope or carry an unrecognized action or trigger shape, and optionally pins deliveries to one workspace or installation. `createHandler()` works as a Fetch handler and as a Node.js `(req, res)` handler, and dispatches typed payloads by kind and by interaction trigger. The Node handler is typed structurally (`ShortcutNodeRequest`, `ShortcutNodeResponse`), so the entrypoint's declarations never import `node:http` and other runtimes need no `@types/node`.
 
 ```ts
 import { ShortcutWebhookClient } from '@shortcut/client/webhooks';
