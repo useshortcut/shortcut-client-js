@@ -243,10 +243,24 @@ export class HttpClient<SecurityDataType = unknown> {
       r.data = null as unknown as T;
       r.error = null as unknown as E;
 
-      const responseToParse = responseFormat ? response.clone() : response;
+      // Read the original body exactly once; never parse a clone, which
+      // leaves the original stream open until the request is aborted or
+      // garbage-collected. JSON is read as text first so an empty body
+      // yields null and a non-JSON body is kept as the raw string.
+      const parseBody = () =>
+        responseFormat === "json"
+          ? response.text().then((text) => {
+              if (!text) return null;
+              try {
+                return JSON.parse(text);
+              } catch {
+                return text;
+              }
+            })
+          : response[responseFormat]();
       const data = !responseFormat
         ? r
-        : await responseToParse[responseFormat]()
+        : await parseBody()
             .then((data) => {
               if (r.ok) {
                 r.data = data;
