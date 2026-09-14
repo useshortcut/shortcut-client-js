@@ -101,7 +101,8 @@ export class ShortcutV4Client extends Api<string> {
   workspace(slug: string): ShortcutWorkspaceApi {
     if (typeof slug !== 'string' || slug.length === 0)
       throw new TypeError('workspace slug is required');
-    const encoded = encodeURIComponent(slug);
+    // The generated operations URL-encode the slug (and every other path
+    // parameter), so pass it raw rather than encoding it twice.
     // Keep wrappers stable while their source functions are unchanged, and
     // refresh them when callers replace or restore a method.
     const members = new Map<
@@ -115,7 +116,7 @@ export class ShortcutV4Client extends Api<string> {
         const cached = members.get(property);
         if (cached?.source === value) return cached.member;
         const member = workspaceOperations.has(property as WorkspaceOperation)
-          ? (...rest: unknown[]) => value.call(target, encoded, ...rest)
+          ? (...rest: unknown[]) => value.call(target, slug, ...rest)
           : value.bind(target);
         members.set(property, { source: value, member });
         return member;
