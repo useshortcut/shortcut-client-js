@@ -48,6 +48,7 @@ function stalledBody(
   init: RequestInit,
   release: Promise<unknown>,
   json: unknown,
+  status = 200,
 ): Response {
   const { signal } = init;
   const stream = new ReadableStream<Uint8Array>({
@@ -62,6 +63,7 @@ function stalledBody(
     },
   });
   return new Response(stream, {
+    status,
     headers: { 'content-type': 'application/json' },
   });
 }
@@ -601,6 +603,21 @@ describe('ShortcutV4Client timeouts', () => {
     const reason = rejectionOf(c.workspace('acme').getStory(1));
     await vi.advanceTimersByTimeAsync(1_000);
     expect(await reason).toHaveProperty('name', 'TimeoutError');
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('reports a timeout while reading an error response body', async () => {
+    vi.useFakeTimers();
+    const body = deferred<void>();
+    const { calls, client: c } = client(
+      (_url, init) =>
+        stalledBody(init, body.promise, { message: 'Unavailable' }, 503),
+      { timeoutMs: 1_000 },
+    );
+    const reason = rejectionOf(c.workspace('acme').getStory(1));
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(await reason).toHaveProperty('name', 'TimeoutError');
+    expect(await reason).toBe(calls[0].init.signal?.reason);
     expect(vi.getTimerCount()).toBe(0);
   });
 
