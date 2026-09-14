@@ -266,7 +266,7 @@ export class Api<
    */
   getSchema = (schemaName: string, params: RequestParams = {}) =>
     this.request<Record<string, any>, ApiError>({
-      path: `/api/v4/schemas/${schemaName}`,
+      path: `/api/v4/schemas/${encodeURIComponent(schemaName)}`,
       method: "GET",
       secure: true,
       ...params,
@@ -303,7 +303,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<WorkspaceTokenEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/admin/tokens`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/admin/tokens`,
       method: "GET",
       query: query,
       secure: true,
@@ -323,7 +323,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/admin/tokens/${tokenPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/admin/tokens/${encodeURIComponent(tokenPublicId)}`,
       method: "DELETE",
       secure: true,
       ...params,
@@ -360,7 +360,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<BranchEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/branches`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/branches`,
       method: "GET",
       query: query,
       secure: true,
@@ -384,7 +384,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<BranchEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/branches/${branchPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/branches/${encodeURIComponent(branchPublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -423,7 +423,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<BranchStoryEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/branches/${branchPublicId}/stories`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/branches/${encodeURIComponent(branchPublicId)}/stories`,
       method: "GET",
       query: query,
       secure: true,
@@ -462,7 +462,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<BranchPullRequestEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/branches/${branchPublicId}/pull-requests`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/branches/${encodeURIComponent(branchPublicId)}/pull-requests`,
       method: "GET",
       query: query,
       secure: true,
@@ -500,7 +500,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<CategoryEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/categories`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/categories`,
       method: "GET",
       query: query,
       secure: true,
@@ -524,7 +524,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<CategoryEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/categories`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/categories`,
       method: "POST",
       query: query,
       body: data,
@@ -546,7 +546,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/categories/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/categories/bulk`,
       method: "DELETE",
       body: data,
       secure: true,
@@ -586,7 +586,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<CategoryEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/categories/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/categories/bulk`,
       method: "PATCH",
       query: query,
       body: data,
@@ -627,7 +627,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<CategoryEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/categories/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/categories/bulk`,
       method: "POST",
       query: query,
       body: data,
@@ -649,7 +649,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/categories/${categoryPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/categories/${encodeURIComponent(categoryPublicId)}`,
       method: "DELETE",
       secure: true,
       ...params,
@@ -672,7 +672,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<CategoryEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/categories/${categoryPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/categories/${encodeURIComponent(categoryPublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -697,7 +697,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<CategoryEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/categories/${categoryPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/categories/${encodeURIComponent(categoryPublicId)}`,
       method: "PATCH",
       query: query,
       body: data,
@@ -738,7 +738,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<CategoryObjectiveEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/categories/${categoryPublicId}/objectives`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/categories/${encodeURIComponent(categoryPublicId)}/objectives`,
       method: "GET",
       query: query,
       secure: true,
@@ -776,7 +776,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<CollectionEntityListWrapper, ApiError | DisabledFeatureError>({
-      path: `/api/v4/${workspaceSlug}/collections`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/collections`,
       method: "GET",
       query: query,
       secure: true,
@@ -800,7 +800,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<CollectionEntityWrapper, ApiError | DisabledFeatureError>({
-      path: `/api/v4/${workspaceSlug}/collections`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/collections`,
       method: "POST",
       query: query,
       body: data,
@@ -826,7 +826,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<CollectionEntityWrapper, ApiError | DisabledFeatureError>({
-      path: `/api/v4/${workspaceSlug}/collections/${collectionPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/collections/${encodeURIComponent(collectionPublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -850,7 +850,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<CollectionEntityWrapper, ApiError | DisabledFeatureError>({
-      path: `/api/v4/${workspaceSlug}/collections/${collectionPublicId}/favorite`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/collections/${encodeURIComponent(collectionPublicId)}/favorite`,
       method: "PUT",
       query: query,
       secure: true,
@@ -874,7 +874,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError | DisabledFeatureError>({
-      path: `/api/v4/${workspaceSlug}/collections/${collectionPublicId}/favorite`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/collections/${encodeURIComponent(collectionPublicId)}/favorite`,
       method: "DELETE",
       query: query,
       secure: true,
@@ -912,7 +912,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<CommitEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/commits`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/commits`,
       method: "GET",
       query: query,
       secure: true,
@@ -936,7 +936,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<CommitEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/commits/${commitPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/commits/${encodeURIComponent(commitPublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -975,7 +975,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<CommitStoryEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/commits/${commitPublicId}/stories`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/commits/${encodeURIComponent(commitPublicId)}/stories`,
       method: "GET",
       query: query,
       secure: true,
@@ -1013,7 +1013,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<CustomFieldEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/custom-fields`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/custom-fields`,
       method: "GET",
       query: query,
       secure: true,
@@ -1033,7 +1033,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/custom-fields/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/custom-fields/bulk`,
       method: "DELETE",
       body: data,
       secure: true,
@@ -1073,7 +1073,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<CustomFieldEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/custom-fields/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/custom-fields/bulk`,
       method: "PATCH",
       query: query,
       body: data,
@@ -1095,7 +1095,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/custom-fields/${customFieldPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/custom-fields/${encodeURIComponent(customFieldPublicId)}`,
       method: "DELETE",
       secure: true,
       ...params,
@@ -1118,7 +1118,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<CustomFieldEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/custom-fields/${customFieldPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/custom-fields/${encodeURIComponent(customFieldPublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -1143,7 +1143,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<CustomFieldEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/custom-fields/${customFieldPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/custom-fields/${encodeURIComponent(customFieldPublicId)}`,
       method: "PATCH",
       query: query,
       body: data,
@@ -1184,7 +1184,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<CustomFieldStoryEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/custom-fields/${customFieldPublicId}/stories`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/custom-fields/${encodeURIComponent(customFieldPublicId)}/stories`,
       method: "GET",
       query: query,
       secure: true,
@@ -1222,7 +1222,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<DocEntityListWrapper, ApiError | DisabledFeatureError>({
-      path: `/api/v4/${workspaceSlug}/documents`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/documents`,
       method: "GET",
       query: query,
       secure: true,
@@ -1246,7 +1246,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<DocEntityWrapper, ApiError | DisabledFeatureError>({
-      path: `/api/v4/${workspaceSlug}/documents`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/documents`,
       method: "POST",
       query: query,
       body: data,
@@ -1287,7 +1287,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<DocEntityListWrapper, ApiError | DisabledFeatureError>({
-      path: `/api/v4/${workspaceSlug}/documents/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/documents/bulk`,
       method: "POST",
       query: query,
       body: data,
@@ -1332,7 +1332,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<DocEntityListWrapper, ApiError | DisabledFeatureError>({
-      path: `/api/v4/${workspaceSlug}/documents/search`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/documents/search`,
       method: "GET",
       query: query,
       secure: true,
@@ -1356,7 +1356,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<DocEntityWrapper, ApiError | DisabledFeatureError>({
-      path: `/api/v4/${workspaceSlug}/documents/${docPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/documents/${encodeURIComponent(docPublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -1396,7 +1396,7 @@ export class Api<
   ) =>
     this.request<DocFollowerEntityListWrapper, ApiError | DisabledFeatureError>(
       {
-        path: `/api/v4/${workspaceSlug}/documents/${docPublicId}/followers`,
+        path: `/api/v4/${encodeURIComponent(workspaceSlug)}/documents/${encodeURIComponent(docPublicId)}/followers`,
         method: "GET",
         query: query,
         secure: true,
@@ -1439,7 +1439,7 @@ export class Api<
       DocCollectionEntityListWrapper,
       ApiError | DisabledFeatureError
     >({
-      path: `/api/v4/${workspaceSlug}/documents/${docPublicId}/collections`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/documents/${encodeURIComponent(docPublicId)}/collections`,
       method: "GET",
       query: query,
       secure: true,
@@ -1464,7 +1464,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<DocEntityWrapper, ApiError | DisabledFeatureError>({
-      path: `/api/v4/${workspaceSlug}/documents/${docPublicId}/collections/${collectionPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/documents/${encodeURIComponent(docPublicId)}/collections/${encodeURIComponent(collectionPublicId)}`,
       method: "PUT",
       query: query,
       secure: true,
@@ -1485,7 +1485,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError | DisabledFeatureError>({
-      path: `/api/v4/${workspaceSlug}/documents/${docPublicId}/collections/${collectionPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/documents/${encodeURIComponent(docPublicId)}/collections/${encodeURIComponent(collectionPublicId)}`,
       method: "DELETE",
       secure: true,
       ...params,
@@ -1522,7 +1522,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EntityTemplateEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/entity-templates`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/entity-templates`,
       method: "GET",
       query: query,
       secure: true,
@@ -1546,7 +1546,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EntityTemplateEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/entity-templates`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/entity-templates`,
       method: "POST",
       query: query,
       body: data,
@@ -1568,7 +1568,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/entity-templates/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/entity-templates/bulk`,
       method: "DELETE",
       body: data,
       secure: true,
@@ -1608,7 +1608,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EntityTemplateEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/entity-templates/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/entity-templates/bulk`,
       method: "PATCH",
       query: query,
       body: data,
@@ -1649,7 +1649,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EntityTemplateEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/entity-templates/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/entity-templates/bulk`,
       method: "POST",
       query: query,
       body: data,
@@ -1671,7 +1671,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/entity-templates/${entityTemplatePublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/entity-templates/${encodeURIComponent(entityTemplatePublicId)}`,
       method: "DELETE",
       secure: true,
       ...params,
@@ -1694,7 +1694,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EntityTemplateEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/entity-templates/${entityTemplatePublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/entity-templates/${encodeURIComponent(entityTemplatePublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -1719,7 +1719,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EntityTemplateEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/entity-templates/${entityTemplatePublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/entity-templates/${encodeURIComponent(entityTemplatePublicId)}`,
       method: "PATCH",
       query: query,
       body: data,
@@ -1744,7 +1744,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicWorkflowEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epic-workflow`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epic-workflow`,
       method: "GET",
       query: query,
       secure: true,
@@ -1782,7 +1782,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicStateEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epic-workflow/states`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epic-workflow/states`,
       method: "GET",
       query: query,
       secure: true,
@@ -1820,7 +1820,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics`,
       method: "GET",
       query: query,
       secure: true,
@@ -1844,7 +1844,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics`,
       method: "POST",
       query: query,
       body: data,
@@ -1870,7 +1870,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/bulk`,
       method: "DELETE",
       query: query,
       body: data,
@@ -1911,7 +1911,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/bulk`,
       method: "PATCH",
       query: query,
       body: data,
@@ -1952,7 +1952,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/bulk`,
       method: "POST",
       query: query,
       body: data,
@@ -1991,7 +1991,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/search`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/search`,
       method: "GET",
       query: query,
       secure: true,
@@ -2015,7 +2015,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}`,
       method: "DELETE",
       query: query,
       secure: true,
@@ -2039,7 +2039,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -2064,7 +2064,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}`,
       method: "PATCH",
       query: query,
       body: data,
@@ -2086,7 +2086,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicStatsWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}/stats`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}/stats`,
       method: "GET",
       secure: true,
       ...params,
@@ -2124,7 +2124,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicTeamEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}/teams`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}/teams`,
       method: "GET",
       query: query,
       secure: true,
@@ -2163,7 +2163,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicLabelEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}/labels`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}/labels`,
       method: "GET",
       query: query,
       secure: true,
@@ -2202,7 +2202,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicOwnerEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}/owners`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}/owners`,
       method: "GET",
       query: query,
       secure: true,
@@ -2241,7 +2241,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicStoryEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}/stories`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}/stories`,
       method: "GET",
       query: query,
       secure: true,
@@ -2282,7 +2282,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicCommentEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}/comments`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}/comments`,
       method: "GET",
       query: query,
       secure: true,
@@ -2307,7 +2307,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicCommentEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}/comments`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}/comments`,
       method: "POST",
       query: query,
       body: data,
@@ -2348,7 +2348,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicFollowerEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}/followers`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}/followers`,
       method: "GET",
       query: query,
       secure: true,
@@ -2387,7 +2387,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicObjectiveEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}/objectives`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}/objectives`,
       method: "GET",
       query: query,
       secure: true,
@@ -2426,7 +2426,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<HealthEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}/epic-healths`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}/epic-healths`,
       method: "GET",
       query: query,
       secure: true,
@@ -2451,7 +2451,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<HealthEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}/epic-healths`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}/epic-healths`,
       method: "POST",
       query: query,
       body: data,
@@ -2474,7 +2474,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}/comments/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}/comments/bulk`,
       method: "DELETE",
       body: data,
       secure: true,
@@ -2515,7 +2515,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicCommentEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}/comments/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}/comments/bulk`,
       method: "PATCH",
       query: query,
       body: data,
@@ -2557,7 +2557,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicCommentEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}/comments/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}/comments/bulk`,
       method: "POST",
       query: query,
       body: data,
@@ -2598,7 +2598,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicMentionedTeamEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}/mentioned-teams`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}/mentioned-teams`,
       method: "GET",
       query: query,
       secure: true,
@@ -2637,7 +2637,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicMentionedMemberEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}/mentioned-members`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}/mentioned-members`,
       method: "GET",
       query: query,
       secure: true,
@@ -2662,7 +2662,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}/comments/${commentPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}/comments/${encodeURIComponent(commentPublicId)}`,
       method: "DELETE",
       query: query,
       secure: true,
@@ -2687,7 +2687,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicCommentEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}/comments/${commentPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}/comments/${encodeURIComponent(commentPublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -2713,7 +2713,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicCommentEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}/comments/${commentPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}/comments/${encodeURIComponent(commentPublicId)}`,
       method: "PATCH",
       query: query,
       body: data,
@@ -2740,7 +2740,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<HealthEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}/epic-healths/${epicHealthPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}/epic-healths/${encodeURIComponent(epicHealthPublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -2780,7 +2780,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicCommentCommentEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}/comments/${commentPublicId}/comments`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}/comments/${encodeURIComponent(commentPublicId)}/comments`,
       method: "GET",
       query: query,
       secure: true,
@@ -2820,7 +2820,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicCommentMentionedTeamEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}/comments/${commentPublicId}/mentioned-teams`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}/comments/${encodeURIComponent(commentPublicId)}/mentioned-teams`,
       method: "GET",
       query: query,
       secure: true,
@@ -2860,7 +2860,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<EpicCommentMentionedMemberEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/epics/${epicPublicId}/comments/${commentPublicId}/mentioned-members`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/epics/${encodeURIComponent(epicPublicId)}/comments/${encodeURIComponent(commentPublicId)}/mentioned-members`,
       method: "GET",
       query: query,
       secure: true,
@@ -2898,7 +2898,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<FileEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/files`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/files`,
       method: "GET",
       query: query,
       secure: true,
@@ -2918,7 +2918,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<FileEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/files`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/files`,
       method: "POST",
       body: data,
       secure: true,
@@ -2939,7 +2939,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/files/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/files/bulk`,
       method: "DELETE",
       body: data,
       secure: true,
@@ -2960,7 +2960,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/files/${filePublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/files/${encodeURIComponent(filePublicId)}`,
       method: "DELETE",
       secure: true,
       ...params,
@@ -2983,7 +2983,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<FileEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/files/${filePublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/files/${encodeURIComponent(filePublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -3022,7 +3022,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<FileStoryEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/files/${filePublicId}/stories`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/files/${encodeURIComponent(filePublicId)}/stories`,
       method: "GET",
       query: query,
       secure: true,
@@ -3061,7 +3061,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<FileMentionedTeamEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/files/${filePublicId}/mentioned-teams`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/files/${encodeURIComponent(filePublicId)}/mentioned-teams`,
       method: "GET",
       query: query,
       secure: true,
@@ -3100,7 +3100,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<FileMentionedMemberEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/files/${filePublicId}/mentioned-members`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/files/${encodeURIComponent(filePublicId)}/mentioned-members`,
       method: "GET",
       query: query,
       secure: true,
@@ -3138,7 +3138,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<IterationEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/iterations`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/iterations`,
       method: "GET",
       query: query,
       secure: true,
@@ -3162,7 +3162,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<IterationEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/iterations`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/iterations`,
       method: "POST",
       query: query,
       body: data,
@@ -3184,7 +3184,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/iterations/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/iterations/bulk`,
       method: "DELETE",
       body: data,
       secure: true,
@@ -3224,7 +3224,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<IterationEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/iterations/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/iterations/bulk`,
       method: "PATCH",
       query: query,
       body: data,
@@ -3265,7 +3265,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<IterationEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/iterations/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/iterations/bulk`,
       method: "POST",
       query: query,
       body: data,
@@ -3304,7 +3304,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<IterationEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/iterations/search`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/iterations/search`,
       method: "GET",
       query: query,
       secure: true,
@@ -3342,7 +3342,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<CurrentIterationsOutput, ApiError>({
-      path: `/api/v4/${workspaceSlug}/iterations/current`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/iterations/current`,
       method: "GET",
       query: query,
       secure: true,
@@ -3362,7 +3362,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/iterations/${iterationPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/iterations/${encodeURIComponent(iterationPublicId)}`,
       method: "DELETE",
       secure: true,
       ...params,
@@ -3385,7 +3385,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<IterationEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/iterations/${iterationPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/iterations/${encodeURIComponent(iterationPublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -3410,7 +3410,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<IterationEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/iterations/${iterationPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/iterations/${encodeURIComponent(iterationPublicId)}`,
       method: "PATCH",
       query: query,
       body: data,
@@ -3451,7 +3451,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<IterationTeamEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/iterations/${iterationPublicId}/teams`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/iterations/${encodeURIComponent(iterationPublicId)}/teams`,
       method: "GET",
       query: query,
       secure: true,
@@ -3490,7 +3490,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<IterationLabelEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/iterations/${iterationPublicId}/labels`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/iterations/${encodeURIComponent(iterationPublicId)}/labels`,
       method: "GET",
       query: query,
       secure: true,
@@ -3529,7 +3529,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<IterationStoryEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/iterations/${iterationPublicId}/stories`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/iterations/${encodeURIComponent(iterationPublicId)}/stories`,
       method: "GET",
       query: query,
       secure: true,
@@ -3568,7 +3568,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<IterationFollowerEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/iterations/${iterationPublicId}/followers`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/iterations/${encodeURIComponent(iterationPublicId)}/followers`,
       method: "GET",
       query: query,
       secure: true,
@@ -3607,7 +3607,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<IterationMentionedTeamEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/iterations/${iterationPublicId}/mentioned-teams`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/iterations/${encodeURIComponent(iterationPublicId)}/mentioned-teams`,
       method: "GET",
       query: query,
       secure: true,
@@ -3646,7 +3646,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<IterationAssociatedTeamEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/iterations/${iterationPublicId}/associated-teams`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/iterations/${encodeURIComponent(iterationPublicId)}/associated-teams`,
       method: "GET",
       query: query,
       secure: true,
@@ -3685,7 +3685,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<IterationMentionedMemberEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/iterations/${iterationPublicId}/mentioned-members`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/iterations/${encodeURIComponent(iterationPublicId)}/mentioned-members`,
       method: "GET",
       query: query,
       secure: true,
@@ -3723,7 +3723,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<KeyResultEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/key-results`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/key-results`,
       method: "GET",
       query: query,
       secure: true,
@@ -3747,7 +3747,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<KeyResultEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/key-results/${keyResultPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/key-results/${encodeURIComponent(keyResultPublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -3772,7 +3772,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<KeyResultEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/key-results/${keyResultPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/key-results/${encodeURIComponent(keyResultPublicId)}`,
       method: "PUT",
       query: query,
       body: data,
@@ -3812,7 +3812,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<LabelEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/labels`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/labels`,
       method: "GET",
       query: query,
       secure: true,
@@ -3836,7 +3836,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<LabelEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/labels`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/labels`,
       method: "POST",
       query: query,
       body: data,
@@ -3858,7 +3858,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/labels/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/labels/bulk`,
       method: "DELETE",
       body: data,
       secure: true,
@@ -3898,7 +3898,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<LabelEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/labels/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/labels/bulk`,
       method: "PATCH",
       query: query,
       body: data,
@@ -3939,7 +3939,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<LabelEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/labels/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/labels/bulk`,
       method: "POST",
       query: query,
       body: data,
@@ -3961,7 +3961,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/labels/${labelPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/labels/${encodeURIComponent(labelPublicId)}`,
       method: "DELETE",
       secure: true,
       ...params,
@@ -3984,7 +3984,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<LabelEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/labels/${labelPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/labels/${encodeURIComponent(labelPublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -4009,7 +4009,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<LabelEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/labels/${labelPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/labels/${encodeURIComponent(labelPublicId)}`,
       method: "PATCH",
       query: query,
       body: data,
@@ -4050,7 +4050,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<LabelEpicEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/labels/${labelPublicId}/epics`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/labels/${encodeURIComponent(labelPublicId)}/epics`,
       method: "GET",
       query: query,
       secure: true,
@@ -4089,7 +4089,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<LabelStoryEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/labels/${labelPublicId}/stories`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/labels/${encodeURIComponent(labelPublicId)}/stories`,
       method: "GET",
       query: query,
       secure: true,
@@ -4127,7 +4127,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<LinkedFileEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/linked-files`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/linked-files`,
       method: "GET",
       query: query,
       secure: true,
@@ -4151,7 +4151,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<LinkedFileEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/linked-files`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/linked-files`,
       method: "POST",
       query: query,
       body: data,
@@ -4173,7 +4173,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/linked-files/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/linked-files/bulk`,
       method: "DELETE",
       body: data,
       secure: true,
@@ -4213,7 +4213,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<LinkedFileEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/linked-files/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/linked-files/bulk`,
       method: "PATCH",
       query: query,
       body: data,
@@ -4254,7 +4254,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<LinkedFileEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/linked-files/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/linked-files/bulk`,
       method: "POST",
       query: query,
       body: data,
@@ -4276,7 +4276,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/linked-files/${linkedFilePublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/linked-files/${encodeURIComponent(linkedFilePublicId)}`,
       method: "DELETE",
       secure: true,
       ...params,
@@ -4299,7 +4299,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<LinkedFileEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/linked-files/${linkedFilePublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/linked-files/${encodeURIComponent(linkedFilePublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -4324,7 +4324,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<LinkedFileEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/linked-files/${linkedFilePublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/linked-files/${encodeURIComponent(linkedFilePublicId)}`,
       method: "PATCH",
       query: query,
       body: data,
@@ -4365,7 +4365,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<LinkedFileStoryEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/linked-files/${linkedFilePublicId}/stories`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/linked-files/${encodeURIComponent(linkedFilePublicId)}/stories`,
       method: "GET",
       query: query,
       secure: true,
@@ -4404,7 +4404,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<LinkedFileMentionedTeamEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/linked-files/${linkedFilePublicId}/mentioned-teams`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/linked-files/${encodeURIComponent(linkedFilePublicId)}/mentioned-teams`,
       method: "GET",
       query: query,
       secure: true,
@@ -4443,7 +4443,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<LinkedFileMentionedMemberEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/linked-files/${linkedFilePublicId}/mentioned-members`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/linked-files/${encodeURIComponent(linkedFilePublicId)}/mentioned-members`,
       method: "GET",
       query: query,
       secure: true,
@@ -4481,7 +4481,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<MemberEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/members`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/members`,
       method: "GET",
       query: query,
       secure: true,
@@ -4520,7 +4520,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<MemberEntityListWrapper, ApiError | UnusableEntitlementError>({
-      path: `/api/v4/${workspaceSlug}/members/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/members/bulk`,
       method: "PATCH",
       query: query,
       body: data,
@@ -4546,7 +4546,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<MemberEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/members/${memberPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/members/${encodeURIComponent(memberPublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -4571,7 +4571,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<MemberEntityWrapper, ApiError | UnusableEntitlementError>({
-      path: `/api/v4/${workspaceSlug}/members/${memberPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/members/${encodeURIComponent(memberPublicId)}`,
       method: "PATCH",
       query: query,
       body: data,
@@ -4612,7 +4612,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<MemberTeamEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/members/${memberPublicId}/teams`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/members/${encodeURIComponent(memberPublicId)}/teams`,
       method: "GET",
       query: query,
       secure: true,
@@ -4651,7 +4651,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<MemberStoryEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/members/${memberPublicId}/stories`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/members/${encodeURIComponent(memberPublicId)}/stories`,
       method: "GET",
       query: query,
       secure: true,
@@ -4689,7 +4689,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<ObjectiveEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/objectives`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/objectives`,
       method: "GET",
       query: query,
       secure: true,
@@ -4713,7 +4713,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<ObjectiveEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/objectives`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/objectives`,
       method: "POST",
       query: query,
       body: data,
@@ -4735,7 +4735,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/objectives/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/objectives/bulk`,
       method: "DELETE",
       body: data,
       secure: true,
@@ -4775,7 +4775,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<ObjectiveEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/objectives/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/objectives/bulk`,
       method: "PATCH",
       query: query,
       body: data,
@@ -4816,7 +4816,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<ObjectiveEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/objectives/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/objectives/bulk`,
       method: "POST",
       query: query,
       body: data,
@@ -4855,7 +4855,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<ObjectiveEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/objectives/search`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/objectives/search`,
       method: "GET",
       query: query,
       secure: true,
@@ -4875,7 +4875,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/objectives/${objectivePublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/objectives/${encodeURIComponent(objectivePublicId)}`,
       method: "DELETE",
       secure: true,
       ...params,
@@ -4898,7 +4898,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<ObjectiveEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/objectives/${objectivePublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/objectives/${encodeURIComponent(objectivePublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -4923,7 +4923,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<ObjectiveEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/objectives/${objectivePublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/objectives/${encodeURIComponent(objectivePublicId)}`,
       method: "PATCH",
       query: query,
       body: data,
@@ -4964,7 +4964,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<ObjectiveEpicEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/objectives/${objectivePublicId}/epics`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/objectives/${encodeURIComponent(objectivePublicId)}/epics`,
       method: "GET",
       query: query,
       secure: true,
@@ -5003,7 +5003,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<ObjectiveTeamEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/objectives/${objectivePublicId}/teams`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/objectives/${encodeURIComponent(objectivePublicId)}/teams`,
       method: "GET",
       query: query,
       secure: true,
@@ -5042,7 +5042,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<ObjectiveOwnerEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/objectives/${objectivePublicId}/owners`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/objectives/${encodeURIComponent(objectivePublicId)}/owners`,
       method: "GET",
       query: query,
       secure: true,
@@ -5081,7 +5081,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<ObjectiveCategoryEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/objectives/${objectivePublicId}/categories`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/objectives/${encodeURIComponent(objectivePublicId)}/categories`,
       method: "GET",
       query: query,
       secure: true,
@@ -5120,7 +5120,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<ObjectiveKeyResultEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/objectives/${objectivePublicId}/key-results`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/objectives/${encodeURIComponent(objectivePublicId)}/key-results`,
       method: "GET",
       query: query,
       secure: true,
@@ -5159,7 +5159,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<HealthEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/objectives/${objectivePublicId}/objective-healths`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/objectives/${encodeURIComponent(objectivePublicId)}/objective-healths`,
       method: "GET",
       query: query,
       secure: true,
@@ -5184,7 +5184,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<HealthEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/objectives/${objectivePublicId}/objective-healths`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/objectives/${encodeURIComponent(objectivePublicId)}/objective-healths`,
       method: "POST",
       query: query,
       body: data,
@@ -5211,7 +5211,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<HealthEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/objectives/${objectivePublicId}/objective-healths/${objectiveHealthPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/objectives/${encodeURIComponent(objectivePublicId)}/objective-healths/${encodeURIComponent(objectiveHealthPublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -5250,7 +5250,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<ProjectEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/projects`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/projects`,
       method: "GET",
       query: query,
       secure: true,
@@ -5275,7 +5275,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<ProjectEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/projects`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/projects`,
       method: "POST",
       query: query,
       body: data,
@@ -5298,7 +5298,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/projects/${projectPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/projects/${encodeURIComponent(projectPublicId)}`,
       method: "DELETE",
       secure: true,
       ...params,
@@ -5322,7 +5322,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<ProjectEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/projects/${projectPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/projects/${encodeURIComponent(projectPublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -5348,7 +5348,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<ProjectEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/projects/${projectPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/projects/${encodeURIComponent(projectPublicId)}`,
       method: "PATCH",
       query: query,
       body: data,
@@ -5390,7 +5390,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<ProjectStoryEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/projects/${projectPublicId}/stories`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/projects/${encodeURIComponent(projectPublicId)}/stories`,
       method: "GET",
       query: query,
       secure: true,
@@ -5430,7 +5430,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<ProjectFollowerEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/projects/${projectPublicId}/followers`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/projects/${encodeURIComponent(projectPublicId)}/followers`,
       method: "GET",
       query: query,
       secure: true,
@@ -5468,7 +5468,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<PullRequestEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/pull-requests`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/pull-requests`,
       method: "GET",
       query: query,
       secure: true,
@@ -5492,7 +5492,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<PullRequestEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/pull-requests/${pullRequestPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/pull-requests/${encodeURIComponent(pullRequestPublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -5531,7 +5531,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<PullRequestStoryEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/pull-requests/${pullRequestPublicId}/stories`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/pull-requests/${encodeURIComponent(pullRequestPublicId)}/stories`,
       method: "GET",
       query: query,
       secure: true,
@@ -5569,7 +5569,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<RepositoryEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/repositories`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/repositories`,
       method: "GET",
       query: query,
       secure: true,
@@ -5593,7 +5593,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<RepositoryEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/repositories/${repositoryPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/repositories/${encodeURIComponent(repositoryPublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -5632,7 +5632,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<RepositoryCommitEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/repositories/${repositoryPublicId}/commits`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/repositories/${encodeURIComponent(repositoryPublicId)}/commits`,
       method: "GET",
       query: query,
       secure: true,
@@ -5671,7 +5671,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<RepositoryBranchEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/repositories/${repositoryPublicId}/branches`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/repositories/${encodeURIComponent(repositoryPublicId)}/branches`,
       method: "GET",
       query: query,
       secure: true,
@@ -5710,7 +5710,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<RepositoryPullRequestEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/repositories/${repositoryPublicId}/pull-requests`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/repositories/${encodeURIComponent(repositoryPublicId)}/pull-requests`,
       method: "GET",
       query: query,
       secure: true,
@@ -5750,7 +5750,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<SearchEntitiesOutput, ApiError>({
-      path: `/api/v4/${workspaceSlug}/search`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/search`,
       method: "GET",
       query: query,
       secure: true,
@@ -5790,7 +5790,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories`,
       method: "GET",
       query: query,
       secure: true,
@@ -5814,7 +5814,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories`,
       method: "POST",
       query: query,
       body: data,
@@ -5840,7 +5840,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/bulk`,
       method: "DELETE",
       query: query,
       body: data,
@@ -5881,7 +5881,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/bulk`,
       method: "PATCH",
       query: query,
       body: data,
@@ -5922,7 +5922,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/bulk`,
       method: "POST",
       query: query,
       body: data,
@@ -5961,7 +5961,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/search`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/search`,
       method: "GET",
       query: query,
       secure: true,
@@ -5997,7 +5997,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryHistoryResponseWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/history`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/history`,
       method: "GET",
       query: query,
       secure: true,
@@ -6021,7 +6021,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}`,
       method: "DELETE",
       query: query,
       secure: true,
@@ -6045,7 +6045,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -6070,7 +6070,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}`,
       method: "PATCH",
       query: query,
       body: data,
@@ -6111,7 +6111,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryFileEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/files`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/files`,
       method: "GET",
       query: query,
       secure: true,
@@ -6150,7 +6150,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryLabelEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/labels`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/labels`,
       method: "GET",
       query: query,
       secure: true,
@@ -6189,7 +6189,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryOwnerEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/owners`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/owners`,
       method: "GET",
       query: query,
       secure: true,
@@ -6228,7 +6228,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryCommitEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/commits`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/commits`,
       method: "GET",
       query: query,
       secure: true,
@@ -6263,7 +6263,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryHistoryResponseWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/history`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/history`,
       method: "GET",
       query: query,
       secure: true,
@@ -6302,7 +6302,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryBranchEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/branches`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/branches`,
       method: "GET",
       query: query,
       secure: true,
@@ -6343,7 +6343,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryCommentEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/comments`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/comments`,
       method: "GET",
       query: query,
       secure: true,
@@ -6368,7 +6368,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryCommentEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/comments`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/comments`,
       method: "POST",
       query: query,
       body: data,
@@ -6409,7 +6409,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryFollowerEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/followers`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/followers`,
       method: "GET",
       query: query,
       secure: true,
@@ -6448,7 +6448,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryIterationEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/iterations`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/iterations`,
       method: "GET",
       query: query,
       secure: true,
@@ -6487,7 +6487,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryStoryLinkEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/story-links`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/story-links`,
       method: "GET",
       query: query,
       secure: true,
@@ -6526,7 +6526,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryLinkedFileEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/linked-files`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/linked-files`,
       method: "GET",
       query: query,
       secure: true,
@@ -6547,7 +6547,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/comments/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/comments/bulk`,
       method: "DELETE",
       body: data,
       secure: true,
@@ -6588,7 +6588,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryCommentEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/comments/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/comments/bulk`,
       method: "PATCH",
       query: query,
       body: data,
@@ -6630,7 +6630,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryCommentEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/comments/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/comments/bulk`,
       method: "POST",
       query: query,
       body: data,
@@ -6671,7 +6671,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryPullRequestEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/pull-requests`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/pull-requests`,
       method: "GET",
       query: query,
       secure: true,
@@ -6710,7 +6710,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryExternalLinkEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/external-links`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/external-links`,
       method: "GET",
       query: query,
       secure: true,
@@ -6751,7 +6751,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryChecklistItemEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/checklist-items`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/checklist-items`,
       method: "GET",
       query: query,
       secure: true,
@@ -6776,7 +6776,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryChecklistItemEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/checklist-items`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/checklist-items`,
       method: "POST",
       query: query,
       body: data,
@@ -6817,7 +6817,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryMentionedTeamEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/mentioned-teams`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/mentioned-teams`,
       method: "GET",
       query: query,
       secure: true,
@@ -6856,7 +6856,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StorySubTaskStoryEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/sub-task-stories`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/sub-task-stories`,
       method: "GET",
       query: query,
       secure: true,
@@ -6895,7 +6895,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryMentionedMemberEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/mentioned-members`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/mentioned-members`,
       method: "GET",
       query: query,
       secure: true,
@@ -6934,7 +6934,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryCustomFieldValueEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/custom-field-values`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/custom-field-values`,
       method: "GET",
       query: query,
       secure: true,
@@ -6955,7 +6955,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/checklist-items/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/checklist-items/bulk`,
       method: "DELETE",
       body: data,
       secure: true,
@@ -6996,7 +6996,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryChecklistItemEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/checklist-items/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/checklist-items/bulk`,
       method: "PATCH",
       query: query,
       body: data,
@@ -7038,7 +7038,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryChecklistItemEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/checklist-items/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/checklist-items/bulk`,
       method: "POST",
       query: query,
       body: data,
@@ -7065,7 +7065,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/comments/${commentPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/comments/${encodeURIComponent(commentPublicId)}`,
       method: "DELETE",
       query: query,
       secure: true,
@@ -7090,7 +7090,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryCommentEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/comments/${commentPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/comments/${encodeURIComponent(commentPublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -7116,7 +7116,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryCommentEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/comments/${commentPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/comments/${encodeURIComponent(commentPublicId)}`,
       method: "PATCH",
       query: query,
       body: data,
@@ -7158,7 +7158,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryCommentCommentEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/comments/${commentPublicId}/comments`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/comments/${encodeURIComponent(commentPublicId)}/comments`,
       method: "GET",
       query: query,
       secure: true,
@@ -7198,7 +7198,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryCommentReactionEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/comments/${commentPublicId}/reactions`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/comments/${encodeURIComponent(commentPublicId)}/reactions`,
       method: "GET",
       query: query,
       secure: true,
@@ -7224,7 +7224,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryCommentReactionEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/comments/${commentPublicId}/reactions`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/comments/${encodeURIComponent(commentPublicId)}/reactions`,
       method: "POST",
       query: query,
       body: data,
@@ -7251,7 +7251,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/checklist-items/${checklistItemPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/checklist-items/${encodeURIComponent(checklistItemPublicId)}`,
       method: "DELETE",
       query: query,
       secure: true,
@@ -7276,7 +7276,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryChecklistItemEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/checklist-items/${checklistItemPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/checklist-items/${encodeURIComponent(checklistItemPublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -7302,7 +7302,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryChecklistItemEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/checklist-items/${checklistItemPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/checklist-items/${encodeURIComponent(checklistItemPublicId)}`,
       method: "PATCH",
       query: query,
       body: data,
@@ -7344,7 +7344,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryCommentMentionedTeamEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/comments/${commentPublicId}/mentioned-teams`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/comments/${encodeURIComponent(commentPublicId)}/mentioned-teams`,
       method: "GET",
       query: query,
       secure: true,
@@ -7384,7 +7384,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryCommentMentionedMemberEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/comments/${commentPublicId}/mentioned-members`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/comments/${encodeURIComponent(commentPublicId)}/mentioned-members`,
       method: "GET",
       query: query,
       secure: true,
@@ -7424,7 +7424,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryChecklistItemMentionedTeamEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/checklist-items/${checklistItemPublicId}/mentioned-teams`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/checklist-items/${encodeURIComponent(checklistItemPublicId)}/mentioned-teams`,
       method: "GET",
       query: query,
       secure: true,
@@ -7446,7 +7446,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/comments/${commentPublicId}/reactions/${reactionPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/comments/${encodeURIComponent(commentPublicId)}/reactions/${encodeURIComponent(reactionPublicId)}`,
       method: "DELETE",
       secure: true,
       ...params,
@@ -7485,7 +7485,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryChecklistItemMentionedMemberEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/stories/${storyPublicId}/checklist-items/${checklistItemPublicId}/mentioned-members`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/stories/${encodeURIComponent(storyPublicId)}/checklist-items/${encodeURIComponent(checklistItemPublicId)}/mentioned-members`,
       method: "GET",
       query: query,
       secure: true,
@@ -7523,7 +7523,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryLinkEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/story-links`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/story-links`,
       method: "GET",
       query: query,
       secure: true,
@@ -7543,7 +7543,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryLinkEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/story-links`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/story-links`,
       method: "POST",
       body: data,
       secure: true,
@@ -7564,7 +7564,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/story-links/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/story-links/bulk`,
       method: "DELETE",
       body: data,
       secure: true,
@@ -7604,7 +7604,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryLinkEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/story-links/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/story-links/bulk`,
       method: "PATCH",
       query: query,
       body: data,
@@ -7645,7 +7645,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryLinkEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/story-links/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/story-links/bulk`,
       method: "POST",
       query: query,
       body: data,
@@ -7667,7 +7667,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<void, ApiError>({
-      path: `/api/v4/${workspaceSlug}/story-links/${storyLinkPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/story-links/${encodeURIComponent(storyLinkPublicId)}`,
       method: "DELETE",
       secure: true,
       ...params,
@@ -7686,7 +7686,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryLinkEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/story-links/${storyLinkPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/story-links/${encodeURIComponent(storyLinkPublicId)}`,
       method: "GET",
       secure: true,
       ...params,
@@ -7706,7 +7706,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<StoryLinkEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/story-links/${storyLinkPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/story-links/${encodeURIComponent(storyLinkPublicId)}`,
       method: "PATCH",
       body: data,
       secure: true,
@@ -7745,7 +7745,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<TeamEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/teams`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/teams`,
       method: "GET",
       query: query,
       secure: true,
@@ -7769,7 +7769,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<TeamEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/teams`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/teams`,
       method: "POST",
       query: query,
       body: data,
@@ -7810,7 +7810,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<TeamEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/teams/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/teams/bulk`,
       method: "PATCH",
       query: query,
       body: data,
@@ -7851,7 +7851,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<TeamEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/teams/bulk`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/teams/bulk`,
       method: "POST",
       query: query,
       body: data,
@@ -7877,7 +7877,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<TeamEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/teams/${teamPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/teams/${encodeURIComponent(teamPublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -7902,7 +7902,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<TeamEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/teams/${teamPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/teams/${encodeURIComponent(teamPublicId)}`,
       method: "PATCH",
       query: query,
       body: data,
@@ -7943,7 +7943,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<TeamMemberEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/teams/${teamPublicId}/members`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/teams/${encodeURIComponent(teamPublicId)}/members`,
       method: "GET",
       query: query,
       secure: true,
@@ -7982,7 +7982,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<TeamStoryEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/teams/${teamPublicId}/stories`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/teams/${encodeURIComponent(teamPublicId)}/stories`,
       method: "GET",
       query: query,
       secure: true,
@@ -8021,7 +8021,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<TeamWorkflowEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/teams/${teamPublicId}/workflows`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/teams/${encodeURIComponent(teamPublicId)}/workflows`,
       method: "GET",
       query: query,
       secure: true,
@@ -8059,7 +8059,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<WorkflowStateEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/workflow-states`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/workflow-states`,
       method: "GET",
       query: query,
       secure: true,
@@ -8083,7 +8083,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<WorkflowStateEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/workflow-states/${workflowStatePublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/workflow-states/${encodeURIComponent(workflowStatePublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -8122,7 +8122,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<WorkflowStoryEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/workflow-states/${workflowStatePublicId}/stories`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/workflow-states/${encodeURIComponent(workflowStatePublicId)}/stories`,
       method: "GET",
       query: query,
       secure: true,
@@ -8160,7 +8160,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<WorkflowEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/workflows`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/workflows`,
       method: "GET",
       query: query,
       secure: true,
@@ -8184,7 +8184,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<WorkflowEntityWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/workflows/${workflowPublicId}`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/workflows/${encodeURIComponent(workflowPublicId)}`,
       method: "GET",
       query: query,
       secure: true,
@@ -8223,7 +8223,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<WorkflowTeamEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/workflows/${workflowPublicId}/teams`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/workflows/${encodeURIComponent(workflowPublicId)}/teams`,
       method: "GET",
       query: query,
       secure: true,
@@ -8262,7 +8262,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<WorkflowStateEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/workflows/${workflowPublicId}/states`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/workflows/${encodeURIComponent(workflowPublicId)}/states`,
       method: "GET",
       query: query,
       secure: true,
@@ -8301,7 +8301,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<WorkflowStoryEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/workflows/${workflowPublicId}/stories`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/workflows/${encodeURIComponent(workflowPublicId)}/stories`,
       method: "GET",
       query: query,
       secure: true,
@@ -8341,7 +8341,7 @@ export class Api<
     params: RequestParams = {},
   ) =>
     this.request<WorkflowProjectEntityListWrapper, ApiError>({
-      path: `/api/v4/${workspaceSlug}/workflows/${workflowPublicId}/projects`,
+      path: `/api/v4/${encodeURIComponent(workspaceSlug)}/workflows/${encodeURIComponent(workflowPublicId)}/projects`,
       method: "GET",
       query: query,
       secure: true,
