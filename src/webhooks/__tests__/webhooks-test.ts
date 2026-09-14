@@ -1,6 +1,9 @@
 import { EventEmitter } from 'node:events';
-import { describe, expect, it } from 'vitest';
+import type { IncomingMessage, ServerResponse } from 'node:http';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 import {
+  type ShortcutNodeRequest,
+  type ShortcutNodeResponse,
   ShortcutWebhookClient,
   ShortcutWebhookError,
   isShortcutInteractionPayload,
@@ -97,6 +100,48 @@ describe('verifyShortcutWebhookSignature', () => {
     );
     expect(await verifyShortcutWebhookSignature('', body, signature)).toBe(
       false,
+    );
+  });
+
+  it('verifies a pooled Node Buffer by its own bytes, not the whole pool', async () => {
+    // Buffer.from of a short string is carved out of Node's shared 8 KiB
+    // pool, so `.buffer` covers far more than the body. Buffer#slice is an
+    // alias of subarray and would not have copied it.
+    const text = '{"type":"validation"}';
+    const pooled = Buffer.from(text);
+    expect(pooled.buffer.byteLength).toBeGreaterThan(pooled.byteLength);
+    const signature = await signShortcutWebhookBody(secret, text);
+    expect(
+      await verifyShortcutWebhookSignature(secret, pooled, signature),
+    ).toBe(true);
+    expect(await signShortcutWebhookBody(secret, pooled)).toBe(signature);
+  });
+
+  it('signs and verifies a subarray view by its own bytes', async () => {
+    const text = '{"type":"validation"}';
+    const standalone = new TextEncoder().encode(text);
+    const larger = new Uint8Array(standalone.byteLength + 64).fill(0x78);
+    larger.set(standalone, 32);
+    const view = larger.subarray(32, 32 + standalone.byteLength);
+    expect(view.byteOffset).toBe(32);
+    const signature = await signShortcutWebhookBody(secret, standalone);
+    expect(await signShortcutWebhookBody(secret, view)).toBe(signature);
+    expect(await verifyShortcutWebhookSignature(secret, view, signature)).toBe(
+      true,
+    );
+    expect(
+      await verifyShortcutWebhookSignature(secret, larger, signature),
+    ).toBe(false);
+  });
+
+  it('signs and verifies a large, unpooled Buffer', async () => {
+    const text = JSON.stringify({ type: 'validation', pad: 'x'.repeat(8192) });
+    const large = Buffer.from(text);
+    expect(large.byteLength).toBeGreaterThan(4096);
+    const signature = await signShortcutWebhookBody(secret, large);
+    expect(signature).toBe(await signShortcutWebhookBody(secret, text));
+    expect(await verifyShortcutWebhookSignature(secret, large, signature)).toBe(
+      true,
     );
   });
 });
@@ -319,6 +364,17 @@ describe('ShortcutWebhookClient.verify', () => {
     await expect(strict.verify(await signed(observer))).resolves.toBeDefined();
   });
 
+  it('verifies a body delivered as a pooled Node Buffer', async () => {
+    const text = JSON.stringify(observer);
+    const body = Buffer.from(text);
+    const delivery = await client.verifyBody(
+      body,
+      await signShortcutWebhookBody(secret, text),
+    );
+    expect(delivery.deliveryId).toBe('delivery-1');
+    expect(delivery.payload).toEqual(observer);
+  });
+
   it('rejects an invalid configuration up front', () => {
     expect(() => new ShortcutWebhookClient('')).toThrow(TypeError);
     expect(() => new ShortcutWebhookClient(secret, { bodyLimit: 0 })).toThrow(
@@ -331,6 +387,29 @@ describe('ShortcutWebhookClient.verify', () => {
 });
 
 describe('ShortcutWebhookClient.createHandler', () => {
+  it('accepts Node http types without depending on them', () => {
+    // The handler's Node overload is typed structurally, so the entrypoint's
+    // declarations stay free of `node:http` for Workers, Deno, and Bun.
+    expectTypeOf<IncomingMessage>().toExtend<ShortcutNodeRequest>();
+    expectTypeOf<ServerResponse>().toExtend<ShortcutNodeResponse>();
+    const handler = new ShortcutWebhookClient(secret).createHandler();
+    expectTypeOf(handler).toBeCallableWith(
+      {} as IncomingMessage,
+      {} as ServerResponse,
+    );
+    expectTypeOf(handler).toBeCallableWith({} as Request);
+    // Never invoked: these closures only pin down each overload's result type.
+    const fetchResult = () => handler({} as Request);
+    const nodeResult = () =>
+      handler({} as IncomingMessage, {} as ServerResponse);
+    expectTypeOf<ReturnType<typeof fetchResult>>().toEqualTypeOf<
+      Promise<Response>
+    >();
+    expectTypeOf<ReturnType<typeof nodeResult>>().toEqualTypeOf<
+      Promise<void>
+    >();
+  });
+
   it('captures mixed asynchronous and synchronous listener failures', async () => {
     const handler = new ShortcutWebhookClient(secret).createHandler();
     const seen: string[] = [];
