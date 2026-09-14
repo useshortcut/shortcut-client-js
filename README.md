@@ -75,7 +75,7 @@ v3 and v4 ship together in this package because v4 does not yet cover every v3 e
 
 ### `@shortcut/client/v4`
 
-v4 is workspace-scoped: every operation takes the workspace slug first, and `workspace(slug)` binds it once. Requests that fail reject with the `Response`, whose `error` carries the parsed body. Lists page by cursor; `paginate()` follows `next_page_url` and only sends the token back to the same API origin.
+v4 is workspace-scoped: every operation takes the workspace slug first, and `workspace(slug)` binds it once. Requests that fail reject with the `Response`, whose `error` carries the parsed body, or the raw text when the body is not JSON. Lists page by cursor; `paginate()` follows `next_page_url` and only sends the token back to the same API origin.
 
 ```ts
 import {

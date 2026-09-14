@@ -212,6 +212,99 @@ describe('ShortcutV4Client', () => {
     });
   });
 
+  it('reads a successful response body once without cloning it', async () => {
+    const clone = vi.spyOn(Response.prototype, 'clone');
+    try {
+      const response = Response.json({ entity: { id: 1 } });
+      const { client: c } = client(() => response);
+      await expect(c.workspace('acme').getStory(1)).resolves.toEqual({
+        entity: { id: 1 },
+      });
+      expect(response.bodyUsed).toBe(true);
+      expect(clone).not.toHaveBeenCalled();
+    } finally {
+      clone.mockRestore();
+    }
+  });
+
+  it('rejects with the same response it read, its body consumed', async () => {
+    const response = Response.json(
+      { message: 'Not found', tag: 'resource_not_found' },
+      { status: 404 },
+    );
+    const { client: c } = client(() => response);
+    const error = await c
+      .workspace('acme')
+      .getStory(1)
+      .catch((caught: unknown) => caught);
+    expect(error).toBe(response);
+    expect(response.bodyUsed).toBe(true);
+    if (!isShortcutV4RequestError(error)) throw new Error('not narrowed');
+    expect(error.status).toBe(404);
+    expect(error.error).toEqual({
+      message: 'Not found',
+      tag: 'resource_not_found',
+    });
+  });
+
+  it('keeps a non-JSON error body as raw text', async () => {
+    const { client: c } = client(
+      () =>
+        new Response('<html>Bad gateway</html>', {
+          status: 502,
+          headers: { 'content-type': 'text/html' },
+        }),
+    );
+    const error = await c
+      .workspace('acme')
+      .getStory(1)
+      .catch((caught: unknown) => caught);
+    expect(isShortcutV4RequestError(error)).toBe(true);
+    expect(error).toMatchObject({
+      status: 502,
+      error: '<html>Bad gateway</html>',
+    });
+  });
+
+  it('resolves null for a 204 and for an ok response with an empty body', async () => {
+    const { client: c } = client((_url, init) =>
+      init.method === 'DELETE'
+        ? new Response(null, { status: 204 })
+        : new Response('', {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+          }),
+    );
+    await expect(c.workspace('acme').deleteStory(1)).resolves.toBeNull();
+    await expect(c.workspace('acme').getStory(1)).resolves.toBeNull();
+  });
+
+  it('consumes every page body while paginating', async () => {
+    const first = Response.json({
+      entities: [1],
+      current_page: 1,
+      total_pages: 2,
+      next_page_url: 'https://api.example.com/api/v4/acme/stories?cursor=a',
+    });
+    const second = Response.json({
+      entities: [2],
+      current_page: 2,
+      total_pages: 2,
+      next_page_url: null,
+    });
+    const { client: c } = client((url) =>
+      new URL(url).searchParams.has('cursor') ? second : first,
+    );
+    const all: number[] = [];
+    for await (const item of c.paginate<number>(
+      c.workspace('acme').listStories() as never,
+    ))
+      all.push(item);
+    expect(all).toEqual([1, 2]);
+    expect(first.bodyUsed).toBe(true);
+    expect(second.bodyUsed).toBe(true);
+  });
+
   it('follows cursor links on the API origin and stops at the last page', async () => {
     const { calls, client: c } = client((url) => {
       const cursor = new URL(url).searchParams.get('cursor');
