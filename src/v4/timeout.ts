@@ -50,6 +50,10 @@ export async function withTimeout<T>(
     // interrupted, so a fired timer always surfaces as a rejection.
     if (controller.signal.aborted) throw controller.signal.reason;
     return result;
+  } catch (error) {
+    // A client may replace an interrupted body-read error with its response.
+    if (controller.signal.aborted) throw controller.signal.reason;
+    throw error;
   } finally {
     clearTimeout(timer);
     combined.release();

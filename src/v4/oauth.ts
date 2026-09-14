@@ -17,9 +17,8 @@ export interface ShortcutOAuthOptions {
 }
 
 /**
- * The token endpoint's response. `permission_id` is the agent's own member id
- * in the workspace. A refresh response may omit the workspace and permission
- * fields; keep the ones from the authorization-code exchange.
+ * The authorization-code exchange response. `permission_id` is the agent's
+ * own member id in the workspace.
  */
 export interface ShortcutOAuthTokens {
   access_token: string;
@@ -34,6 +33,18 @@ export interface ShortcutOAuthTokens {
   scope?: string;
   token_type?: string;
 }
+
+/** A refresh may omit workspace and permission fields; retain them from the code exchange. */
+export type ShortcutOAuthRefreshTokens = Omit<
+  ShortcutOAuthTokens,
+  'permission_id' | 'workspace2_id' | 'workspace2_slug'
+> &
+  Partial<
+    Pick<
+      ShortcutOAuthTokens,
+      'permission_id' | 'workspace2_id' | 'workspace2_slug'
+    >
+  >;
 
 export class ShortcutOAuthError extends Error {
   readonly status: number;
@@ -91,7 +102,7 @@ export class ShortcutOAuth {
       throw new TypeError('authorization code is required');
     if (typeof redirectUri !== 'string' || redirectUri.length === 0)
       throw new TypeError('redirectUri is required');
-    return this.tokenRequest(
+    return this.tokenRequest<ShortcutOAuthTokens>(
       { grant_type: 'authorization_code', code, redirect_uri: redirectUri },
       // The install flow records the workspace, so the exchange must name it.
       ['access_token', 'workspace2_id'],
@@ -102,19 +113,21 @@ export class ShortcutOAuth {
    * Rotates the tokens. The previous refresh token is invalidated. The
    * response may omit the workspace and permission fields.
    */
-  refreshAccessToken(refreshToken: string): Promise<ShortcutOAuthTokens> {
+  refreshAccessToken(
+    refreshToken: string,
+  ): Promise<ShortcutOAuthRefreshTokens> {
     if (typeof refreshToken !== 'string' || refreshToken.length === 0)
       throw new TypeError('refreshToken is required');
-    return this.tokenRequest(
+    return this.tokenRequest<ShortcutOAuthRefreshTokens>(
       { grant_type: 'refresh_token', refresh_token: refreshToken },
       ['access_token', 'refresh_token'],
     );
   }
 
-  private tokenRequest(
+  private tokenRequest<T extends ShortcutOAuthRefreshTokens>(
     params: Record<string, string>,
     required: ReadonlyArray<keyof ShortcutOAuthTokens>,
-  ): Promise<ShortcutOAuthTokens> {
+  ): Promise<T> {
     return withTimeout(this.timeoutMs, undefined, async (signal) => {
       const response = await this.fetch(this.tokenEndpoint, {
         method: 'POST',
@@ -148,7 +161,7 @@ export class ShortcutOAuth {
       if (required.some((field) => typeof body[field] !== 'string')) {
         throw new ShortcutOAuthError(response.status, 'invalid_token_response');
       }
-      return body as unknown as ShortcutOAuthTokens;
+      return body as unknown as T;
     });
   }
 }
