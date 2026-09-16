@@ -16,7 +16,8 @@ const dir = mkdtempSync(join(tmpdir(), 'shortcut-consumer-'));
 const source = `
 import ShortcutClient, { ShortcutClient as NamedV3 } from '@shortcut/client';
 import ShortcutV4Client, { ShortcutV4Client as NamedV4 } from '@shortcut/client/v4';
-import type { ShortcutWorkspaceApi, WorkspaceOperation } from '@shortcut/client/v4';
+import { isShortcutV4RequestError } from '@shortcut/client/v4';
+import type { ShortcutV4ErrorBody, ShortcutWorkspaceApi, WorkspaceOperation } from '@shortcut/client/v4';
 import { ShortcutWebhookClient } from '@shortcut/client/webhooks';
 import axios, { type AxiosInstance } from 'axios';
 const legacy: ShortcutClient = new ShortcutClient('token');
@@ -54,6 +55,26 @@ type Unbound = Assert<Equal<ShortcutWorkspaceApi['getSchema'], ShortcutV4Client[
 type Utility = Assert<Equal<ShortcutWorkspaceApi['setSecurityData'], ShortcutV4Client['setSecurityData']>>;
 type Known = Assert<Equal<Exclude<WorkspaceOperation, keyof ShortcutV4Client>, never>>;
 type Slugless = Assert<Equal<Exclude<'getWhoami' | 'getSchema', WorkspaceOperation>, 'getWhoami' | 'getSchema'>>;
+// A rejected request's error body is the parsed JSON, the raw text of a
+// non-JSON body, or null for an empty body, so it must be narrowed first.
+async function describeFailure(): Promise<string> {
+  try {
+    await workspace.getStory(1);
+  } catch (error) {
+    if (isShortcutV4RequestError(error)) {
+      const status: number = error.status;
+      const body: ShortcutV4ErrorBody = error.error;
+      // @ts-expect-error The body may be a string or null.
+      error.error.message;
+      if (typeof body === 'string') return body;
+      if (body === null) return String(status);
+      const message: string = body.message;
+      return message;
+    }
+  }
+  return '';
+}
+void describeFailure;
 `;
 try {
   mkdirSync(join(dir, 'node_modules/@shortcut'), { recursive: true });

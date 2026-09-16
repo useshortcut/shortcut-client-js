@@ -47,8 +47,15 @@ export type ShortcutWorkspaceApi = {
     : Api<string>[K];
 };
 
-/** The rejection value of a failed v4 request: the `Response`, with the parsed error body on `error`. */
-export type ShortcutV4RequestError = HttpResponse<unknown, ApiError>;
+/**
+ * The `error` of a failed v4 request: the parsed JSON body, the raw text when
+ * the body is not JSON, or `null` when it is empty. Narrow before reading
+ * `message`.
+ */
+export type ShortcutV4ErrorBody = ApiError | string | null;
+
+/** The rejection value of a failed v4 request: the `Response`, with the error body on `error`. */
+export type ShortcutV4RequestError = HttpResponse<unknown, ShortcutV4ErrorBody>;
 
 export function isShortcutV4RequestError(
   value: unknown,
@@ -178,7 +185,7 @@ export class ShortcutV4Client extends Api<string> {
       secure: true,
       format: 'json',
     };
-    return this.request<ShortcutV4Page<T>, ApiError>(params);
+    return this.request<ShortcutV4Page<T>, ShortcutV4ErrorBody>(params);
   }
 
   /**
