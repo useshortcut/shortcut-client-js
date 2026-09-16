@@ -435,6 +435,50 @@ describe('ShortcutV4Client', () => {
     ).not.toContain('fields');
   });
 
+  it.each([
+    { baseUrl: undefined, prefix: '/default' },
+    { baseUrl: '', prefix: '/default' },
+    { baseUrl: 'https://api.example.com/override', prefix: '/override' },
+  ])(
+    'records the effective request path with baseUrl $baseUrl',
+    async ({ baseUrl, prefix }) => {
+      const { client: c, calls } = client(
+        () => Response.json({ tag: 'not_found' }, { status: 404 }),
+        { baseUrl: 'https://api.example.com/default' },
+      );
+      const error = await rejectionOf(
+        c.workspace('acme').getStory(123, { fields: 'id' }, { baseUrl }),
+      );
+      const path = `${prefix}/api/v4/acme/stories/123`;
+      expect(calls[0].url).toBe(`https://api.example.com${path}?fields=id`);
+      expect(isShortcutV4RequestError(error)).toBe(true);
+      if (!isShortcutV4RequestError(error)) throw new Error('not narrowed');
+      expect(error.request).toEqual({ method: 'GET', path });
+      expect(summarizeShortcutV4Error(error)).toEqual({
+        method: 'GET',
+        path,
+        status: 404,
+        tag: 'not_found',
+      });
+    },
+  );
+
+  it.each([
+    { request: undefined },
+    { request: null },
+    { request: {} },
+    { request: [] },
+    { request: 'GET /api/v4/whoami' },
+    { request: { method: 'GET' } },
+    { request: { path: '/api/v4/whoami' } },
+    { request: { method: 123, path: '/api/v4/whoami' } },
+    { request: { method: 'GET', path: 123 } },
+  ])('rejects malformed request metadata $request', ({ request }) => {
+    const error = { status: 500, error: 'unrelated', request };
+    expect(summarizeShortcutV4Error(error)).toBeNull();
+    expect(isShortcutV4RequestError(error)).toBe(false);
+  });
+
   it('attaches the page path without its cursor to a rejected page from paginate', async () => {
     const { client: c } = client((url) =>
       new URL(url).searchParams.has('cursor')

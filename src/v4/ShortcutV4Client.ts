@@ -83,9 +83,15 @@ export function isShortcutV4RequestError(
     typeof value === 'object' &&
     value !== null &&
     'status' in value &&
-    typeof (value as Response).status === 'number' &&
+    typeof value.status === 'number' &&
     'error' in value &&
-    typeof (value as { request?: unknown }).request === 'object'
+    'request' in value &&
+    typeof value.request === 'object' &&
+    value.request !== null &&
+    'method' in value.request &&
+    typeof value.request.method === 'string' &&
+    'path' in value.request &&
+    typeof value.request.path === 'string'
   );
 }
 
@@ -217,7 +223,11 @@ export class ShortcutV4Client extends Api<string> {
   /** Records which request a rejected `Response` answers; other errors pass through. */
   private describeRejection(
     error: unknown,
-    { method, path }: Pick<FullRequestParams, 'method' | 'path'>,
+    {
+      method,
+      path,
+      baseUrl,
+    }: Pick<FullRequestParams, 'method' | 'path' | 'baseUrl'>,
   ): unknown {
     if (
       typeof error !== 'object' ||
@@ -230,7 +240,7 @@ export class ShortcutV4Client extends Api<string> {
     }
     let pathname = path.split('?')[0] ?? path;
     try {
-      pathname = new URL(`${this.baseUrl}${path}`).pathname;
+      pathname = new URL(`${baseUrl || this.baseUrl || ''}${path}`).pathname;
     } catch {
       // Keep the operation path when the base URL cannot be parsed.
     }
