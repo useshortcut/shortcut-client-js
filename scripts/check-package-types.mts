@@ -19,12 +19,19 @@ import ShortcutV4Client, { ShortcutV4Client as NamedV4 } from '@shortcut/client/
 import type { ShortcutWorkspaceApi, WorkspaceOperation } from '@shortcut/client/v4';
 import { ShortcutWebhookClient } from '@shortcut/client/webhooks';
 import axios, { type AxiosInstance } from 'axios';
+import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 const legacy: ShortcutClient = new ShortcutClient('token');
 legacy.instance = axios.create();
 const instance: AxiosInstance = legacy.instance;
 new NamedV3('token');
 new NamedV4({ token: 'token' });
-new ShortcutWebhookClient('secret');
+const webhooks = new ShortcutWebhookClient('secret');
+const handler = webhooks.createHandler();
+// Node's real request and response types must satisfy the structural
+// \`ShortcutNodeRequest\` / \`ShortcutNodeResponse\` overload.
+createServer(handler);
+const nodeResult: Promise<void> = handler({} as IncomingMessage, {} as ServerResponse);
+const fetchResult: Promise<Response> = handler(new Request('https://x'));
 const client: ShortcutV4Client = new ShortcutV4Client({ token: 'token' });
 const workspace = client.workspace('acme');
 workspace.getWhoami();
