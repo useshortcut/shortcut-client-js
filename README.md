@@ -112,15 +112,38 @@ try {
 }
 ```
 
-Agent apps authenticate with OAuth per workspace. `ShortcutOAuth` completes the authorization-code exchange and refreshes tokens; the response's `permission_id` is the agent's own member id, which deliveries report as `actor.member_id` for changes the agent made. A refresh response may omit the workspace fields, so keep the ones from the exchange. Token requests share the same `timeoutMs` option (30 s by default, `Infinity` disables it, and it covers reading the body).
+Agent apps authenticate with OAuth per workspace. `ShortcutOAuth` completes the authorization-code exchange and refreshes tokens; the response's `permission_id` is the agent's own member id, which deliveries report as `actor.member_id` for changes the agent made. A refresh response may omit the workspace fields; `applyRefresh(previous, rotated)` merges a refresh over the previous tokens and keeps them, along with `scope`, when omitted. Token requests share the same `timeoutMs` option (30 s by default, `Infinity` disables it, and it covers reading the body).
+
+The client rotates the token itself when given `refresh`: it calls `run` before a request once `expiresAt` is within `beforeMs` (five minutes by default) and once more when a request comes back 401, then retries that request. Concurrent requests share one `run`, and a second 401 rejects as usual. `run` does the persistence and returns the new token.
 
 ```ts
-import { ShortcutOAuth } from '@shortcut/client/v4';
+import {
+  ShortcutOAuth,
+  ShortcutV4Client,
+  applyRefresh,
+} from '@shortcut/client/v4';
 
 const oauth = new ShortcutOAuth({ clientId, clientSecret, redirectUri });
-const tokens = await oauth.exchangeAuthorizationCode(code);
-// later, before tokens.access_token_expires_at:
-const rotated = await oauth.refreshAccessToken(tokens.refresh_token);
+let tokens = await oauth.exchangeAuthorizationCode(code);
+await store.save(tokens);
+
+const client = new ShortcutV4Client({
+  token: tokens.access_token,
+  refresh: {
+    expiresAt: tokens.access_token_expires_at,
+    run: async () => {
+      tokens = applyRefresh(
+        tokens,
+        await oauth.refreshAccessToken(tokens.refresh_token),
+      );
+      await store.save(tokens);
+      return {
+        token: tokens.access_token,
+        expiresAt: tokens.access_token_expires_at,
+      };
+    },
+  },
+});
 ```
 
 ### `@shortcut/client/webhooks`

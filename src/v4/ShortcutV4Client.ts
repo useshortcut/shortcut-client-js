@@ -28,6 +28,49 @@ export interface ShortcutV4ClientOptions {
    * to disable.
    */
   timeoutMs?: number;
+  /**
+   * Refreshes the bearer token proactively before it expires and once more
+   * when a request comes back 401, then retries that request.
+   */
+  refresh?: ShortcutV4RefreshOptions;
+}
+
+/** When and how the client rotates its bearer token. */
+export interface ShortcutV4RefreshOptions {
+  /**
+   * Rotates the token, persisting whatever the caller needs, and returns the
+   * new one. Called before a request once `expiresAt` is within `beforeMs`,
+   * and after a 401. Concurrent requests share one call.
+   */
+  run: () => Promise<ShortcutV4RefreshedToken>;
+  /** When the current token expires; enables proactive refresh. */
+  expiresAt?: string | number | Date;
+  /** How long before `expiresAt` to refresh. Defaults to five minutes. */
+  beforeMs?: number;
+}
+
+/** What `refresh.run` returns: the new token and, when known, its expiry. */
+export interface ShortcutV4RefreshedToken {
+  token: string;
+  expiresAt?: string | number | Date;
+}
+
+const DEFAULT_REFRESH_BEFORE_MS = 5 * 60 * 1000;
+
+/** `expiresAt` as epoch milliseconds, or `undefined` when unknown. */
+function expiryMs(
+  value: string | number | Date | undefined,
+  owner: string,
+): number | undefined {
+  if (value === undefined || value === null) return undefined;
+  const ms =
+    value instanceof Date ? value.getTime() : new Date(value).getTime();
+  if (typeof value === 'boolean' || Number.isNaN(ms)) {
+    throw new TypeError(
+      `${owner} expiresAt must be a date, epoch milliseconds, or an ISO 8601 string`,
+    );
+  }
+  return ms;
 }
 
 /** A page of a v4 list endpoint. Requests page with `cursor`, never `page`. */
@@ -151,12 +194,35 @@ type CancelTokenRegistry = {
  */
 export class ShortcutV4Client extends Api<string> {
   readonly timeoutMs: number;
+  private readonly refresh?: {
+    run: ShortcutV4RefreshOptions['run'];
+    beforeMs: number;
+  };
+  private expiresAt?: number;
+  private refreshing?: Promise<void>;
 
   constructor(options: ShortcutV4ClientOptions) {
     if (typeof options?.token !== 'string' || options.token.length === 0) {
       throw new TypeError('ShortcutV4Client requires a token');
     }
     const timeoutMs = resolveTimeoutMs(options.timeoutMs, 'ShortcutV4Client');
+    const refresh = options.refresh;
+    if (refresh !== undefined) {
+      if (typeof refresh?.run !== 'function') {
+        throw new TypeError('ShortcutV4Client refresh.run must be a function');
+      }
+      const beforeMs = refresh.beforeMs ?? DEFAULT_REFRESH_BEFORE_MS;
+      if (
+        typeof beforeMs !== 'number' ||
+        Number.isNaN(beforeMs) ||
+        beforeMs < 0
+      ) {
+        throw new TypeError(
+          'ShortcutV4Client refresh.beforeMs must be a non-negative number of milliseconds',
+        );
+      }
+      expiryMs(refresh.expiresAt, 'ShortcutV4Client refresh');
+    }
     super({
       baseUrl: (options.baseUrl ?? SHORTCUT_V4_BASE_URL).replace(/\/+$/, ''),
       ...(options.fetch ? { customFetch: options.fetch } : {}),
@@ -166,13 +232,20 @@ export class ShortcutV4Client extends Api<string> {
     });
     this.timeoutMs = timeoutMs;
     this.setSecurityData(options.token);
+    if (refresh !== undefined) {
+      this.refresh = {
+        run: refresh.run,
+        beforeMs: refresh.beforeMs ?? DEFAULT_REFRESH_BEFORE_MS,
+      };
+      this.expiresAt = expiryMs(refresh.expiresAt, 'ShortcutV4Client refresh');
+    }
 
     // The generated `request` only honours `signal` when no `cancelToken` is
     // given, so the timeout wraps it: the cancel token's controller is created
     // here, joined with the caller's signal and the timer, and handed down as
     // the one signal `fetch` and the body read observe.
     const base = this.request;
-    this.request = async <T = any>({
+    const attempt = async <T>({
       cancelToken,
       signal,
       ...params
@@ -202,11 +275,58 @@ export class ShortcutV4Client extends Api<string> {
         }
       }
     };
+    // Refresh before a request once the token is about to expire, and once
+    // more when a request still comes back 401; a second 401 rejects.
+    this.request = async <T = any>(params: FullRequestParams): Promise<T> => {
+      if (this.refresh === undefined) return attempt<T>(params);
+      if (this.isExpiring()) await this.refreshToken();
+      try {
+        return await attempt<T>(params);
+      } catch (error) {
+        if (!isShortcutV4RequestError(error) || error.status !== 401)
+          throw error;
+        await this.refreshToken();
+        return attempt<T>(params);
+      }
+    };
   }
 
-  /** Replaces the bearer token, e.g. after an OAuth refresh. */
-  setToken(token: string): void {
+  /**
+   * Replaces the bearer token, e.g. after an OAuth refresh done outside the
+   * client, and its expiry when known.
+   */
+  setToken(token: string, expiresAt?: string | number | Date): void {
+    if (typeof token !== 'string' || token.length === 0) {
+      throw new TypeError('ShortcutV4Client requires a token');
+    }
+    const expiry = expiryMs(expiresAt, 'ShortcutV4Client setToken');
     this.setSecurityData(token);
+    if (expiresAt !== undefined) this.expiresAt = expiry;
+  }
+
+  private isExpiring(): boolean {
+    return (
+      this.refresh !== undefined &&
+      this.expiresAt !== undefined &&
+      Date.now() >= this.expiresAt - this.refresh.beforeMs
+    );
+  }
+
+  /** Runs `refresh.run` once for every caller waiting on it. */
+  private refreshToken(): Promise<void> {
+    const refresh = this.refresh;
+    if (refresh === undefined) return Promise.resolve();
+    this.refreshing ??= Promise.resolve()
+      .then(() => refresh.run())
+      .then(({ token, expiresAt }) => {
+        this.setToken(token);
+        // A refresh that reports no expiry leaves it unknown, not stale.
+        this.expiresAt = expiryMs(expiresAt, 'ShortcutV4Client refresh');
+      })
+      .finally(() => {
+        this.refreshing = undefined;
+      });
+    return this.refreshing;
   }
 
   /** The API bound to one workspace slug. */

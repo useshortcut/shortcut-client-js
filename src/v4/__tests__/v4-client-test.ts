@@ -6,6 +6,8 @@ import {
   ShortcutOAuthError,
   ShortcutV4Client,
   type ShortcutV4ClientOptions,
+  type ShortcutV4RefreshedToken,
+  applyRefresh,
   grantedScopes,
   isShortcutV4RequestError,
   summarizeShortcutV4Error,
@@ -986,6 +988,253 @@ describe('ShortcutV4Client timeouts', () => {
       ).toThrow(TypeError);
     },
   );
+});
+
+describe('ShortcutV4Client refresh', () => {
+  const inMs = (ms: number) => new Date(Date.now() + ms).toISOString();
+  const bearer = (init: RequestInit) =>
+    (init.headers as Record<string, string>).Authorization;
+
+  it('refreshes before a request once the token is within the window', async () => {
+    const run = vi.fn<() => Promise<ShortcutV4RefreshedToken>>(async () => ({
+      token: 'rotated',
+      expiresAt: inMs(60 * 60_000),
+    }));
+    const { calls, client: c } = client(
+      () => Response.json({ entity: { id: 1 } }),
+      {
+        refresh: { expiresAt: inMs(4 * 60_000), run },
+      },
+    );
+    await c.workspace('acme').getStory(1);
+    await c.workspace('acme').getStory(1);
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(calls.map((call) => bearer(call.init))).toEqual([
+      'Bearer rotated',
+      'Bearer rotated',
+    ]);
+  });
+
+  it('does not refresh while the token is outside the window, and honours beforeMs', async () => {
+    const run = vi.fn<() => Promise<ShortcutV4RefreshedToken>>(async () => ({
+      token: 'rotated',
+    }));
+    const { calls, client: c } = client(
+      () => Response.json({ entity: { id: 1 } }),
+      {
+        refresh: { expiresAt: inMs(10 * 60_000), run },
+      },
+    );
+    await c.workspace('acme').getStory(1);
+    expect(run).not.toHaveBeenCalled();
+    const custom = client(() => Response.json({ entity: { id: 1 } }), {
+      refresh: { expiresAt: inMs(10 * 60_000), beforeMs: 11 * 60_000, run },
+    });
+    await custom.client.workspace('acme').getStory(1);
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(bearer(calls[0].init)).toBe('Bearer secret-token');
+    expect(bearer(custom.calls[0].init)).toBe('Bearer rotated');
+  });
+
+  it('refreshes once on a 401 and retries with the new token', async () => {
+    const run = vi.fn<() => Promise<ShortcutV4RefreshedToken>>(async () => ({
+      token: 'rotated',
+    }));
+    const { calls, client: c } = client(
+      (_url, init) =>
+        bearer(init) === 'Bearer rotated'
+          ? Response.json({ entity: { id: 1 } })
+          : Response.json({ message: 'Unauthorized' }, { status: 401 }),
+      { refresh: { run } },
+    );
+    await expect(c.workspace('acme').getStory(1)).resolves.toEqual({
+      entity: { id: 1 },
+    });
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(calls.map((call) => bearer(call.init))).toEqual([
+      'Bearer secret-token',
+      'Bearer rotated',
+    ]);
+  });
+
+  it('rejects with the second 401 rather than refreshing again', async () => {
+    const run = vi.fn<() => Promise<ShortcutV4RefreshedToken>>(async () => ({
+      token: 'rotated',
+    }));
+    const { calls, client: c } = client(
+      () => Response.json({ message: 'Unauthorized' }, { status: 401 }),
+      { refresh: { run } },
+    );
+    const error = await rejectionOf(c.workspace('acme').getStory(1));
+    expect(isShortcutV4RequestError(error) && error.status).toBe(401);
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(calls).toHaveLength(2);
+  });
+
+  it('shares one refresh between concurrent requests', async () => {
+    const rotated = deferred<{ token: string }>();
+    const run = vi.fn<() => Promise<ShortcutV4RefreshedToken>>(
+      () => rotated.promise,
+    );
+    const { calls, client: c } = client(
+      () => Response.json({ entity: { id: 1 } }),
+      {
+        refresh: { expiresAt: inMs(-1), run },
+      },
+    );
+    const requests = [1, 2, 3].map((id) => c.workspace('acme').getStory(id));
+    await Promise.resolve();
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(calls).toHaveLength(0);
+    rotated.resolve({ token: 'rotated' });
+    await Promise.all(requests);
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(calls.map((call) => bearer(call.init))).toEqual(
+      Array(3).fill('Bearer rotated'),
+    );
+  });
+
+  it('rejects the request with the refresh error when run fails', async () => {
+    const failure = new Error('store unavailable');
+    const { calls, client: c } = client(
+      () => Response.json({ message: 'Unauthorized' }, { status: 401 }),
+      {
+        refresh: {
+          run: async () => {
+            throw failure;
+          },
+        },
+      },
+    );
+    await expect(c.workspace('acme').getStory(1)).rejects.toBe(failure);
+    expect(calls).toHaveLength(1);
+    const proactive = client(() => Response.json({ entity: { id: 1 } }), {
+      refresh: {
+        expiresAt: inMs(-1),
+        run: async () => {
+          throw failure;
+        },
+      },
+    });
+    await expect(proactive.client.workspace('acme').getStory(1)).rejects.toBe(
+      failure,
+    );
+    expect(proactive.calls).toHaveLength(0);
+  });
+
+  it('refreshes in the middle of paginate', async () => {
+    const run = vi.fn<() => Promise<ShortcutV4RefreshedToken>>(async () => ({
+      token: 'rotated',
+    }));
+    const { client: c } = client(
+      (url, init) => {
+        const cursor = new URL(url).searchParams.get('cursor');
+        if (cursor && bearer(init) !== 'Bearer rotated')
+          return Response.json({ message: 'Unauthorized' }, { status: 401 });
+        return Response.json(
+          cursor
+            ? { entities: [{ id: 2 }], current_page: 2, total_pages: 2 }
+            : {
+                entities: [{ id: 1 }],
+                current_page: 1,
+                total_pages: 2,
+                next_page_url:
+                  'https://api.example.com/api/v4/acme/stories/1/comments?cursor=c2',
+              },
+        );
+      },
+      { refresh: { run } },
+    );
+    const items = [];
+    for await (const item of c.paginate(
+      c.workspace('acme').listStoryComments(1),
+    ))
+      items.push(item);
+    expect(items).toEqual([{ id: 1 }, { id: 2 }]);
+    expect(run).toHaveBeenCalledTimes(1);
+  });
+
+  it('takes an expiry from setToken and from run', async () => {
+    const run = vi.fn<() => Promise<ShortcutV4RefreshedToken>>(async () => ({
+      token: 'rotated',
+    }));
+    const { calls, client: c } = client(
+      () => Response.json({ entity: { id: 1 } }),
+      {
+        refresh: { run },
+      },
+    );
+    await c.workspace('acme').getStory(1);
+    expect(run).not.toHaveBeenCalled();
+    c.setToken('manual', Date.now() + 60_000);
+    await c.workspace('acme').getStory(1);
+    expect(run).toHaveBeenCalledTimes(1);
+    // The refresh reported no expiry, so nothing is expiring any more.
+    await c.workspace('acme').getStory(1);
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(calls.map((call) => bearer(call.init))).toEqual([
+      'Bearer secret-token',
+      'Bearer rotated',
+      'Bearer rotated',
+    ]);
+  });
+
+  it('validates the refresh options', () => {
+    const make = (refresh: unknown) =>
+      new ShortcutV4Client({
+        token: 't',
+        refresh: refresh as ShortcutV4ClientOptions['refresh'],
+      });
+    expect(() => make({})).toThrow(TypeError);
+    expect(() => make({ run: 'later' })).toThrow(TypeError);
+    expect(() =>
+      make({ run: async () => ({ token: 't' }), beforeMs: -1 }),
+    ).toThrow(TypeError);
+    expect(() =>
+      make({ run: async () => ({ token: 't' }), expiresAt: 'soon' }),
+    ).toThrow(TypeError);
+    expect(() =>
+      make({ run: async () => ({ token: 't' }), expiresAt: new Date(0) }),
+    ).not.toThrow();
+    expect(() =>
+      new ShortcutV4Client({ token: 't' }).setToken('u', 'never'),
+    ).toThrow(TypeError);
+  });
+
+  it('merges a refresh over the previous tokens with applyRefresh', () => {
+    const previous = {
+      access_token: 'a1',
+      refresh_token: 'r1',
+      access_token_expires_at: '2026-01-01T00:00:00Z',
+      permission_id: 'p',
+      workspace2_id: 'w',
+      workspace2_slug: 'acme',
+      scope: 'read comment-write',
+    };
+    const rotated = {
+      access_token: 'a2',
+      refresh_token: 'r2',
+      access_token_expires_at: '2026-02-01T00:00:00Z',
+    };
+    expect(applyRefresh(previous, rotated)).toEqual({
+      ...previous,
+      ...rotated,
+    });
+    expect(
+      applyRefresh(previous, {
+        ...rotated,
+        scope: 'read',
+        workspace2_slug: 'renamed',
+      }),
+    ).toEqual({
+      ...previous,
+      ...rotated,
+      scope: 'read',
+      workspace2_slug: 'renamed',
+    });
+    const { scope: _scope, ...unscoped } = previous;
+    expect(applyRefresh(unscoped, rotated)).not.toHaveProperty('scope');
+  });
 });
 
 describe('ShortcutOAuth', () => {

@@ -46,6 +46,32 @@ export type ShortcutOAuthRefreshTokens = Omit<
     >
   >;
 
+const RETAINED_ON_REFRESH = [
+  'permission_id',
+  'workspace2_id',
+  'workspace2_slug',
+  'scope',
+  'token_type',
+] as const;
+
+/**
+ * The tokens after a refresh: the rotated fields from `refreshed`, with the
+ * workspace, permission, scope, and token type kept from `previous` when the
+ * refresh response omits them.
+ */
+export function applyRefresh(
+  previous: ShortcutOAuthTokens,
+  refreshed: ShortcutOAuthRefreshTokens,
+): ShortcutOAuthTokens {
+  const merged: Record<string, unknown> = { ...previous, ...refreshed };
+  for (const key of RETAINED_ON_REFRESH) {
+    if (refreshed[key] !== undefined) continue;
+    if (previous[key] === undefined) delete merged[key];
+    else merged[key] = previous[key];
+  }
+  return merged as unknown as ShortcutOAuthTokens;
+}
+
 export class ShortcutOAuthError extends Error {
   readonly status: number;
   readonly error: string;
