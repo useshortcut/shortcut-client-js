@@ -11,6 +11,8 @@ export interface ShortcutWebhookActor {
   displayable_name: string;
   /** The acting member's permission id. Compare against the agent's own `permission_id` to ignore its own writes. */
   member_id?: string;
+  /** The acting member's @-handle, when the actor is a member with one; address them with `@${mention_name}`. */
+  mention_name?: string;
   automation_id?: string;
   webhook_id?: string;
 }
