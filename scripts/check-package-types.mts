@@ -20,12 +20,19 @@ import { isShortcutV4RequestError } from '@shortcut/client/v4';
 import type { ShortcutV4ErrorBody, ShortcutWorkspaceApi, WorkspaceOperation } from '@shortcut/client/v4';
 import { ShortcutWebhookClient } from '@shortcut/client/webhooks';
 import axios, { type AxiosInstance } from 'axios';
+import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 const legacy: ShortcutClient = new ShortcutClient('token');
 legacy.instance = axios.create();
 const instance: AxiosInstance = legacy.instance;
 new NamedV3('token');
 new NamedV4({ token: 'token' });
-new ShortcutWebhookClient('secret');
+const webhooks = new ShortcutWebhookClient('secret');
+const handler = webhooks.createHandler();
+// Node's real request and response types must satisfy the structural
+// \`ShortcutNodeRequest\` / \`ShortcutNodeResponse\` overload.
+createServer(handler);
+const nodeResult: Promise<void> = handler({} as IncomingMessage, {} as ServerResponse);
+const fetchResult: Promise<Response> = handler(new Request('https://x'));
 const client: ShortcutV4Client = new ShortcutV4Client({ token: 'token' });
 const workspace = client.workspace('acme');
 workspace.getWhoami();
@@ -75,6 +82,20 @@ async function describeFailure(): Promise<string> {
   return '';
 }
 void describeFailure;
+`;
+// A Workers-style project: no Node types at all, only the DOM's Fetch API.
+// The webhooks declarations must not reach for `node:http`.
+const workersSource = `
+import { ShortcutV4Client } from '@shortcut/client/v4';
+import { ShortcutWebhookClient } from '@shortcut/client/webhooks';
+const client = new ShortcutV4Client({ token: 'token' });
+client.workspace('acme').getWhoami();
+const webhooks = new ShortcutWebhookClient('s');
+const handler = webhooks.createHandler();
+handler.on('mentioned', async () => {});
+const response: Promise<Response> = handler(new Request('https://x'));
+webhooks.verify(new Request('https://x'));
+export default { fetch: handler };
 `;
 try {
   mkdirSync(join(dir, 'node_modules/@shortcut'), { recursive: true });
@@ -151,6 +172,36 @@ try {
       );
     }
     console.log(`Consumer types pass: ${label}`);
+  }
+  {
+    const file = join(dir, 'worker.mts');
+    writeFileSync(file, workersSource);
+    const program = ts.createProgram([file], {
+      module: ts.ModuleKind.ESNext,
+      moduleResolution: ts.ModuleResolutionKind.Bundler,
+      target: ts.ScriptTarget.ES2022,
+      lib: ['lib.es2022.d.ts', 'lib.dom.d.ts', 'lib.dom.iterable.d.ts'],
+      noEmit: true,
+      strict: true,
+      esModuleInterop: true,
+      types: [],
+      typeRoots: [resolve(import.meta.dirname, '../node_modules/@types')],
+      ignoreDeprecations: '6.0',
+    });
+    const diagnostics = ts.getPreEmitDiagnostics(program);
+    if (diagnostics.length) {
+      throw new Error(
+        `workers (no Node types):\n${ts.formatDiagnosticsWithColorAndContext(
+          diagnostics,
+          {
+            getCanonicalFileName: (name) => name,
+            getCurrentDirectory: () => dir,
+            getNewLine: () => '\n',
+          },
+        )}`,
+      );
+    }
+    console.log('Consumer types pass: workers (no Node types)');
   }
 } finally {
   rmSync(dir, { recursive: true, force: true });

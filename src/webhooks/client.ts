@@ -1,4 +1,3 @@
-import type { IncomingMessage, ServerResponse } from 'node:http';
 import {
   type ShortcutInteractionPayload,
   type ShortcutObserverPayload,
@@ -79,9 +78,28 @@ export type ShortcutWebhookEventHandler<
   T extends ShortcutWebhookPayload = ShortcutWebhookPayload,
 > = (payload: T, delivery: ShortcutVerifiedDelivery) => void | Promise<void>;
 
+/**
+ * The subset of Node's `http.IncomingMessage` the Node handler uses. It is
+ * structural so the declarations never depend on `@types/node`, which keeps
+ * the entrypoint usable from Workers, Deno, and Bun projects.
+ */
+export interface ShortcutNodeRequest {
+  method?: string | undefined;
+  headers: Record<string, string | string[] | undefined>;
+  destroy(error?: Error): unknown;
+  [Symbol.asyncIterator](): AsyncIterator<Uint8Array | string>;
+}
+
+/** The subset of Node's `http.ServerResponse` the Node handler uses. */
+export interface ShortcutNodeResponse {
+  statusCode: number;
+  setHeader(name: string, value: string): unknown;
+  end(chunk: string): unknown;
+}
+
 export interface ShortcutWebhookHandler {
   (request: Request): Promise<Response>;
-  (request: IncomingMessage, response: ServerResponse): Promise<void>;
+  (request: ShortcutNodeRequest, response: ShortcutNodeResponse): Promise<void>;
   on<T extends ShortcutWebhookEventName>(
     event: T,
     handler: ShortcutWebhookEventHandler<ShortcutWebhookEventPayloadMap[T]>,
@@ -225,12 +243,15 @@ export class ShortcutWebhookClient {
       ShortcutWebhookEventHandler[]
     >();
     const handler = async (
-      requestOrMessage: Request | IncomingMessage,
-      response?: ServerResponse,
+      requestOrMessage: Request | ShortcutNodeRequest,
+      response?: ShortcutNodeResponse,
     ): Promise<Response | void> => {
       const adapter = this.isFetchRequest(requestOrMessage)
         ? this.createFetchAdapter(requestOrMessage)
-        : this.createNodeAdapter(requestOrMessage, response as ServerResponse);
+        : this.createNodeAdapter(
+            requestOrMessage,
+            response as ShortcutNodeResponse,
+          );
       let delivery: ShortcutVerifiedDelivery;
       try {
         delivery = await this.verifyAdapter(adapter);
@@ -355,8 +376,8 @@ export class ShortcutWebhookClient {
   }
 
   private createNodeAdapter(
-    message: IncomingMessage,
-    response: ServerResponse,
+    message: ShortcutNodeRequest,
+    response: ShortcutNodeResponse,
   ): HttpAdapter {
     const header = (name: string): string | null => {
       const value = message.headers[name];
