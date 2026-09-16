@@ -75,12 +75,13 @@ v3 and v4 ship together in this package because v4 does not yet cover every v3 e
 
 ### `@shortcut/client/v4`
 
-v4 is workspace-scoped: every operation takes the workspace slug first, and `workspace(slug)` binds it once. The generated operations URL-encode their path parameters (the slug, member ids, external ids, ...), so pass raw values. Requests that fail reject with the `Response`, whose `error` carries the parsed body, the raw text when the body is not JSON, or `null` when it is empty. Lists page by cursor; `paginate()` follows `next_page_url` and only sends the token back to the same API origin. Every request, including reading its body, is aborted with a `TimeoutError` after `timeoutMs` (30 s by default; `Infinity` disables it), which composes with a per-request `signal` or `cancelToken`.
+v4 is workspace-scoped: every operation takes the workspace slug first, and `workspace(slug)` binds it once. The generated operations URL-encode their path parameters (the slug, member ids, external ids, ...), so pass raw values. Requests that fail reject with the `Response`, whose `error` carries the parsed body, the raw text when the body is not JSON, or `null` when it is empty, and whose `request` names the method and URL pathname (never the query) that produced it. `summarizeShortcutV4Error(error)` reduces a rejection to method, path, status, and the body's identifier-shaped `tag` and `error` codes, which is safe to log without echoing user content, cursors, or credentials. Lists page by cursor; `paginate()` follows `next_page_url` and only sends the token back to the same API origin. Every request, including reading its body, is aborted with a `TimeoutError` after `timeoutMs` (30 s by default; `Infinity` disables it), which composes with a per-request `signal` or `cancelToken`.
 
 ```ts
 import {
   ShortcutV4Client,
   isShortcutV4RequestError,
+  summarizeShortcutV4Error,
 } from '@shortcut/client/v4';
 
 const client = new ShortcutV4Client({ token: process.env.SHORTCUT_TOKEN });
@@ -103,8 +104,11 @@ try {
     { fields: 'id' },
   );
 } catch (error) {
-  if (isShortcutV4RequestError(error))
-    console.error(error.status, error.error.message);
+  // e.g. { method: 'POST', path: '/api/v4/acme/stories/123/comments', status: 422, tag: 'invalid_params' }
+  console.error(summarizeShortcutV4Error(error));
+  if (isShortcutV4RequestError(error) && error.status === 404) {
+    // error.error is the parsed body, the raw text, or null
+  }
 }
 ```
 

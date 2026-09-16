@@ -61,19 +61,67 @@ export type ShortcutWorkspaceApi = {
  */
 export type ShortcutV4ErrorBody = ApiError | string | null;
 
-/** The rejection value of a failed v4 request: the `Response`, with the error body on `error`. */
+/** The request a rejected `Response` answers: the uppercase method and the URL pathname, never the query. */
+export type ShortcutV4RequestInfo = HttpResponse<unknown, unknown>['request'];
+
+/**
+ * The rejection value of a failed v4 request: the `Response`, with the error
+ * body on `error` and the request that produced it on `request`.
+ */
 export type ShortcutV4RequestError = HttpResponse<unknown, ShortcutV4ErrorBody>;
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
 
 export function isShortcutV4RequestError(
   value: unknown,
 ): value is ShortcutV4RequestError {
   return (
-    typeof value === 'object' &&
-    value !== null &&
-    'status' in value &&
-    typeof (value as Response).status === 'number' &&
-    'error' in value
+    isRecord(value) &&
+    typeof value.status === 'number' &&
+    'error' in value &&
+    isRecord(value.request) &&
+    typeof value.request.method === 'string' &&
+    typeof value.request.path === 'string'
   );
+}
+
+/** What `summarizeShortcutV4Error` keeps of a rejection: safe to log as is. */
+export interface ShortcutV4ErrorSummary {
+  method: string;
+  path: string;
+  status: number;
+  /** The body's `tag`, when it is an identifier. */
+  tag?: string;
+  /** The body's `error`, when it is an identifier. */
+  code?: string;
+}
+
+const IDENTIFIER = /^[a-z][a-z0-9_]{0,79}$/;
+
+/**
+ * Reduces a rejected request to its method, pathname, status, and the body's
+ * machine-readable `tag` and `error` codes. Free-form messages, the response
+ * body, the query string, and headers are left out, so the result can be
+ * logged without echoing user content, cursors, or credentials. Returns
+ * `null` for anything that is not a v4 rejection.
+ */
+export function summarizeShortcutV4Error(
+  error: unknown,
+): ShortcutV4ErrorSummary | null {
+  if (!isShortcutV4RequestError(error)) return null;
+  const summary: ShortcutV4ErrorSummary = {
+    method: error.request.method,
+    path: error.request.path,
+    status: error.status,
+  };
+  const body = error.error;
+  if (body !== null && typeof body === 'object') {
+    const { tag, error: code } = body as { tag?: unknown; error?: unknown };
+    if (typeof tag === 'string' && IDENTIFIER.test(tag)) summary.tag = tag;
+    if (typeof code === 'string' && IDENTIFIER.test(code)) summary.code = code;
+  }
+  return summary;
 }
 
 const MAX_PAGES = 10_000;
@@ -92,8 +140,9 @@ type CancelTokenRegistry = {
  * Generated operations take the workspace slug as their first argument;
  * `workspace(slug)` returns the same operations with it applied. Requests
  * that fail reject with the `Response`, so `isShortcutV4RequestError` narrows
- * a caught error to one with a typed `.error` body and `.status`. Every
- * request is aborted with a `TimeoutError` after `timeoutMs`.
+ * a caught error to one with a typed `.error` body, `.status`, and the
+ * `.request` that produced it. Every request is aborted with a `TimeoutError`
+ * after `timeoutMs`.
  *
  * ```ts
  * const client = new ShortcutV4Client({ token });

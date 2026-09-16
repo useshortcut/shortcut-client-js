@@ -50,9 +50,20 @@ export interface HttpResponse<D extends unknown, E extends unknown = unknown>
   extends Response {
   data: D;
   error: E;
+  /** The request this response answers: uppercase method and URL pathname, never the query. */
+  request: { method: string; path: string };
 }
 
 type CancelToken = Symbol | string | number;
+
+/** The pathname of `url`, falling back to `path` without its query or fragment. */
+function pathnameOf(url: string, path: string): string {
+  try {
+    return new URL(url).pathname;
+  } catch {
+    return path.split(/[?#]/)[0] ?? "";
+  }
+}
 
 export enum ContentType {
   Json = "application/json",
@@ -219,29 +230,31 @@ export class HttpClient<SecurityDataType = unknown> {
     const payloadFormatter = this.contentFormatters[type || ContentType.Json];
     const responseFormat = format || requestParams.format;
 
-    return this.customFetch(
-      `${baseUrl || this.baseUrl || ""}${path}${queryString ? `?${queryString}` : ""}`,
-      {
-        ...requestParams,
-        headers: {
-          ...(requestParams.headers || {}),
-          ...(type && type !== ContentType.FormData
-            ? { "Content-Type": type }
-            : {}),
-        },
-        signal:
-          (cancelToken
-            ? this.createAbortSignal(cancelToken)
-            : requestParams.signal) || null,
-        body:
-          typeof body === "undefined" || body === null
-            ? null
-            : payloadFormatter(body),
+    const url = `${baseUrl || this.baseUrl || ""}${path}${queryString ? `?${queryString}` : ""}`;
+    return this.customFetch(url, {
+      ...requestParams,
+      headers: {
+        ...(requestParams.headers || {}),
+        ...(type && type !== ContentType.FormData
+          ? { "Content-Type": type }
+          : {}),
       },
-    ).then(async (response) => {
+      signal:
+        (cancelToken
+          ? this.createAbortSignal(cancelToken)
+          : requestParams.signal) || null,
+      body:
+        typeof body === "undefined" || body === null
+          ? null
+          : payloadFormatter(body),
+    }).then(async (response) => {
       const r = response as HttpResponse<T, E>;
       r.data = null as unknown as T;
       r.error = null as unknown as E;
+      r.request = {
+        method: (requestParams.method || "GET").toUpperCase(),
+        path: pathnameOf(url, path),
+      };
 
       // Read the original body exactly once; never parse a clone, which
       // leaves the original stream open until the request is aborted or
