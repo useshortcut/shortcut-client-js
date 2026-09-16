@@ -16,8 +16,8 @@ const dir = mkdtempSync(join(tmpdir(), 'shortcut-consumer-'));
 const source = `
 import ShortcutClient, { ShortcutClient as NamedV3 } from '@shortcut/client';
 import ShortcutV4Client, { ShortcutV4Client as NamedV4, ShortcutOAuth } from '@shortcut/client/v4';
-import { isShortcutV4RequestError } from '@shortcut/client/v4';
-import type { ShortcutV4ErrorBody, ShortcutWorkspaceApi, WorkspaceOperation } from '@shortcut/client/v4';
+import { isShortcutV4RequestError, summarizeShortcutV4Error } from '@shortcut/client/v4';
+import type { ShortcutV4ErrorBody, ShortcutV4ErrorSummary, ShortcutWorkspaceApi, WorkspaceOperation } from '@shortcut/client/v4';
 import { ShortcutWebhookClient } from '@shortcut/client/webhooks';
 import axios, { type AxiosInstance } from 'axios';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
@@ -81,6 +81,8 @@ async function describeFailure(): Promise<string> {
     if (isShortcutV4RequestError(error)) {
       const status: number = error.status;
       const body: ShortcutV4ErrorBody = error.error;
+      const requested: string = error.request.method + ' ' + error.request.path;
+      void requested;
       // @ts-expect-error The body may be a string or null.
       error.error.message;
       if (typeof body === 'string') return body;
@@ -92,6 +94,9 @@ async function describeFailure(): Promise<string> {
   return '';
 }
 void describeFailure;
+const summary: ShortcutV4ErrorSummary | null = summarizeShortcutV4Error(new Error('x'));
+const summarized: string | undefined = summary?.tag;
+void summarized;
 `;
 // A Workers-style project: no Node types at all, only the DOM's Fetch API.
 // The webhooks declarations must not reach for `node:http`.

@@ -8,6 +8,7 @@ import {
   type ShortcutV4ClientOptions,
   grantedScopes,
   isShortcutV4RequestError,
+  summarizeShortcutV4Error,
 } from '../index';
 
 function client(
@@ -403,6 +404,113 @@ describe('ShortcutV4Client', () => {
     expect(all).toEqual([1, 2]);
     expect(first.bodyUsed).toBe(true);
     expect(second.bodyUsed).toBe(true);
+  });
+
+  it('attaches the request method and pathname, without the query, to rejections', async () => {
+    const { client: c } = client((_url, init) =>
+      Response.json(
+        { message: 'Not found' },
+        { status: init.method === 'POST' ? 422 : 404 },
+      ),
+    );
+    const read = await rejectionOf(
+      c.workspace('my workspace').getStory(123, { fields: 'name,team' }),
+    );
+    expect(isShortcutV4RequestError(read)).toBe(true);
+    expect((read as { request: unknown }).request).toEqual({
+      method: 'GET',
+      path: '/api/v4/my%20workspace/stories/123',
+    });
+    const write = await rejectionOf(
+      c
+        .workspace('acme')
+        .createStoryComment(123, { text: 'hi' }, { fields: 'id' }),
+    );
+    expect((write as { request: unknown }).request).toEqual({
+      method: 'POST',
+      path: '/api/v4/acme/stories/123/comments',
+    });
+    expect(
+      JSON.stringify((write as { request: unknown }).request),
+    ).not.toContain('fields');
+  });
+
+  it('attaches the page path without its cursor to a rejected page from paginate', async () => {
+    const { client: c } = client((url) =>
+      new URL(url).searchParams.has('cursor')
+        ? Response.json({ message: 'Bad cursor' }, { status: 400 })
+        : Response.json({
+            entities: [{ id: 1 }],
+            current_page: 1,
+            total_pages: 2,
+            next_page_url:
+              'https://api.example.com/api/v4/acme/stories/1/comments?cursor=secret-cursor',
+          }),
+    );
+    const seen: unknown[] = [];
+    const error = await rejectionOf(
+      (async () => {
+        for await (const item of c.paginate(
+          c.workspace('acme').listStoryComments(1, { fields: 'id' }),
+        )) {
+          seen.push(item);
+        }
+      })(),
+    );
+    expect(seen).toEqual([{ id: 1 }]);
+    expect(isShortcutV4RequestError(error)).toBe(true);
+    expect((error as { request: unknown }).request).toEqual({
+      method: 'GET',
+      path: '/api/v4/acme/stories/1/comments',
+    });
+    expect(JSON.stringify(summarizeShortcutV4Error(error))).not.toContain(
+      'secret-cursor',
+    );
+  });
+
+  it('summarizes a rejection to its method, path, status, and identifier-shaped codes', async () => {
+    const bodies: Array<[BodyInit | null, string | undefined]> = [
+      [
+        JSON.stringify({
+          tag: 'invalid_params',
+          error: 'bad_request',
+          message: 'private text',
+        }),
+        'application/json',
+      ],
+      [
+        JSON.stringify({ tag: 'Not An Identifier!', error: 42 }),
+        'application/json',
+      ],
+      ['<html>private proxy error</html>', 'text/html'],
+      [null, undefined],
+    ];
+    let index = 0;
+    const { client: c } = client(() => {
+      const [body, type] = bodies[index++];
+      return new Response(body, {
+        status: 400,
+        headers: type ? { 'content-type': type } : {},
+      });
+    });
+    const summaries = [];
+    for (let i = 0; i < bodies.length; i += 1) {
+      summaries.push(
+        summarizeShortcutV4Error(
+          await rejectionOf(c.workspace('acme').getStory(7)),
+        ),
+      );
+    }
+    const base = { method: 'GET', path: '/api/v4/acme/stories/7', status: 400 };
+    expect(summaries).toEqual([
+      { ...base, tag: 'invalid_params', code: 'bad_request' },
+      base,
+      base,
+      base,
+    ]);
+    expect(JSON.stringify(summaries)).not.toMatch(/private/);
+    expect(summarizeShortcutV4Error(new Error('nope'))).toBeNull();
+    expect(summarizeShortcutV4Error(null)).toBeNull();
   });
 
   it('follows cursor links on the API origin and stops at the last page', async () => {
