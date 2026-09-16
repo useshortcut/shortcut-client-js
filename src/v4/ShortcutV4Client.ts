@@ -128,19 +128,28 @@ export class ShortcutV4Client extends Api<string> {
       signal,
       ...params
     }: FullRequestParams): Promise<T> => {
+      const registry = (this as unknown as CancelTokenRegistry)
+        .abortControllers;
       const cancel =
         cancelToken === undefined
           ? signal
           : this.createAbortSignal(cancelToken);
+      // `abortRequest` drops the token's entry synchronously, so a request
+      // started with the same token before this one's rejection settles owns a
+      // newer controller; only forget the token while it still maps to ours.
+      const controller =
+        cancelToken === undefined ? undefined : registry?.get(cancelToken);
       try {
         return await withTimeout(this.timeoutMs, cancel, (combined) =>
           base<T>({ ...params, signal: combined }),
         );
       } finally {
-        if (cancelToken !== undefined) {
-          (this as unknown as CancelTokenRegistry).abortControllers?.delete(
-            cancelToken,
-          );
+        if (
+          cancelToken !== undefined &&
+          controller !== undefined &&
+          registry?.get(cancelToken) === controller
+        ) {
+          registry.delete(cancelToken);
         }
       }
     };

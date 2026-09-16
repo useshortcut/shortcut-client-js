@@ -680,6 +680,33 @@ describe('ShortcutV4Client timeouts', () => {
     expect(registry.abortControllers.size).toBe(0);
   });
 
+  it('keeps a reused cancelToken abortable after the previous request was aborted', async () => {
+    vi.useFakeTimers();
+    const { calls, client: c } = client((_url, init) =>
+      stalledUntilAborted(init),
+    );
+    const first = rejectionOf(
+      c.workspace('acme').getStory(1, undefined, { cancelToken: 'reused' }),
+    );
+    await vi.advanceTimersByTimeAsync(0);
+    c.abortRequest('reused');
+    // Start the second request before the first one's rejection has settled.
+    const second = rejectionOf(
+      c.workspace('acme').getStory(2, undefined, { cancelToken: 'reused' }),
+    );
+    expect(await first).toHaveProperty('name', 'AbortError');
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(calls).toHaveLength(2);
+    expect(calls[1].init.signal?.aborted).toBe(false);
+    c.abortRequest('reused');
+    expect(calls[1].init.signal?.aborted).toBe(true);
+    expect(await second).toHaveProperty('name', 'AbortError');
+    const registry = c as unknown as {
+      abortControllers: Map<unknown, unknown>;
+    };
+    expect(registry.abortControllers.size).toBe(0);
+  });
+
   it('still aborts through a caller-provided signal', async () => {
     vi.useFakeTimers();
     const { calls, client: c } = client((_url, init) =>
