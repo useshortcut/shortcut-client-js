@@ -9,7 +9,7 @@ import type {
   FullRequestParams,
   HttpResponse,
 } from './generated/http-client';
-import { resolveTimeoutMs, withTimeout } from './timeout';
+import { resolveTimeoutMs, untilAborted, withTimeout } from './timeout';
 
 export const SHORTCUT_V4_BASE_URL = 'https://api.app.shortcut.com';
 
@@ -57,20 +57,57 @@ export interface ShortcutV4RefreshedToken {
 
 const DEFAULT_REFRESH_BEFORE_MS = 5 * 60 * 1000;
 
+function requireToken(token: unknown): asserts token is string {
+  if (typeof token !== 'string' || token.length === 0) {
+    throw new TypeError('ShortcutV4Client requires a token');
+  }
+}
+
 /** `expiresAt` as epoch milliseconds, or `undefined` when unknown. */
 function expiryMs(
   value: string | number | Date | undefined,
   owner: string,
 ): number | undefined {
-  if (value === undefined || value === null) return undefined;
+  if (value === undefined) return undefined;
   const ms =
-    value instanceof Date ? value.getTime() : new Date(value).getTime();
-  if (typeof value === 'boolean' || Number.isNaN(ms)) {
+    value instanceof Date
+      ? value.getTime()
+      : typeof value === 'string' || typeof value === 'number'
+        ? new Date(value).getTime()
+        : NaN;
+  if (Number.isNaN(ms)) {
     throw new TypeError(
-      `${owner} expiresAt must be a date, epoch milliseconds, or an ISO 8601 string`,
+      `${owner} expiresAt must be a Date, epoch milliseconds, or an ISO 8601 string`,
     );
   }
   return ms;
+}
+
+type RefreshState = {
+  run: ShortcutV4RefreshOptions['run'];
+  beforeMs: number;
+  expiresAt: number | undefined;
+};
+
+/** The validated refresh options, or `undefined` when refresh is off. */
+function resolveRefresh(
+  refresh: ShortcutV4RefreshOptions | undefined,
+): RefreshState | undefined {
+  if (refresh === undefined) return undefined;
+  if (typeof refresh?.run !== 'function') {
+    throw new TypeError('ShortcutV4Client refresh.run must be a function');
+  }
+  const beforeMs = refresh.beforeMs ?? DEFAULT_REFRESH_BEFORE_MS;
+  if (typeof beforeMs !== 'number' || Number.isNaN(beforeMs) || beforeMs < 0) {
+    throw new TypeError(
+      'ShortcutV4Client refresh.beforeMs must be a non-negative number of milliseconds',
+    );
+  }
+  return {
+    run: refresh.run,
+    beforeMs,
+    expiresAt: expiryMs(refresh.expiresAt, 'ShortcutV4Client refresh'),
+  };
 }
 
 /** A page of a v4 list endpoint. Requests page with `cursor`, never `page`. */
@@ -194,36 +231,15 @@ type CancelTokenRegistry = {
  */
 export class ShortcutV4Client extends Api<string> {
   readonly timeoutMs: number;
-  private readonly refresh?: {
-    run: ShortcutV4RefreshOptions['run'];
-    beforeMs: number;
-  };
+  private readonly refresh?: Omit<RefreshState, 'expiresAt'>;
   private expiresAt?: number;
   private refreshing?: Promise<void>;
   private tokenGeneration = 0;
 
   constructor(options: ShortcutV4ClientOptions) {
-    if (typeof options?.token !== 'string' || options.token.length === 0) {
-      throw new TypeError('ShortcutV4Client requires a token');
-    }
+    requireToken(options?.token);
     const timeoutMs = resolveTimeoutMs(options.timeoutMs, 'ShortcutV4Client');
-    const refresh = options.refresh;
-    if (refresh !== undefined) {
-      if (typeof refresh?.run !== 'function') {
-        throw new TypeError('ShortcutV4Client refresh.run must be a function');
-      }
-      const beforeMs = refresh.beforeMs ?? DEFAULT_REFRESH_BEFORE_MS;
-      if (
-        typeof beforeMs !== 'number' ||
-        Number.isNaN(beforeMs) ||
-        beforeMs < 0
-      ) {
-        throw new TypeError(
-          'ShortcutV4Client refresh.beforeMs must be a non-negative number of milliseconds',
-        );
-      }
-      expiryMs(refresh.expiresAt, 'ShortcutV4Client refresh');
-    }
+    const refresh = resolveRefresh(options.refresh);
     super({
       baseUrl: (options.baseUrl ?? SHORTCUT_V4_BASE_URL).replace(/\/+$/, ''),
       ...(options.fetch ? { customFetch: options.fetch } : {}),
@@ -234,11 +250,8 @@ export class ShortcutV4Client extends Api<string> {
     this.timeoutMs = timeoutMs;
     this.setSecurityData(options.token);
     if (refresh !== undefined) {
-      this.refresh = {
-        run: refresh.run,
-        beforeMs: refresh.beforeMs ?? DEFAULT_REFRESH_BEFORE_MS,
-      };
-      this.expiresAt = expiryMs(refresh.expiresAt, 'ShortcutV4Client refresh');
+      this.refresh = { run: refresh.run, beforeMs: refresh.beforeMs };
+      this.expiresAt = refresh.expiresAt;
     }
 
     // The generated `request` only honours `signal` when no `cancelToken` is
@@ -262,28 +275,12 @@ export class ShortcutV4Client extends Api<string> {
       const controller =
         cancelToken === undefined ? undefined : registry?.get(cancelToken);
       try {
-        return await withTimeout(this.timeoutMs, cancel, async (combined) => {
-          const attempt = async (): Promise<T> => {
+        return await withTimeout(this.timeoutMs, cancel, (combined) =>
+          this.withFreshToken(combined, () => {
             combined?.throwIfAborted();
             return base<T>({ ...params, signal: combined });
-          };
-          if (this.refresh === undefined) return attempt();
-          if (this.refreshing || this.isExpiring())
-            await this.refreshToken(combined);
-          const generation = this.tokenGeneration;
-          try {
-            return await attempt();
-          } catch (error) {
-            combined?.throwIfAborted();
-            if (!isShortcutV4RequestError(error) || error.status !== 401)
-              throw error;
-            // A delayed 401 may belong to a token another request already
-            // replaced. Reuse that token, or join a refresh still in flight.
-            if (generation === this.tokenGeneration || this.refreshing)
-              await this.refreshToken(combined);
-            return attempt();
-          }
-        });
+          }),
+        );
       } finally {
         if (
           cancelToken !== undefined &&
@@ -298,16 +295,40 @@ export class ShortcutV4Client extends Api<string> {
 
   /**
    * Replaces the bearer token, e.g. after an OAuth refresh done outside the
-   * client, and its expiry when known.
+   * client, and records its expiry. Omit `expiresAt` when it is unknown; the
+   * previous expiry does not carry over to a new token.
    */
   setToken(token: string, expiresAt?: string | number | Date): void {
-    if (typeof token !== 'string' || token.length === 0) {
-      throw new TypeError('ShortcutV4Client requires a token');
-    }
+    requireToken(token);
     const expiry = expiryMs(expiresAt, 'ShortcutV4Client setToken');
     this.setSecurityData(token);
     this.tokenGeneration += 1;
-    if (expiresAt !== undefined) this.expiresAt = expiry;
+    this.expiresAt = expiry;
+  }
+
+  /**
+   * Runs `send` with a token that is not about to expire, and once more
+   * after a fresh token when the first attempt comes back 401.
+   */
+  private async withFreshToken<T>(
+    signal: AbortSignal | undefined,
+    send: () => Promise<T>,
+  ): Promise<T> {
+    const refresh = this.refresh;
+    if (refresh === undefined) return send();
+    if (this.refreshing || this.isExpiring())
+      await this.refreshToken(refresh, signal);
+    const generation = this.tokenGeneration;
+    try {
+      return await send();
+    } catch (error) {
+      if (!isShortcutV4RequestError(error) || error.status !== 401) throw error;
+      // A delayed 401 may belong to a token another request already
+      // replaced. Reuse that token, or join a refresh still in flight.
+      if (generation === this.tokenGeneration || this.refreshing)
+        await this.refreshToken(refresh, signal);
+      return send();
+    }
   }
 
   private isExpiring(): boolean {
@@ -318,30 +339,20 @@ export class ShortcutV4Client extends Api<string> {
     );
   }
 
-  /** Shares the refresh while letting each caller cancel its own wait. */
-  private refreshToken(signal?: AbortSignal): Promise<void> {
+  /** Starts or joins the one in-flight refresh; each caller can abandon its own wait. */
+  private refreshToken(
+    refresh: Omit<RefreshState, 'expiresAt'>,
+    signal?: AbortSignal,
+  ): Promise<void> {
     if (signal?.aborted) return Promise.reject(signal.reason);
-    const refresh = this.refresh;
-    if (refresh === undefined) return Promise.resolve();
-    this.refreshing ??= Promise.resolve()
-      .then(() => refresh.run())
-      .then(({ token, expiresAt }) => {
-        this.setToken(token);
-        // A refresh that reports no expiry leaves it unknown, not stale.
-        this.expiresAt = expiryMs(expiresAt, 'ShortcutV4Client refresh');
-      })
+    this.refreshing ??= new Promise<ShortcutV4RefreshedToken>((resolve) =>
+      resolve(refresh.run()),
+    )
+      .then(({ token, expiresAt }) => this.setToken(token, expiresAt))
       .finally(() => {
         this.refreshing = undefined;
       });
-    if (!signal) return this.refreshing;
-    const refreshing = this.refreshing;
-    let onAbort: () => void;
-    const waiting = new Promise<void>((resolve, reject) => {
-      onAbort = () => reject(signal.reason);
-      signal.addEventListener('abort', onAbort, { once: true });
-      void refreshing.then(resolve, reject);
-    });
-    return waiting.finally(() => signal.removeEventListener('abort', onAbort));
+    return untilAborted(this.refreshing, signal);
   }
 
   /** The API bound to one workspace slug. */

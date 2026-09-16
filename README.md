@@ -112,16 +112,12 @@ try {
 }
 ```
 
-Agent apps authenticate with OAuth per workspace. `ShortcutOAuth` completes the authorization-code exchange and refreshes tokens; the response's `permission_id` is the agent's own member id, which deliveries report as `actor.member_id` for changes the agent made. A refresh response may omit the workspace fields; `applyRefresh(previous, rotated)` merges a refresh over the previous tokens and keeps them, along with `scope`, when omitted. Token requests share the same `timeoutMs` option (30 s by default, `Infinity` disables it, and it covers reading the body).
+Agent apps authenticate with OAuth per workspace. `ShortcutOAuth` completes the authorization-code exchange and refreshes tokens; the response's `permission_id` is the agent's own member id, which deliveries report as `actor.member_id` for changes the agent made. A refresh response may omit the workspace fields; pass the previous tokens to `refreshAccessToken` and it resolves the merged result, keeping them and `scope` when omitted (`applyRefresh` does the merge on its own). Token requests share the same `timeoutMs` option (30 s by default, `Infinity` disables it, and it covers reading the body).
 
 The client rotates the token itself when given `refresh`: it calls `run` before a request once `expiresAt` is within `beforeMs` (five minutes by default) and once more when a request comes back 401, then retries that request. Concurrent requests share one `run`; a delayed 401 from an older token retries with the token already refreshed by another request. A second 401 rejects as usual. The request deadline and cancellation cover refresh waits and the retry. Cancelling or timing out one request stops its wait without interrupting a shared refresh. `run` does the persistence and returns the new token, and its time counts against the request's `timeoutMs`, so raise that on the client when the token store is slow.
 
 ```ts
-import {
-  ShortcutOAuth,
-  ShortcutV4Client,
-  applyRefresh,
-} from '@shortcut/client/v4';
+import { ShortcutOAuth, ShortcutV4Client } from '@shortcut/client/v4';
 
 const oauth = new ShortcutOAuth({ clientId, clientSecret, redirectUri });
 let tokens = await oauth.exchangeAuthorizationCode(code);
@@ -132,10 +128,7 @@ const client = new ShortcutV4Client({
   refresh: {
     expiresAt: tokens.access_token_expires_at,
     run: async () => {
-      tokens = applyRefresh(
-        tokens,
-        await oauth.refreshAccessToken(tokens.refresh_token),
-      );
+      tokens = await oauth.refreshAccessToken(tokens);
       await store.save(tokens);
       return {
         token: tokens.access_token,

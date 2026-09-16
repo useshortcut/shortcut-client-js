@@ -46,30 +46,19 @@ export type ShortcutOAuthRefreshTokens = Omit<
     >
   >;
 
-const RETAINED_ON_REFRESH = [
-  'permission_id',
-  'workspace2_id',
-  'workspace2_slug',
-  'scope',
-  'token_type',
-] as const;
-
 /**
- * The tokens after a refresh: the rotated fields from `refreshed`, with the
- * workspace, permission, scope, and token type kept from `previous` when the
- * refresh response omits them.
+ * The tokens after a refresh: the rotated fields from `refreshed` over
+ * `previous`, so the workspace, permission, scope, and token type fields
+ * survive a refresh response that omits them.
  */
 export function applyRefresh(
   previous: ShortcutOAuthTokens,
   refreshed: ShortcutOAuthRefreshTokens,
 ): ShortcutOAuthTokens {
-  const merged: Record<string, unknown> = { ...previous, ...refreshed };
-  for (const key of RETAINED_ON_REFRESH) {
-    if (refreshed[key] !== undefined) continue;
-    if (previous[key] === undefined) delete merged[key];
-    else merged[key] = previous[key];
-  }
-  return merged as unknown as ShortcutOAuthTokens;
+  const rotated = Object.fromEntries(
+    Object.entries(refreshed).filter(([, value]) => value !== undefined),
+  );
+  return { ...previous, ...rotated };
 }
 
 export class ShortcutOAuthError extends Error {
@@ -136,16 +125,27 @@ export class ShortcutOAuth {
   }
 
   /**
-   * Rotates the tokens. The previous refresh token is invalidated. The
-   * response may omit the workspace and permission fields.
+   * Rotates the tokens. The previous refresh token is invalidated. Given the
+   * previous tokens, resolves the merged result (see {@link applyRefresh});
+   * given a refresh token, resolves the raw response, which may omit the
+   * workspace and permission fields.
    */
   refreshAccessToken(
-    refreshToken: string,
-  ): Promise<ShortcutOAuthRefreshTokens> {
-    if (typeof refreshToken !== 'string' || refreshToken.length === 0)
+    previous: ShortcutOAuthTokens,
+  ): Promise<ShortcutOAuthTokens>;
+  refreshAccessToken(refreshToken: string): Promise<ShortcutOAuthRefreshTokens>;
+  refreshAccessToken(
+    source: string | ShortcutOAuthTokens,
+  ): Promise<ShortcutOAuthRefreshTokens | ShortcutOAuthTokens> {
+    if (typeof source === 'object' && source !== null) {
+      return this.refreshAccessToken(source.refresh_token).then((refreshed) =>
+        applyRefresh(source, refreshed),
+      );
+    }
+    if (typeof source !== 'string' || source.length === 0)
       throw new TypeError('refreshToken is required');
     return this.tokenRequest<ShortcutOAuthRefreshTokens>(
-      { grant_type: 'refresh_token', refresh_token: refreshToken },
+      { grant_type: 'refresh_token', refresh_token: source },
       ['access_token', 'refresh_token'],
     );
   }

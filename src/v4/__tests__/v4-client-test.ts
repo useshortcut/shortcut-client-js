@@ -996,6 +996,10 @@ describe('ShortcutV4Client refresh', () => {
   const inMs = (ms: number) => new Date(Date.now() + ms).toISOString();
   const bearer = (init: RequestInit) =>
     (init.headers as Record<string, string>).Authorization;
+  const rotate = () =>
+    vi.fn<() => Promise<ShortcutV4RefreshedToken>>(async () => ({
+      token: 'rotated',
+    }));
 
   it('refreshes before a request once the token is within the window', async () => {
     const run = vi.fn<() => Promise<ShortcutV4RefreshedToken>>(async () => ({
@@ -1018,9 +1022,7 @@ describe('ShortcutV4Client refresh', () => {
   });
 
   it('does not refresh while the token is outside the window, and honours beforeMs', async () => {
-    const run = vi.fn<() => Promise<ShortcutV4RefreshedToken>>(async () => ({
-      token: 'rotated',
-    }));
+    const run = rotate();
     const { calls, client: c } = client(
       () => Response.json({ entity: { id: 1 } }),
       {
@@ -1039,9 +1041,7 @@ describe('ShortcutV4Client refresh', () => {
   });
 
   it('refreshes once on a 401 and retries with the new token', async () => {
-    const run = vi.fn<() => Promise<ShortcutV4RefreshedToken>>(async () => ({
-      token: 'rotated',
-    }));
+    const run = rotate();
     const { calls, client: c } = client(
       (_url, init) =>
         bearer(init) === 'Bearer rotated'
@@ -1060,9 +1060,7 @@ describe('ShortcutV4Client refresh', () => {
   });
 
   it('rejects with the second 401 rather than refreshing again', async () => {
-    const run = vi.fn<() => Promise<ShortcutV4RefreshedToken>>(async () => ({
-      token: 'rotated',
-    }));
+    const run = rotate();
     const { calls, client: c } = client(
       () => Response.json({ message: 'Unauthorized' }, { status: 401 }),
       { refresh: { run } },
@@ -1124,35 +1122,26 @@ describe('ShortcutV4Client refresh', () => {
           refresh: { expiresAt: mode === 'proactive' ? 0 : undefined, run },
         },
       );
-      let outcome: unknown = 'pending';
-      const request = c
-        .workspace('acme')
-        .createStoryComment(
-          1,
-          { text: 'cancelled' },
-          undefined,
-          cancellation === 'signal'
-            ? { signal: controller.signal }
-            : { cancelToken: 'comment' },
-        )
-        .then(
-          (value) => {
-            outcome = value;
-          },
-          (error) => {
-            outcome = error;
-          },
-        );
+      const request = rejectionOf(
+        c
+          .workspace('acme')
+          .createStoryComment(
+            1,
+            { text: 'cancelled' },
+            undefined,
+            cancellation === 'signal'
+              ? { signal: controller.signal }
+              : { cancelToken: 'comment' },
+          ),
+      );
       await vi.advanceTimersByTimeAsync(0);
       expect(run).toHaveBeenCalledTimes(1);
       if (cancellation === 'signal') controller.abort();
       else c.abortRequest('comment');
-      await vi.advanceTimersByTimeAsync(0);
-      const whenCancelled = outcome;
+      // The waiter rejects on its own; the shared refresh is still pending.
+      expect(await request).toHaveProperty('name', 'AbortError');
       rotated.resolve({ token: 'rotated' });
-      await request;
       await vi.advanceTimersByTimeAsync(0);
-      expect(whenCancelled).toHaveProperty('name', 'AbortError');
       expect(writes).toBe(0);
       expect(calls).toHaveLength(mode === 'proactive' ? 0 : 1);
       expect(vi.getTimerCount()).toBe(0);
@@ -1177,24 +1166,11 @@ describe('ShortcutV4Client refresh', () => {
           },
         },
       );
-      let outcome: unknown = 'pending';
-      const request = c
-        .workspace('acme')
-        .getStory(1)
-        .then(
-          (value) => {
-            outcome = value;
-          },
-          (error) => {
-            outcome = error;
-          },
-        );
+      const request = rejectionOf(c.workspace('acme').getStory(1));
       await vi.advanceTimersByTimeAsync(100);
-      const atDeadline = outcome;
+      expect(await request).toHaveProperty('name', 'TimeoutError');
       rotated.resolve({ token: 'rotated' });
-      await request;
       await vi.advanceTimersByTimeAsync(0);
-      expect(atDeadline).toHaveProperty('name', 'TimeoutError');
       expect(calls).toHaveLength(mode === 'proactive' ? 0 : 1);
       expect(vi.getTimerCount()).toBe(0);
     },
@@ -1213,29 +1189,18 @@ describe('ShortcutV4Client refresh', () => {
       },
       { refresh: { expiresAt: 0, run } },
     );
-    let outcome: unknown = 'pending';
-    const first = c
-      .workspace('acme')
-      .getStory(1, undefined, { cancelToken: 'reused' })
-      .then(
-        (value) => {
-          outcome = value;
-        },
-        (error) => {
-          outcome = error;
-        },
-      );
+    const first = rejectionOf(
+      c.workspace('acme').getStory(1, undefined, { cancelToken: 'reused' }),
+    );
     const second = c.workspace('acme').getStory(2);
     await vi.advanceTimersByTimeAsync(0);
     c.abortRequest('reused');
     const third = c
       .workspace('acme')
       .getStory(3, undefined, { cancelToken: 'reused' });
-    await vi.advanceTimersByTimeAsync(0);
-    const whenCancelled = outcome;
+    expect(await first).toHaveProperty('name', 'AbortError');
     rotated.resolve({ token: 'rotated' });
-    await Promise.all([first, second, third]);
-    expect(whenCancelled).toHaveProperty('name', 'AbortError');
+    await Promise.all([second, third]);
     expect(run).toHaveBeenCalledTimes(1);
     expect(calls.map((call) => new URL(call.url).pathname)).toEqual([
       '/api/v4/acme/stories/2',
@@ -1293,9 +1258,7 @@ describe('ShortcutV4Client refresh', () => {
   });
 
   it('does not start a refresh for an already-aborted request', async () => {
-    const run = vi.fn<() => Promise<ShortcutV4RefreshedToken>>(async () => ({
-      token: 'rotated',
-    }));
+    const run = rotate();
     const { calls, client: c } = client(() => Response.json({}), {
       refresh: { expiresAt: 0, run },
     });
@@ -1323,37 +1286,21 @@ describe('ShortcutV4Client refresh', () => {
         refresh: { run: () => rotated.promise },
       },
     );
-    let outcome: unknown = 'pending';
-    const request = c
-      .workspace('acme')
-      .getStory(1)
-      .then(
-        (value) => {
-          outcome = value;
-        },
-        (error) => {
-          outcome = error;
-        },
-      );
+    const request = rejectionOf(c.workspace('acme').getStory(1));
     await vi.advanceTimersByTimeAsync(40);
     first.resolve(Response.json({}, { status: 401 }));
     await vi.advanceTimersByTimeAsync(40);
     rotated.resolve({ token: 'rotated' });
     await vi.advanceTimersByTimeAsync(20);
-    const atDeadline = outcome;
-    await vi.advanceTimersByTimeAsync(100);
-    await request;
+    expect(await request).toHaveProperty('name', 'TimeoutError');
     expect(calls).toHaveLength(2);
-    expect(atDeadline).toHaveProperty('name', 'TimeoutError');
     expect(vi.getTimerCount()).toBe(0);
   });
 
   it('reuses the current token for a delayed 401 from an older token', async () => {
     const late = deferred<Response>();
     const started = deferred<void>();
-    const run = vi.fn<() => Promise<ShortcutV4RefreshedToken>>(async () => ({
-      token: 'rotated',
-    }));
+    const run = rotate();
     const { calls, client: c } = client(
       (url, init) => {
         if (bearer(init) === 'Bearer rotated')
@@ -1435,9 +1382,7 @@ describe('ShortcutV4Client refresh', () => {
   });
 
   it('refreshes in the middle of paginate', async () => {
-    const run = vi.fn<() => Promise<ShortcutV4RefreshedToken>>(async () => ({
-      token: 'rotated',
-    }));
+    const run = rotate();
     const { client: c } = client(
       (url, init) => {
         const cursor = new URL(url).searchParams.get('cursor');
@@ -1467,9 +1412,7 @@ describe('ShortcutV4Client refresh', () => {
   });
 
   it('takes an expiry from setToken and from run', async () => {
-    const run = vi.fn<() => Promise<ShortcutV4RefreshedToken>>(async () => ({
-      token: 'rotated',
-    }));
+    const run = rotate();
     const { calls, client: c } = client(
       () => Response.json({ entity: { id: 1 } }),
       {
@@ -1546,6 +1489,38 @@ describe('ShortcutV4Client refresh', () => {
     });
     const { scope: _scope, ...unscoped } = previous;
     expect(applyRefresh(unscoped, rotated)).not.toHaveProperty('scope');
+  });
+
+  it('merges for the caller when refreshAccessToken is given the previous tokens', async () => {
+    const previous = {
+      access_token: 'a1',
+      refresh_token: 'r1',
+      access_token_expires_at: '2026-01-01T00:00:00Z',
+      permission_id: 'p',
+      workspace2_id: 'w',
+      workspace2_slug: 'acme',
+      scope: 'read',
+    };
+    const bodies: string[] = [];
+    const oauth = new ShortcutOAuth({
+      clientId: 'id',
+      clientSecret: 'secret',
+      fetch: async (_url, init) => {
+        bodies.push(String(init?.body));
+        return Response.json({
+          access_token: 'a2',
+          refresh_token: 'r2',
+          access_token_expires_at: '2026-02-01T00:00:00Z',
+        });
+      },
+    });
+    await expect(oauth.refreshAccessToken(previous)).resolves.toEqual({
+      ...previous,
+      access_token: 'a2',
+      refresh_token: 'r2',
+      access_token_expires_at: '2026-02-01T00:00:00Z',
+    });
+    expect(bodies[0]).toContain('refresh_token=r1');
   });
 });
 
