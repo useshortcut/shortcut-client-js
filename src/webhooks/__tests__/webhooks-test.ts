@@ -18,7 +18,11 @@ const observer = {
   id: 'delivery-1',
   version: 'v2',
   timestamp: new Date().toISOString(),
-  actor: { displayable_name: 'Ada', member_id: 'member-1' },
+  actor: {
+    displayable_name: 'Ada',
+    member_id: 'member-1',
+    mention_name: 'ada',
+  },
   workspace2: { id: 'workspace-1', url_slug: 'acme' },
   installation_id: 'install-1',
   actions: [
@@ -228,6 +232,23 @@ describe('ShortcutWebhookClient.verify', () => {
     expect(error).toBeInstanceOf(ShortcutWebhookError);
     expect((error as ShortcutWebhookError).code).toBe(code);
     expect((error as ShortcutWebhookError).status).toBe(status);
+  });
+
+  it('passes the actor mention name through and accepts actors without one', async () => {
+    const client = new ShortcutWebhookClient(secret);
+    const { payload } = await client.verify(await signed(observer));
+    expect(payload.actor).toEqual({
+      displayable_name: 'Ada',
+      member_id: 'member-1',
+      mention_name: 'ada',
+    });
+    const anonymous = await client.verify(
+      await signed({
+        ...observer,
+        actor: { displayable_name: 'Automation', automation_id: 'a-1' },
+      }),
+    );
+    expect(anonymous.payload.actor.mention_name).toBeUndefined();
   });
 
   it.each([

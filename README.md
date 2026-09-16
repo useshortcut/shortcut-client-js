@@ -108,7 +108,7 @@ try {
 }
 ```
 
-Agent apps authenticate with OAuth per workspace. `ShortcutOAuth` completes the authorization-code exchange and refreshes tokens; the response's `permission_id` is the agent's own member id, which deliveries report as `actor.member_id` for changes the agent made. A refresh response may omit the workspace fields, so keep the ones from the exchange. Token requests share the same `timeoutMs` option (30 s by default, `Infinity` disables it, and it covers reading the body).
+Agent apps authenticate with OAuth per workspace. `ShortcutOAuth` completes the authorization-code exchange and refreshes tokens; the response's `permission_id` is the agent's own member id, which deliveries report as `actor.member_id` for changes the agent made. Deliveries also carry `actor.mention_name` when the actor is a member, so an agent can address the person in a comment without fetching them. A refresh response may omit the workspace fields, so keep the ones from the exchange. Token requests share the same `timeoutMs` option (30 s by default, `Infinity` disables it, and it covers reading the body).
 
 ```ts
 import { ShortcutOAuth } from '@shortcut/client/v4';
