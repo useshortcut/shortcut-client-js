@@ -38,9 +38,20 @@ export interface ApiConfig<SecurityDataType = unknown> {
 export interface HttpResponse<D extends unknown, E extends unknown = unknown> extends Response {
     data: D;
     error: E;
+    /** The request this response answers: uppercase method and URL pathname, never the query. */
+    request: { method: string; path: string };
 }
 
 type CancelToken = Symbol | string | number;
+
+/** The pathname of `url`, or the operation `path` when the URL cannot be parsed. */
+function pathnameOf(url: string, path: string): string {
+    try {
+        return new URL(url).pathname;
+    } catch {
+        return path;
+    }
+}
 
 <% if (config.enumStyle === "const") { %>
 export const ContentType = {
@@ -206,8 +217,9 @@ export class HttpClient<SecurityDataType = unknown> {
         const payloadFormatter = this.contentFormatters[type || <%~ CT.Json %>];
         const responseFormat = format || requestParams.format;
 
+        const url = `${baseUrl || this.baseUrl || ""}${path}${queryString ? `?${queryString}` : ""}`;
         return this.customFetch(
-        `${baseUrl || this.baseUrl || ""}${path}${queryString ? `?${queryString}` : ""}`,
+        url,
         {
             ...requestParams,
             headers: {
@@ -221,6 +233,7 @@ export class HttpClient<SecurityDataType = unknown> {
             const r = response as HttpResponse<T, E>;
             r.data = (null as unknown) as T;
             r.error = (null as unknown) as E;
+            r.request = { method: (requestParams.method || "GET").toUpperCase(), path: pathnameOf(url, path) };
 
             // Read the original body exactly once; never parse a clone, which
             // leaves the original stream open until the request is aborted or

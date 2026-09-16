@@ -416,8 +416,8 @@ describe('ShortcutV4Client', () => {
     const read = await rejectionOf(
       c.workspace('my workspace').getStory(123, { fields: 'name,team' }),
     );
-    expect(isShortcutV4RequestError(read)).toBe(true);
-    expect((read as { request: unknown }).request).toEqual({
+    if (!isShortcutV4RequestError(read)) throw new Error('not narrowed');
+    expect(read.request).toEqual({
       method: 'GET',
       path: '/api/v4/my%20workspace/stories/123',
     });
@@ -426,13 +426,12 @@ describe('ShortcutV4Client', () => {
         .workspace('acme')
         .createStoryComment(123, { text: 'hi' }, { fields: 'id' }),
     );
-    expect((write as { request: unknown }).request).toEqual({
+    if (!isShortcutV4RequestError(write)) throw new Error('not narrowed');
+    expect(write.request).toEqual({
       method: 'POST',
       path: '/api/v4/acme/stories/123/comments',
     });
-    expect(
-      JSON.stringify((write as { request: unknown }).request),
-    ).not.toContain('fields');
+    expect(JSON.stringify(write.request)).not.toContain('fields');
   });
 
   it.each([
@@ -451,7 +450,6 @@ describe('ShortcutV4Client', () => {
       );
       const path = `${prefix}/api/v4/acme/stories/123`;
       expect(calls[0].url).toBe(`https://api.example.com${path}?fields=id`);
-      expect(isShortcutV4RequestError(error)).toBe(true);
       if (!isShortcutV4RequestError(error)) throw new Error('not narrowed');
       expect(error.request).toEqual({ method: 'GET', path });
       expect(summarizeShortcutV4Error(error)).toEqual({
@@ -502,8 +500,8 @@ describe('ShortcutV4Client', () => {
       })(),
     );
     expect(seen).toEqual([{ id: 1 }]);
-    expect(isShortcutV4RequestError(error)).toBe(true);
-    expect((error as { request: unknown }).request).toEqual({
+    if (!isShortcutV4RequestError(error)) throw new Error('not narrowed');
+    expect(error.request).toEqual({
       method: 'GET',
       path: '/api/v4/acme/stories/1/comments',
     });

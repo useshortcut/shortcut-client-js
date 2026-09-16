@@ -62,35 +62,26 @@ export type ShortcutWorkspaceApi = {
 export type ShortcutV4ErrorBody = ApiError | string | null;
 
 /** The request a rejected `Response` answers: the uppercase method and the URL pathname, never the query. */
-export interface ShortcutV4RequestInfo {
-  method: string;
-  path: string;
-}
+export type ShortcutV4RequestInfo = HttpResponse<unknown, unknown>['request'];
 
 /**
  * The rejection value of a failed v4 request: the `Response`, with the error
  * body on `error` and the request that produced it on `request`.
  */
-export type ShortcutV4RequestError = HttpResponse<
-  unknown,
-  ShortcutV4ErrorBody
-> & { readonly request: ShortcutV4RequestInfo };
+export type ShortcutV4RequestError = HttpResponse<unknown, ShortcutV4ErrorBody>;
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
 
 export function isShortcutV4RequestError(
   value: unknown,
 ): value is ShortcutV4RequestError {
   return (
-    typeof value === 'object' &&
-    value !== null &&
-    'status' in value &&
+    isRecord(value) &&
     typeof value.status === 'number' &&
     'error' in value &&
-    'request' in value &&
-    typeof value.request === 'object' &&
-    value.request !== null &&
-    'method' in value.request &&
+    isRecord(value.request) &&
     typeof value.request.method === 'string' &&
-    'path' in value.request &&
     typeof value.request.path === 'string'
   );
 }
@@ -201,8 +192,6 @@ export class ShortcutV4Client extends Api<string> {
         return await withTimeout(this.timeoutMs, cancel, (combined) =>
           base<T>({ ...params, signal: combined }),
         );
-      } catch (error) {
-        throw this.describeRejection(error, params);
       } finally {
         if (
           cancelToken !== undefined &&
@@ -218,41 +207,6 @@ export class ShortcutV4Client extends Api<string> {
   /** Replaces the bearer token, e.g. after an OAuth refresh. */
   setToken(token: string): void {
     this.setSecurityData(token);
-  }
-
-  /** Records which request a rejected `Response` answers; other errors pass through. */
-  private describeRejection(
-    error: unknown,
-    {
-      method,
-      path,
-      baseUrl,
-    }: Pick<FullRequestParams, 'method' | 'path' | 'baseUrl'>,
-  ): unknown {
-    if (
-      typeof error !== 'object' ||
-      error === null ||
-      !('status' in error) ||
-      !('error' in error) ||
-      'request' in error
-    ) {
-      return error;
-    }
-    let pathname = path.split('?')[0] ?? path;
-    try {
-      pathname = new URL(`${baseUrl || this.baseUrl || ''}${path}`).pathname;
-    } catch {
-      // Keep the operation path when the base URL cannot be parsed.
-    }
-    const request: ShortcutV4RequestInfo = {
-      method: (method ?? 'GET').toUpperCase(),
-      path: pathname,
-    };
-    Object.defineProperty(error, 'request', {
-      value: request,
-      enumerable: true,
-    });
-    return error;
   }
 
   /** The API bound to one workspace slug. */
