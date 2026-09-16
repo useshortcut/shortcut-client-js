@@ -72,7 +72,7 @@ describe('ShortcutV4Client', () => {
 
     c.getStory = replacement;
     await workspace.getStory(1, { fields: 'name' });
-    expect(replacement).toHaveBeenCalledWith('my%20workspace', 1, {
+    expect(replacement).toHaveBeenCalledWith('my workspace', 1, {
       fields: 'name',
     });
     const replacementWrapper = workspace.getStory;
@@ -147,6 +147,48 @@ describe('ShortcutV4Client', () => {
     ).toBe('Bearer secret-token');
   });
 
+  it('encodes the workspace slug on direct calls without the workspace facade', async () => {
+    const { calls, client: c } = client(() =>
+      Response.json({ entity: { id: 123 } }),
+    );
+    await c.getStory('my workspace', 123);
+    expect(calls[0].url).toBe(
+      'https://api.example.com/api/v4/my%20workspace/stories/123',
+    );
+  });
+
+  it('encodes every path parameter once, including reserved characters', async () => {
+    const { calls, client: c } = client(() =>
+      Response.json({ entity: { id: 'm' } }),
+    );
+    await c.workspace('acme').getMember('a/b?c#d');
+    await c.workspace('a/b').getMember('m');
+    await c.getMember('a/b', 'x y');
+    expect(calls.map((call) => call.url)).toEqual([
+      'https://api.example.com/api/v4/acme/members/a%2Fb%3Fc%23d',
+      'https://api.example.com/api/v4/a%2Fb/members/m',
+      'https://api.example.com/api/v4/a%2Fb/members/x%20y',
+    ]);
+  });
+
+  it('encodes every interpolation in every generated request path', () => {
+    // Path parameters are interpolated by templates/v4/procedure-call.ejs;
+    // a raw `${name}` would send ids, slugs, and names unencoded.
+    const source = readFileSync(
+      new URL('../generated/Api.ts', import.meta.url),
+      'utf8',
+    );
+    const paths = source.match(/^\s*path: `[^`]*`,$/gm) ?? [];
+    expect(paths.length).toBeGreaterThan(100);
+    const raw = paths.filter((line) =>
+      /\$\{(?!encodeURIComponent\()/.test(line),
+    );
+    expect(raw.map((line) => line.trim())).toEqual([]);
+    expect(
+      paths.filter((line) => line.includes('${encodeURIComponent(')).length,
+    ).toBeGreaterThan(100);
+  });
+
   it('keeps workspace-independent operations unbound', async () => {
     const { calls, client: c } = client(() => Response.json({ id: 'me' }));
     await c.workspace('acme').getWhoami();
@@ -213,6 +255,7 @@ describe('ShortcutV4Client', () => {
   });
 
   it('follows cursor links on the API origin and stops at the last page', async () => {
+    // The link's path is sent as the API returned it, not re-encoded.
     const { calls, client: c } = client((url) => {
       const cursor = new URL(url).searchParams.get('cursor');
       if (!cursor)
@@ -221,7 +264,7 @@ describe('ShortcutV4Client', () => {
           current_page: 1,
           total_pages: 2,
           next_page_url:
-            'https://api.example.com/api/v4/acme/stories/1/comments?cursor=abc%3D&fields=id',
+            'https://api.example.com/api/v4/my%20workspace/stories/1/comments?cursor=abc%3D&fields=id',
         });
       expect(new URL(url).searchParams.has('limit')).toBe(false);
       return Response.json({
@@ -234,14 +277,14 @@ describe('ShortcutV4Client', () => {
     const all: number[] = [];
     for await (const item of c.paginate<number>(
       c
-        .workspace('acme')
+        .workspace('my workspace')
         .listStoryComments(1, { fields: 'id', limit: 100 }) as never,
     ))
       all.push(item);
     expect(all).toEqual([1, 2, 3]);
     expect(calls.map((call) => call.url)).toEqual([
-      'https://api.example.com/api/v4/acme/stories/1/comments?fields=id&limit=100',
-      'https://api.example.com/api/v4/acme/stories/1/comments?cursor=abc%3D&fields=id',
+      'https://api.example.com/api/v4/my%20workspace/stories/1/comments?fields=id&limit=100',
+      'https://api.example.com/api/v4/my%20workspace/stories/1/comments?cursor=abc%3D&fields=id',
     ]);
     expect(
       (calls[1].init.headers as Record<string, string>).Authorization,
