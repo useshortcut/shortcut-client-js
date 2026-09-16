@@ -15,7 +15,7 @@ const packageRoot = resolve(process.argv[2] ?? '.');
 const dir = mkdtempSync(join(tmpdir(), 'shortcut-consumer-'));
 const source = `
 import ShortcutClient, { ShortcutClient as NamedV3 } from '@shortcut/client';
-import ShortcutV4Client, { ShortcutV4Client as NamedV4 } from '@shortcut/client/v4';
+import ShortcutV4Client, { ShortcutV4Client as NamedV4, ShortcutOAuth } from '@shortcut/client/v4';
 import { isShortcutV4RequestError } from '@shortcut/client/v4';
 import type { ShortcutV4ErrorBody, ShortcutWorkspaceApi, WorkspaceOperation } from '@shortcut/client/v4';
 import { ShortcutWebhookClient } from '@shortcut/client/webhooks';
@@ -52,6 +52,16 @@ workspace.getStory('acme', 1);
 type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends
   (<T>() => T extends B ? 1 : 2) ? true : false;
 type Assert<T extends true> = T;
+type RefreshedTokens = Awaited<ReturnType<ShortcutOAuth['refreshAccessToken']>>;
+type ExchangedTokens = Awaited<ReturnType<ShortcutOAuth['exchangeAuthorizationCode']>>;
+type RefreshWorkspace = Assert<Equal<RefreshedTokens['workspace2_id'], string | undefined>>;
+type RefreshSlug = Assert<Equal<RefreshedTokens['workspace2_slug'], string | undefined>>;
+type RefreshPermission = Assert<Equal<RefreshedTokens['permission_id'], string | undefined>>;
+type RefreshAccessToken = Assert<Equal<RefreshedTokens['access_token'], string>>;
+type RefreshRefreshToken = Assert<Equal<RefreshedTokens['refresh_token'], string>>;
+type ExchangeWorkspace = Assert<Equal<ExchangedTokens['workspace2_id'], string>>;
+type ExchangeSlug = Assert<Equal<ExchangedTokens['workspace2_slug'], string>>;
+type ExchangePermission = Assert<Equal<ExchangedTokens['permission_id'], string>>;
 type Deleted = Assert<Equal<Awaited<ReturnType<typeof workspace.deleteStory>>, void>>;
 type Schema = Assert<Equal<Awaited<ReturnType<typeof workspace.getSchema>>, Record<string, any>>>;
 // The facade type is keyed on the generated operation list: bound members
