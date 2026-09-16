@@ -23,9 +23,9 @@ export interface ShortcutV4ClientOptions {
   /** Extra defaults applied to every request (headers, credentials, ...). */
   baseApiParams?: ApiConfig['baseApiParams'];
   /**
-   * Milliseconds each request, including reading its body, may take before
-   * it is aborted with a `TimeoutError`. Defaults to 30 000; pass `Infinity`
-   * to disable.
+   * Milliseconds each request, including refresh waits, retries, and reading
+   * its body, may take before it is aborted with a `TimeoutError`. Defaults
+   * to 30 000; pass `Infinity` to disable.
    */
   timeoutMs?: number;
   /**
@@ -200,6 +200,7 @@ export class ShortcutV4Client extends Api<string> {
   };
   private expiresAt?: number;
   private refreshing?: Promise<void>;
+  private tokenGeneration = 0;
 
   constructor(options: ShortcutV4ClientOptions) {
     if (typeof options?.token !== 'string' || options.token.length === 0) {
@@ -241,11 +242,10 @@ export class ShortcutV4Client extends Api<string> {
     }
 
     // The generated `request` only honours `signal` when no `cancelToken` is
-    // given, so the timeout wraps it: the cancel token's controller is created
-    // here, joined with the caller's signal and the timer, and handed down as
-    // the one signal `fetch` and the body read observe.
+    // given. Keep one controller and deadline for the whole operation,
+    // including refresh waits and the retry, and pass its signal to fetch.
     const base = this.request;
-    const attempt = async <T>({
+    this.request = async <T = any>({
       cancelToken,
       signal,
       ...params
@@ -262,9 +262,28 @@ export class ShortcutV4Client extends Api<string> {
       const controller =
         cancelToken === undefined ? undefined : registry?.get(cancelToken);
       try {
-        return await withTimeout(this.timeoutMs, cancel, (combined) =>
-          base<T>({ ...params, signal: combined }),
-        );
+        return await withTimeout(this.timeoutMs, cancel, async (combined) => {
+          const attempt = async (): Promise<T> => {
+            combined?.throwIfAborted();
+            return base<T>({ ...params, signal: combined });
+          };
+          if (this.refresh === undefined) return attempt();
+          if (this.refreshing || this.isExpiring())
+            await this.refreshToken(combined);
+          const generation = this.tokenGeneration;
+          try {
+            return await attempt();
+          } catch (error) {
+            combined?.throwIfAborted();
+            if (!isShortcutV4RequestError(error) || error.status !== 401)
+              throw error;
+            // A delayed 401 may belong to a token another request already
+            // replaced. Reuse that token, or join a refresh still in flight.
+            if (generation === this.tokenGeneration || this.refreshing)
+              await this.refreshToken(combined);
+            return attempt();
+          }
+        });
       } finally {
         if (
           cancelToken !== undefined &&
@@ -273,20 +292,6 @@ export class ShortcutV4Client extends Api<string> {
         ) {
           registry.delete(cancelToken);
         }
-      }
-    };
-    // Refresh before a request once the token is about to expire, and once
-    // more when a request still comes back 401; a second 401 rejects.
-    this.request = async <T = any>(params: FullRequestParams): Promise<T> => {
-      if (this.refresh === undefined) return attempt<T>(params);
-      if (this.isExpiring()) await this.refreshToken();
-      try {
-        return await attempt<T>(params);
-      } catch (error) {
-        if (!isShortcutV4RequestError(error) || error.status !== 401)
-          throw error;
-        await this.refreshToken();
-        return attempt<T>(params);
       }
     };
   }
@@ -301,6 +306,7 @@ export class ShortcutV4Client extends Api<string> {
     }
     const expiry = expiryMs(expiresAt, 'ShortcutV4Client setToken');
     this.setSecurityData(token);
+    this.tokenGeneration += 1;
     if (expiresAt !== undefined) this.expiresAt = expiry;
   }
 
@@ -312,8 +318,9 @@ export class ShortcutV4Client extends Api<string> {
     );
   }
 
-  /** Runs `refresh.run` once for every caller waiting on it. */
-  private refreshToken(): Promise<void> {
+  /** Shares the refresh while letting each caller cancel its own wait. */
+  private refreshToken(signal?: AbortSignal): Promise<void> {
+    if (signal?.aborted) return Promise.reject(signal.reason);
     const refresh = this.refresh;
     if (refresh === undefined) return Promise.resolve();
     this.refreshing ??= Promise.resolve()
@@ -326,7 +333,15 @@ export class ShortcutV4Client extends Api<string> {
       .finally(() => {
         this.refreshing = undefined;
       });
-    return this.refreshing;
+    if (!signal) return this.refreshing;
+    const refreshing = this.refreshing;
+    let onAbort: () => void;
+    const waiting = new Promise<void>((resolve, reject) => {
+      onAbort = () => reject(signal.reason);
+      signal.addEventListener('abort', onAbort, { once: true });
+      void refreshing.then(resolve, reject);
+    });
+    return waiting.finally(() => signal.removeEventListener('abort', onAbort));
   }
 
   /** The API bound to one workspace slug. */

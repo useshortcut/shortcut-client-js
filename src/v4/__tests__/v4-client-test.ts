@@ -991,6 +991,8 @@ describe('ShortcutV4Client timeouts', () => {
 });
 
 describe('ShortcutV4Client refresh', () => {
+  afterEach(() => vi.useRealTimers());
+
   const inMs = (ms: number) => new Date(Date.now() + ms).toISOString();
   const bearer = (init: RequestInit) =>
     (init.headers as Record<string, string>).Authorization;
@@ -1092,6 +1094,316 @@ describe('ShortcutV4Client refresh', () => {
     expect(calls.map((call) => bearer(call.init))).toEqual(
       Array(3).fill('Bearer rotated'),
     );
+  });
+
+  it.each([
+    { mode: 'proactive', cancellation: 'cancelToken' },
+    { mode: 'reactive', cancellation: 'cancelToken' },
+    { mode: 'proactive', cancellation: 'signal' },
+    { mode: 'reactive', cancellation: 'signal' },
+  ])(
+    'cancels during $mode refresh with $cancellation without sending a write',
+    async ({ mode, cancellation }) => {
+      vi.useFakeTimers();
+      const rotated = deferred<{ token: string }>();
+      const run = vi.fn<() => Promise<ShortcutV4RefreshedToken>>(
+        () => rotated.promise,
+      );
+      const controller = new AbortController();
+      let writes = 0;
+      const { calls, client: c } = client(
+        (_url, init) => {
+          init.signal?.throwIfAborted();
+          if (mode === 'reactive' && bearer(init) === 'Bearer secret-token')
+            return Response.json({}, { status: 401 });
+          writes += 1;
+          return Response.json({ entity: { id: 1 } });
+        },
+        {
+          timeoutMs: Infinity,
+          refresh: { expiresAt: mode === 'proactive' ? 0 : undefined, run },
+        },
+      );
+      let outcome: unknown = 'pending';
+      const request = c
+        .workspace('acme')
+        .createStoryComment(
+          1,
+          { text: 'cancelled' },
+          undefined,
+          cancellation === 'signal'
+            ? { signal: controller.signal }
+            : { cancelToken: 'comment' },
+        )
+        .then(
+          (value) => {
+            outcome = value;
+          },
+          (error) => {
+            outcome = error;
+          },
+        );
+      await vi.advanceTimersByTimeAsync(0);
+      expect(run).toHaveBeenCalledTimes(1);
+      if (cancellation === 'signal') controller.abort();
+      else c.abortRequest('comment');
+      await vi.advanceTimersByTimeAsync(0);
+      const whenCancelled = outcome;
+      rotated.resolve({ token: 'rotated' });
+      await request;
+      await vi.advanceTimersByTimeAsync(0);
+      expect(whenCancelled).toHaveProperty('name', 'AbortError');
+      expect(writes).toBe(0);
+      expect(calls).toHaveLength(mode === 'proactive' ? 0 : 1);
+      expect(vi.getTimerCount()).toBe(0);
+    },
+  );
+
+  it.each(['proactive', 'reactive'])(
+    'times out while waiting for %s refresh',
+    async (mode) => {
+      vi.useFakeTimers();
+      const rotated = deferred<{ token: string }>();
+      const { calls, client: c } = client(
+        (_url, init) =>
+          bearer(init) === 'Bearer secret-token'
+            ? Response.json({}, { status: 401 })
+            : Response.json({ entity: { id: 1 } }),
+        {
+          timeoutMs: 100,
+          refresh: {
+            expiresAt: mode === 'proactive' ? 0 : undefined,
+            run: () => rotated.promise,
+          },
+        },
+      );
+      let outcome: unknown = 'pending';
+      const request = c
+        .workspace('acme')
+        .getStory(1)
+        .then(
+          (value) => {
+            outcome = value;
+          },
+          (error) => {
+            outcome = error;
+          },
+        );
+      await vi.advanceTimersByTimeAsync(100);
+      const atDeadline = outcome;
+      rotated.resolve({ token: 'rotated' });
+      await request;
+      await vi.advanceTimersByTimeAsync(0);
+      expect(atDeadline).toHaveProperty('name', 'TimeoutError');
+      expect(calls).toHaveLength(mode === 'proactive' ? 0 : 1);
+      expect(vi.getTimerCount()).toBe(0);
+    },
+  );
+
+  it('keeps a shared refresh running when one waiter cancels and reuses its cancel token', async () => {
+    vi.useFakeTimers();
+    const rotated = deferred<{ token: string }>();
+    const run = vi.fn<() => Promise<ShortcutV4RefreshedToken>>(
+      () => rotated.promise,
+    );
+    const { calls, client: c } = client(
+      (_url, init) => {
+        init.signal?.throwIfAborted();
+        return Response.json({ entity: { id: 1 } });
+      },
+      { refresh: { expiresAt: 0, run } },
+    );
+    let outcome: unknown = 'pending';
+    const first = c
+      .workspace('acme')
+      .getStory(1, undefined, { cancelToken: 'reused' })
+      .then(
+        (value) => {
+          outcome = value;
+        },
+        (error) => {
+          outcome = error;
+        },
+      );
+    const second = c.workspace('acme').getStory(2);
+    await vi.advanceTimersByTimeAsync(0);
+    c.abortRequest('reused');
+    const third = c
+      .workspace('acme')
+      .getStory(3, undefined, { cancelToken: 'reused' });
+    await vi.advanceTimersByTimeAsync(0);
+    const whenCancelled = outcome;
+    rotated.resolve({ token: 'rotated' });
+    await Promise.all([first, second, third]);
+    expect(whenCancelled).toHaveProperty('name', 'AbortError');
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(calls.map((call) => new URL(call.url).pathname)).toEqual([
+      '/api/v4/acme/stories/2',
+      '/api/v4/acme/stories/3',
+    ]);
+    expect(calls.every((call) => bearer(call.init) === 'Bearer rotated')).toBe(
+      true,
+    );
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('keeps a shared refresh running when one waiter times out', async () => {
+    vi.useFakeTimers();
+    const rotated = deferred<{ token: string }>();
+    const run = vi.fn<() => Promise<ShortcutV4RefreshedToken>>(
+      () => rotated.promise,
+    );
+    const { calls, client: c } = client(
+      () => Response.json({ entity: { id: 2 } }),
+      { timeoutMs: 100, refresh: { expiresAt: 0, run } },
+    );
+    const first = rejectionOf(c.workspace('acme').getStory(1));
+    await vi.advanceTimersByTimeAsync(50);
+    const second = c.workspace('acme').getStory(2);
+    await vi.advanceTimersByTimeAsync(50);
+    expect(await first).toHaveProperty('name', 'TimeoutError');
+    expect(calls).toHaveLength(0);
+    rotated.resolve({ token: 'rotated' });
+    await expect(second).resolves.toEqual({ entity: { id: 2 } });
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(calls).toHaveLength(1);
+    expect(calls[0].url).toContain('/stories/2');
+    expect(bearer(calls[0].init)).toBe('Bearer rotated');
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('keeps the retry cancellable through the original cancel token', async () => {
+    vi.useFakeTimers();
+    const { calls, client: c } = client(
+      (_url, init) =>
+        bearer(init) === 'Bearer secret-token'
+          ? Response.json({}, { status: 401 })
+          : stalledUntilAborted(init),
+      { refresh: { run: async () => ({ token: 'rotated' }) } },
+    );
+    const result = rejectionOf(
+      c.workspace('acme').getStory(1, undefined, { cancelToken: 'retry' }),
+    );
+    await vi.advanceTimersByTimeAsync(0);
+    expect(calls).toHaveLength(2);
+    c.abortRequest('retry');
+    expect(await result).toHaveProperty('name', 'AbortError');
+    expect(calls[1].init.signal?.aborted).toBe(true);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('does not start a refresh for an already-aborted request', async () => {
+    const run = vi.fn<() => Promise<ShortcutV4RefreshedToken>>(async () => ({
+      token: 'rotated',
+    }));
+    const { calls, client: c } = client(() => Response.json({}), {
+      refresh: { expiresAt: 0, run },
+    });
+    const controller = new AbortController();
+    const reason = new Error('cancelled');
+    controller.abort(reason);
+    await expect(
+      c.workspace('acme').getStory(1, undefined, { signal: controller.signal }),
+    ).rejects.toBe(reason);
+    expect(run).not.toHaveBeenCalled();
+    expect(calls).toHaveLength(0);
+  });
+
+  it('uses one deadline across the initial request, refresh, and retry', async () => {
+    vi.useFakeTimers();
+    const first = deferred<Response>();
+    const rotated = deferred<{ token: string }>();
+    const { calls, client: c } = client(
+      (_url, init) =>
+        bearer(init) === 'Bearer secret-token'
+          ? first.promise
+          : stalledUntilAborted(init),
+      {
+        timeoutMs: 100,
+        refresh: { run: () => rotated.promise },
+      },
+    );
+    let outcome: unknown = 'pending';
+    const request = c
+      .workspace('acme')
+      .getStory(1)
+      .then(
+        (value) => {
+          outcome = value;
+        },
+        (error) => {
+          outcome = error;
+        },
+      );
+    await vi.advanceTimersByTimeAsync(40);
+    first.resolve(Response.json({}, { status: 401 }));
+    await vi.advanceTimersByTimeAsync(40);
+    rotated.resolve({ token: 'rotated' });
+    await vi.advanceTimersByTimeAsync(20);
+    const atDeadline = outcome;
+    await vi.advanceTimersByTimeAsync(100);
+    await request;
+    expect(calls).toHaveLength(2);
+    expect(atDeadline).toHaveProperty('name', 'TimeoutError');
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('reuses the current token for a delayed 401 from an older token', async () => {
+    const late = deferred<Response>();
+    const started = deferred<void>();
+    const run = vi.fn<() => Promise<ShortcutV4RefreshedToken>>(async () => ({
+      token: 'rotated',
+    }));
+    const { calls, client: c } = client(
+      (url, init) => {
+        if (bearer(init) === 'Bearer rotated')
+          return Response.json({ entity: { id: 1 } });
+        if (url.endsWith('/2')) {
+          started.resolve();
+          return late.promise;
+        }
+        return Response.json({}, { status: 401 });
+      },
+      { refresh: { run } },
+    );
+    const slow = c.workspace('acme').getStory(2);
+    await started.promise;
+    await c.workspace('acme').getStory(1);
+    late.resolve(Response.json({}, { status: 401 }));
+    await slow;
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(calls.map((call) => bearer(call.init))).toEqual([
+      'Bearer secret-token',
+      'Bearer secret-token',
+      'Bearer rotated',
+      'Bearer rotated',
+    ]);
+  });
+
+  it('waits for an in-flight reactive refresh before sending a new request', async () => {
+    const rotated = deferred<{ token: string }>();
+    const started = deferred<void>();
+    const run = vi.fn<() => Promise<ShortcutV4RefreshedToken>>(() => {
+      started.resolve();
+      return rotated.promise;
+    });
+    const { calls, client: c } = client(
+      (_url, init) =>
+        bearer(init) === 'Bearer rotated'
+          ? Response.json({ entity: { id: 1 } })
+          : Response.json({}, { status: 401 }),
+      { refresh: { run } },
+    );
+    const first = c.workspace('acme').getStory(1);
+    await started.promise;
+    const second = c.workspace('acme').getStory(2);
+    await Promise.resolve();
+    const callsWhileRefreshing = calls.length;
+    rotated.resolve({ token: 'rotated' });
+    await Promise.all([first, second]);
+    expect(callsWhileRefreshing).toBe(1);
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(calls).toHaveLength(3);
   });
 
   it('rejects the request with the refresh error when run fails', async () => {
