@@ -44,12 +44,12 @@ export interface HttpResponse<D extends unknown, E extends unknown = unknown> ex
 
 type CancelToken = Symbol | string | number;
 
-/** The pathname of `url`, or the operation `path` when the URL cannot be parsed. */
+/** The pathname of `url`, falling back to `path` without its query or fragment. */
 function pathnameOf(url: string, path: string): string {
     try {
         return new URL(url).pathname;
     } catch {
-        return path;
+        return path.split(/[?#]/)[0] ?? "";
     }
 }
 

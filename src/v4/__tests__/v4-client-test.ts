@@ -462,6 +462,35 @@ describe('ShortcutV4Client', () => {
   );
 
   it.each([
+    '',
+    '?cursor=private-cursor',
+    '#private-fragment',
+    '?cursor=private-cursor#private-fragment',
+    '#private-fragment?cursor=private-cursor',
+  ])(
+    'strips query and fragment from the fallback request path: %s',
+    async (suffix) => {
+      const { client: c, calls } = client(
+        () => Response.json({ tag: 'bad_request' }, { status: 400 }),
+        { baseUrl: '/proxy' },
+      );
+      const path = '/api/v4/acme%3F%23/stories';
+      const error = await rejectionOf(
+        c.request({ method: 'GET', path: `${path}${suffix}` }),
+      );
+      expect(calls[0].url).toBe(`/proxy${path}${suffix}`);
+      if (!isShortcutV4RequestError(error)) throw new Error('not narrowed');
+      expect(error.request).toEqual({ method: 'GET', path });
+      expect(summarizeShortcutV4Error(error)).toEqual({
+        method: 'GET',
+        path,
+        status: 400,
+        tag: 'bad_request',
+      });
+    },
+  );
+
+  it.each([
     { request: undefined },
     { request: null },
     { request: {} },
