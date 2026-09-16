@@ -81,3 +81,25 @@ function combineSignals(
     release: () => subscriptions.forEach((unsubscribe) => unsubscribe()),
   };
 }
+
+/**
+ * `promise`, or `signal`'s reason once it aborts first. The promise itself
+ * keeps running for anyone else waiting on it.
+ */
+export function untilAborted<T>(
+  promise: Promise<T>,
+  signal?: AbortSignal,
+): Promise<T> {
+  if (!signal) return promise;
+  if (signal.aborted) {
+    void promise.catch(() => {});
+    return Promise.reject(signal.reason);
+  }
+  return new Promise<T>((resolve, reject) => {
+    const onAbort = () => reject(signal.reason);
+    signal.addEventListener('abort', onAbort, { once: true });
+    void promise
+      .then(resolve, reject)
+      .finally(() => signal.removeEventListener('abort', onAbort));
+  });
+}

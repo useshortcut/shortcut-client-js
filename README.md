@@ -75,12 +75,13 @@ v3 and v4 ship together in this package because v4 does not yet cover every v3 e
 
 ### `@shortcut/client/v4`
 
-v4 is workspace-scoped: every operation takes the workspace slug first, and `workspace(slug)` binds it once. The generated operations URL-encode their path parameters (the slug, member ids, external ids, ...), so pass raw values. Requests that fail reject with the `Response`, whose `error` carries the parsed body, the raw text when the body is not JSON, or `null` when it is empty. Lists page by cursor; `paginate()` follows `next_page_url` and only sends the token back to the same API origin. Every request, including reading its body, is aborted with a `TimeoutError` after `timeoutMs` (30 s by default; `Infinity` disables it), which composes with a per-request `signal` or `cancelToken`.
+v4 is workspace-scoped: every operation takes the workspace slug first, and `workspace(slug)` binds it once. The generated operations URL-encode their path parameters (the slug, member ids, external ids, ...), so pass raw values. Requests that fail reject with the `Response`, whose `error` carries the parsed body, the raw text when the body is not JSON, or `null` when it is empty, and whose `request` names the method and URL pathname (never the query) that produced it. `summarizeShortcutV4Error(error)` reduces a rejection to method, path, status, and the body's identifier-shaped `tag` and `error` codes, which is safe to log without echoing user content, cursors, or credentials. Lists page by cursor; `paginate()` follows `next_page_url` and only sends the token back to the same API origin. Every request, including refresh waits, retries, and reading its body, is aborted with a `TimeoutError` after `timeoutMs` (30 s by default; `Infinity` disables it), which composes with a per-request `signal` or `cancelToken`.
 
 ```ts
 import {
   ShortcutV4Client,
   isShortcutV4RequestError,
+  summarizeShortcutV4Error,
 } from '@shortcut/client/v4';
 
 const client = new ShortcutV4Client({ token: process.env.SHORTCUT_TOKEN });
@@ -103,20 +104,40 @@ try {
     { fields: 'id' },
   );
 } catch (error) {
-  if (isShortcutV4RequestError(error))
-    console.error(error.status, error.error.message);
+  // e.g. { method: 'POST', path: '/api/v4/acme/stories/123/comments', status: 422, tag: 'invalid_params' }
+  console.error(summarizeShortcutV4Error(error));
+  if (isShortcutV4RequestError(error) && error.status === 404) {
+    // error.error is the parsed body, the raw text, or null
+  }
 }
 ```
 
-Agent apps authenticate with OAuth per workspace. `ShortcutOAuth` completes the authorization-code exchange and refreshes tokens; the response's `permission_id` is the agent's own member id, which deliveries report as `actor.member_id` for changes the agent made. Deliveries also carry `actor.mention_name` when the actor is a member, so an agent can address the person in a comment without fetching them. A refresh response may omit the workspace fields, so keep the ones from the exchange. Token requests share the same `timeoutMs` option (30 s by default, `Infinity` disables it, and it covers reading the body).
+<<<<<<< HEAD
+Agent apps authenticate with OAuth per workspace. `ShortcutOAuth` completes the authorization-code exchange and refreshes tokens; the response's `permission_id` is the agent's own member id, which deliveries report as `actor.member_id` for changes the agent made. Deliveries also carry `actor.mention_name` when the actor is a member, so an agent can address the person in a comment without fetching them. A refresh response may omit the workspace fields; pass the previous tokens to `refreshAccessToken` and it resolves the merged result, keeping them and `scope` when omitted (`applyRefresh` does the merge on its own). Token requests share the same `timeoutMs` option (30 s by default, `Infinity` disables it, and it covers reading the body).
+
+The client rotates the token itself when given `refresh`: it calls `run` before a request once `expiresAt` is within `beforeMs` (five minutes by default) and once more when a request comes back 401, then retries that request. Concurrent requests share one `run`; a delayed 401 from an older token retries with the token already refreshed by another request. A second 401 rejects as usual. The request deadline and cancellation cover refresh waits and the retry. Cancelling or timing out one request stops its wait without interrupting a shared refresh. `run` does the persistence and returns the new token, and its time counts against the request's `timeoutMs`, so raise that on the client when the token store is slow.
 
 ```ts
-import { ShortcutOAuth } from '@shortcut/client/v4';
+import { ShortcutOAuth, ShortcutV4Client } from '@shortcut/client/v4';
 
 const oauth = new ShortcutOAuth({ clientId, clientSecret, redirectUri });
-const tokens = await oauth.exchangeAuthorizationCode(code);
-// later, before tokens.access_token_expires_at:
-const rotated = await oauth.refreshAccessToken(tokens.refresh_token);
+let tokens = await oauth.exchangeAuthorizationCode(code);
+await store.save(tokens);
+
+const client = new ShortcutV4Client({
+  token: tokens.access_token,
+  refresh: {
+    expiresAt: tokens.access_token_expires_at,
+    run: async () => {
+      tokens = await oauth.refreshAccessToken(tokens);
+      await store.save(tokens);
+      return {
+        token: tokens.access_token,
+        expiresAt: tokens.access_token_expires_at,
+      };
+    },
+  },
+});
 ```
 
 ### `@shortcut/client/webhooks`

@@ -46,6 +46,21 @@ export type ShortcutOAuthRefreshTokens = Omit<
     >
   >;
 
+/**
+ * The tokens after a refresh: the rotated fields from `refreshed` over
+ * `previous`, so the workspace, permission, scope, and token type fields
+ * survive a refresh response that omits them.
+ */
+export function applyRefresh(
+  previous: ShortcutOAuthTokens,
+  refreshed: ShortcutOAuthRefreshTokens,
+): ShortcutOAuthTokens {
+  const rotated = Object.fromEntries(
+    Object.entries(refreshed).filter(([, value]) => value !== undefined),
+  );
+  return { ...previous, ...rotated };
+}
+
 export class ShortcutOAuthError extends Error {
   readonly status: number;
   readonly error: string;
@@ -110,16 +125,27 @@ export class ShortcutOAuth {
   }
 
   /**
-   * Rotates the tokens. The previous refresh token is invalidated. The
-   * response may omit the workspace and permission fields.
+   * Rotates the tokens. The previous refresh token is invalidated. Given the
+   * previous tokens, resolves the merged result (see {@link applyRefresh});
+   * given a refresh token, resolves the raw response, which may omit the
+   * workspace and permission fields.
    */
   refreshAccessToken(
-    refreshToken: string,
-  ): Promise<ShortcutOAuthRefreshTokens> {
-    if (typeof refreshToken !== 'string' || refreshToken.length === 0)
+    previous: ShortcutOAuthTokens,
+  ): Promise<ShortcutOAuthTokens>;
+  refreshAccessToken(refreshToken: string): Promise<ShortcutOAuthRefreshTokens>;
+  refreshAccessToken(
+    source: string | ShortcutOAuthTokens,
+  ): Promise<ShortcutOAuthRefreshTokens | ShortcutOAuthTokens> {
+    if (typeof source === 'object' && source !== null) {
+      return this.refreshAccessToken(source.refresh_token).then((refreshed) =>
+        applyRefresh(source, refreshed),
+      );
+    }
+    if (typeof source !== 'string' || source.length === 0)
       throw new TypeError('refreshToken is required');
     return this.tokenRequest<ShortcutOAuthRefreshTokens>(
-      { grant_type: 'refresh_token', refresh_token: refreshToken },
+      { grant_type: 'refresh_token', refresh_token: source },
       ['access_token', 'refresh_token'],
     );
   }

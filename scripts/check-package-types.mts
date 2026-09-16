@@ -16,8 +16,8 @@ const dir = mkdtempSync(join(tmpdir(), 'shortcut-consumer-'));
 const source = `
 import ShortcutClient, { ShortcutClient as NamedV3 } from '@shortcut/client';
 import ShortcutV4Client, { ShortcutV4Client as NamedV4, ShortcutOAuth } from '@shortcut/client/v4';
-import { isShortcutV4RequestError } from '@shortcut/client/v4';
-import type { ShortcutV4ErrorBody, ShortcutWorkspaceApi, WorkspaceOperation } from '@shortcut/client/v4';
+import { applyRefresh, isShortcutV4RequestError, summarizeShortcutV4Error } from '@shortcut/client/v4';
+import type { ShortcutOAuthRefreshTokens, ShortcutOAuthTokens, ShortcutV4ErrorBody, ShortcutV4ErrorSummary, ShortcutWorkspaceApi, WorkspaceOperation } from '@shortcut/client/v4';
 import { ShortcutWebhookClient } from '@shortcut/client/webhooks';
 import axios, { type AxiosInstance } from 'axios';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
@@ -34,6 +34,22 @@ createServer(handler);
 const nodeResult: Promise<void> = handler({} as IncomingMessage, {} as ServerResponse);
 const fetchResult: Promise<Response> = handler(new Request('https://x'));
 const client: ShortcutV4Client = new ShortcutV4Client({ token: 'token' });
+new ShortcutV4Client({
+  token: 'token',
+  refresh: { expiresAt: new Date(), beforeMs: 60_000, run: async () => ({ token: 'rotated', expiresAt: '2099-01-01T00:00:00Z' }) },
+});
+// @ts-expect-error refresh.run must return the new token.
+new ShortcutV4Client({ token: 'token', refresh: { run: async () => ({}) } });
+client.setToken('rotated', Date.now() + 60_000);
+declare const exchanged: ShortcutOAuthTokens;
+declare const rotated: ShortcutOAuthRefreshTokens;
+const merged: ShortcutOAuthTokens = applyRefresh(exchanged, rotated);
+void merged;
+const oauth = new ShortcutOAuth({ clientId: 'id', clientSecret: 'secret' });
+const mergedByClient: Promise<ShortcutOAuthTokens> = oauth.refreshAccessToken(exchanged);
+const raw: Promise<ShortcutOAuthRefreshTokens> = oauth.refreshAccessToken('refresh');
+void mergedByClient;
+void raw;
 const workspace = client.workspace('acme');
 workspace.getWhoami();
 workspace.getSchema('story');
@@ -81,6 +97,8 @@ async function describeFailure(): Promise<string> {
     if (isShortcutV4RequestError(error)) {
       const status: number = error.status;
       const body: ShortcutV4ErrorBody = error.error;
+      const requested: string = error.request.method + ' ' + error.request.path;
+      void requested;
       // @ts-expect-error The body may be a string or null.
       error.error.message;
       if (typeof body === 'string') return body;
@@ -92,6 +110,9 @@ async function describeFailure(): Promise<string> {
   return '';
 }
 void describeFailure;
+const summary: ShortcutV4ErrorSummary | null = summarizeShortcutV4Error(new Error('x'));
+const summarized: string | undefined = summary?.tag;
+void summarized;
 `;
 // A Workers-style project: no Node types at all, only the DOM's Fetch API.
 // The webhooks declarations must not reach for `node:http`.
