@@ -159,7 +159,8 @@ const mergedResponses: Json = {};
 for (const [key, group] of [...byKey].sort(([a], [b]) => a.localeCompare(b))) {
   const base = `${responseBaseName(group.response)}Response`;
   let target = base;
-  for (let n = 2; takenResponseNames.has(target); n += 1) target = `${base}${n}`;
+  for (let n = 2; takenResponseNames.has(target); n += 1)
+    target = `${base}${n}`;
   takenResponseNames.add(target);
   mergedResponses[target] = group.response;
   for (const name of group.names) responseRenames.set(name, target);
