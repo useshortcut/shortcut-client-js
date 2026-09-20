@@ -17,7 +17,7 @@ const source = `
 import ShortcutClient, { ShortcutClient as NamedV3 } from '@shortcut/client';
 import ShortcutV4Client, { ShortcutV4Client as NamedV4, ShortcutOAuth } from '@shortcut/client/v4';
 import { applyRefresh, isShortcutV4RequestError, summarizeShortcutV4Error } from '@shortcut/client/v4';
-import type { Member, MemberAgent, ShortcutAgentCapabilities, ShortcutOAuthRefreshTokens, ShortcutOAuthTokens, ShortcutV4ErrorBody, ShortcutV4ErrorSummary, ShortcutWorkspaceApi, WorkspaceOperation } from '@shortcut/client/v4';
+import type { ChecklistItemSetPosition, Member, MemberAgent, SetPosition, ShortcutAgentCapabilities, ShortcutOAuthRefreshTokens, ShortcutOAuthTokens, ShortcutV4ErrorBody, ShortcutV4ErrorSummary, ShortcutWorkspaceApi, WorkspaceOperation } from '@shortcut/client/v4';
 import { ShortcutWebhookClient } from '@shortcut/client/webhooks';
 import axios, { type AxiosInstance } from 'axios';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
@@ -81,6 +81,8 @@ type MergedCapabilities = Assert<Equal<(typeof merged)['capabilities'], Shortcut
 type CapabilityFlags = Assert<Equal<ShortcutAgentCapabilities, { assignable: boolean; mentionable: boolean }>>;
 type MemberAgentField = Assert<Equal<Member['agent'], MemberAgent | null | undefined>>;
 type MemberAgentShape = Assert<Equal<MemberAgent, { assignable: boolean; mentionable: boolean }>>;
+// The pre-3.5 name for the checklist-item position body still resolves.
+type LegacySetPosition = Assert<Equal<SetPosition, ChecklistItemSetPosition>>;
 const capabilities: ShortcutAgentCapabilities | undefined = exchanged.capabilities;
 void capabilities;
 // @ts-expect-error Capabilities are read from the token response, not invented client-side.
