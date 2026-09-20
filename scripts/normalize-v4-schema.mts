@@ -30,6 +30,8 @@ const schemas: Json = doc.components.schemas;
 const responses: Json = doc.components.responses ?? {};
 const requestBodies: Json = doc.components.requestBodies ?? {};
 const refName = (ref: string) => ref.split('/').pop() as string;
+const pascal = (id: string) =>
+  id.replace(/(^|[^a-zA-Z0-9])([a-z0-9])/g, (_, __, c) => c.toUpperCase());
 const renames = new Map<string, string>();
 const suffixed: string[] = [];
 let inlined = 0;
@@ -121,6 +123,61 @@ for (const pathItem of Object.values<Json>(doc.paths)) {
     }
   }
 }
+// 1b. Responses: the published document numbers them (`Response1631606`) and
+// renumbers on every release, which churns thousands of lines of this file
+// for no change in meaning. Name each distinct response by its content, merge
+// duplicates, and point operations at the merged name. The generator never
+// uses these names, so this only keeps the checked-in document stable.
+const responseKey = (response: Json) =>
+  JSON.stringify({
+    description: response.description ?? '',
+    content: response.content ?? null,
+    headers: response.headers ?? null,
+  });
+const responseBaseName = (response: Json): string => {
+  const schema = response.content?.['application/json']?.schema;
+  const description = pascal(
+    String(response.description ?? '').replace(/[^A-Za-z0-9 ]/g, ' '),
+  );
+  if (!response.content) return description || 'NoContent';
+  if (schema?.$ref) {
+    const name = refName(schema.$ref);
+    return name === 'ApiError' ? description || 'ApiError' : name;
+  }
+  return description || 'Body';
+};
+const byKey = new Map<string, { response: Json; names: string[] }>();
+for (const [name, response] of Object.entries<Json>(responses)) {
+  const key = responseKey(response);
+  const group = byKey.get(key) ?? { response, names: [] };
+  group.names.push(name);
+  byKey.set(key, group);
+}
+const responseRenames = new Map<string, string>();
+const takenResponseNames = new Set<string>();
+const mergedResponses: Json = {};
+for (const [key, group] of [...byKey].sort(([a], [b]) => a.localeCompare(b))) {
+  const base = `${responseBaseName(group.response)}Response`;
+  let target = base;
+  for (let n = 2; takenResponseNames.has(target); n += 1) target = `${base}${n}`;
+  takenResponseNames.add(target);
+  mergedResponses[target] = group.response;
+  for (const name of group.names) responseRenames.set(name, target);
+}
+for (const pathItem of Object.values<Json>(doc.paths)) {
+  for (const operation of Object.values<Json>(pathItem)) {
+    for (const response of Object.values<Json>(operation?.responses ?? {})) {
+      const ref = response?.$ref;
+      if (typeof ref !== 'string' || !ref.startsWith('#/components/responses/'))
+        continue;
+      const target = responseRenames.get(refName(ref));
+      if (target) response.$ref = `#/components/responses/${target}`;
+    }
+  }
+}
+for (const name of Object.keys(responses)) delete responses[name];
+Object.assign(responses, mergedResponses);
+
 // Keep schemas still referenced elsewhere, including a component shared with
 // a successful response. Only remove wrappers made obsolete above.
 const referencedSchemas = new Set<string>();
@@ -142,8 +199,6 @@ for (const name of replacedSchemas) {
 }
 
 // 2. Request bodies: name after the operation that uses them.
-const pascal = (id: string) =>
-  id.replace(/(^|[^a-zA-Z0-9])([a-z0-9])/g, (_, __, c) => c.toUpperCase());
 for (const pathItem of Object.values<Json>(doc.paths)) {
   for (const operation of Object.values<Json>(pathItem)) {
     const ref = operation?.requestBody?.$ref;
