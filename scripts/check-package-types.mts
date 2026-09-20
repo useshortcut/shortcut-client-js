@@ -17,7 +17,7 @@ const source = `
 import ShortcutClient, { ShortcutClient as NamedV3 } from '@shortcut/client';
 import ShortcutV4Client, { ShortcutV4Client as NamedV4, ShortcutOAuth } from '@shortcut/client/v4';
 import { applyRefresh, isShortcutV4RequestError, summarizeShortcutV4Error } from '@shortcut/client/v4';
-import type { ShortcutOAuthRefreshTokens, ShortcutOAuthTokens, ShortcutV4ErrorBody, ShortcutV4ErrorSummary, ShortcutWorkspaceApi, WorkspaceOperation } from '@shortcut/client/v4';
+import type { Member, MemberAgent, ShortcutAgentCapabilities, ShortcutOAuthRefreshTokens, ShortcutOAuthTokens, ShortcutV4ErrorBody, ShortcutV4ErrorSummary, ShortcutWorkspaceApi, WorkspaceOperation } from '@shortcut/client/v4';
 import { ShortcutWebhookClient } from '@shortcut/client/webhooks';
 import axios, { type AxiosInstance } from 'axios';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
@@ -73,6 +73,19 @@ type ExchangedTokens = Awaited<ReturnType<ShortcutOAuth['exchangeAuthorizationCo
 type RefreshWorkspace = Assert<Equal<RefreshedTokens['workspace2_id'], string | undefined>>;
 type RefreshSlug = Assert<Equal<RefreshedTokens['workspace2_slug'], string | undefined>>;
 type RefreshPermission = Assert<Equal<RefreshedTokens['permission_id'], string | undefined>>;
+// Agent capabilities (sc-320647): optional on both token responses, carried by applyRefresh,
+// and reported on the v4 Member as agent, null for a person.
+type ExchangedCapabilities = Assert<Equal<ExchangedTokens['capabilities'], ShortcutAgentCapabilities | undefined>>;
+type RefreshedCapabilities = Assert<Equal<RefreshedTokens['capabilities'], ShortcutAgentCapabilities | undefined>>;
+type MergedCapabilities = Assert<Equal<(typeof merged)['capabilities'], ShortcutAgentCapabilities | undefined>>;
+type CapabilityFlags = Assert<Equal<ShortcutAgentCapabilities, { assignable: boolean; mentionable: boolean }>>;
+type MemberAgentField = Assert<Equal<Member['agent'], MemberAgent | null | undefined>>;
+type MemberAgentShape = Assert<Equal<MemberAgent, { assignable: boolean; mentionable: boolean }>>;
+const capabilities: ShortcutAgentCapabilities | undefined = exchanged.capabilities;
+void capabilities;
+// @ts-expect-error Capabilities are read from the token response, not invented client-side.
+const invented: ShortcutAgentCapabilities = { assignable: 'yes', mentionable: false };
+void invented;
 type RefreshAccessToken = Assert<Equal<RefreshedTokens['access_token'], string>>;
 type RefreshRefreshToken = Assert<Equal<RefreshedTokens['refresh_token'], string>>;
 type ExchangeWorkspace = Assert<Equal<ExchangedTokens['workspace2_id'], string>>;

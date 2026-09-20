@@ -2035,6 +2035,7 @@ export interface BranchStoryEntityListWrapper {
 
 /** The Member the caller is authenticated as. */
 export interface Member {
+  agent?: MemberAgent | null;
   /**
    * The time/date the Member was created.
    * @format date-time
@@ -2891,7 +2892,7 @@ export interface CreateStoryChecklistItemParams {
    */
   external_id?: string;
   /** One of "first", "last", "before", or "after". This can be used to move the Checklist Item to the first or last position in the Story's checklist, or before or after a given Checklist Item. */
-  set_position?: SetPosition;
+  set_position?: ChecklistItemSetPosition;
 }
 
 export interface BulkUpdateStoryChecklistItemsParams1 {
@@ -2909,7 +2910,7 @@ export interface BulkUpdateStoryChecklistItemsParams1 {
    */
   description?: string;
   /** One of "first", "last", "before", or "after". This can be used to move the Checklist Item to the first or last position in the Story's checklist, or before or after a given Checklist Item. */
-  set_position?: SetPosition;
+  set_position?: ChecklistItemSetPosition;
 }
 
 export interface FileStoryEntityListWrapper {
@@ -7614,6 +7615,13 @@ export interface ExternalLink {
   value?: string;
 }
 
+export interface MemberAgent {
+  /** True if the agent may be set as an owner on Stories and Epics. */
+  assignable: boolean;
+  /** True if the agent may be @-mentioned in comments and descriptions. */
+  mentionable: boolean;
+}
+
 export interface Token {
   /**
    * The time/date the Token was created.
@@ -9553,7 +9561,7 @@ export interface CreateStoryChecklistItemBody {
    */
   external_id?: string;
   /** One of "first", "last", "before", or "after". This can be used to move the Checklist Item to the first or last position in the Story's checklist, or before or after a given Checklist Item. */
-  set_position?: SetPosition;
+  set_position?: ChecklistItemSetPosition;
 }
 
 export interface BulkDeleteStoryChecklistItemsParams {
@@ -9606,7 +9614,7 @@ export interface UpdateStoryChecklistItemParams {
    */
   description?: string;
   /** One of "first", "last", "before", or "after". This can be used to move the Checklist Item to the first or last position in the Story's checklist, or before or after a given Checklist Item. */
-  set_position?: SetPosition;
+  set_position?: ChecklistItemSetPosition;
 }
 
 export interface BulkDeleteStoryLinksParams {
@@ -9742,7 +9750,7 @@ export interface UpdateTeamParams {
 }
 
 /** One of "first", "last", "before", or "after". This can be used to move the Checklist Item to the first or last position in the Story's checklist, or before or after a given Checklist Item. */
-export interface SetPosition {
+export interface ChecklistItemSetPosition {
   position: "after" | "last" | "before" | "first";
   /** @format int64 */
   anchor_checklist_item_id?: number;

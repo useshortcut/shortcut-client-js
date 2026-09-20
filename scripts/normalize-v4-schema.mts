@@ -197,15 +197,27 @@ for (const name of Object.keys(schemas)) {
   const shape = JSON.stringify(schemas[name]);
   groups.set(shape, [...(groups.get(shape) ?? []), name]);
 }
+// Name each shape from its own content, not from the order the document
+// lists it in: the published document reorders between releases, and a
+// first-come claim on a short name like `SetPosition` would flip which
+// entity owns it from one sync to the next.
 const claimed = new Set(Object.keys(schemas));
-for (const [shape, names] of groups) {
+const entityOf = (props: string[]): string | undefined => {
+  const anchor = props.find((prop) => /^anchor_.+_id$/.test(prop));
+  return anchor ? pascal(anchor.replace(/^anchor_|_id$/g, '')) : undefined;
+};
+const sortedGroups = [...groups].sort(([a], [b]) => a.localeCompare(b));
+for (const [shape, names] of sortedGroups) {
   const suffixes = names
     .map((name) => name.replace(/^(Body|Response)\d+/, ''))
     .filter(Boolean);
   const props = Object.keys(JSON.parse(shape).properties ?? {});
-  let target =
-    suffixes.sort((a, b) => a.length - b.length)[0] ??
+  const shortest =
+    suffixes.sort((a, b) => a.length - b.length || a.localeCompare(b))[0] ??
     `${pascal(props.join('_'))}Body`;
+  const entity = entityOf(props);
+  let target =
+    entity && !shortest.startsWith(entity) ? `${entity}${shortest}` : shortest;
   if (claimed.has(target)) {
     const distinguishing =
       props.find((prop) => prop !== 'position') ?? props[0] ?? 'Value';
