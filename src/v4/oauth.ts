@@ -17,6 +17,19 @@ export interface ShortcutOAuthOptions {
 }
 
 /**
+ * What people in a workspace may do with the agent, as configured on its app.
+ * `assignable` means it can be set as an owner on stories and epics and its
+ * webhook receives `assigned` deliveries; `mentionable` means it can be
+ * @-mentioned and receives `mentioned` deliveries. A builder can change
+ * these in Settings without a new token, so a token response is a snapshot:
+ * `GET /whoami` reports the current values under `member.agent`.
+ */
+export interface ShortcutAgentCapabilities {
+  assignable: boolean;
+  mentionable: boolean;
+}
+
+/**
  * The authorization-code exchange response. `permission_id` is the agent's
  * own member id in the workspace.
  */
@@ -32,6 +45,11 @@ export interface ShortcutOAuthTokens {
   /** Space-separated granted scopes, when reported. */
   scope?: string;
   token_type?: string;
+  /**
+   * The agent's capabilities at the time of this response. Present for agent
+   * tokens (code exchange and refresh), absent for other tokens.
+   */
+  capabilities?: ShortcutAgentCapabilities;
 }
 
 /** A refresh may omit workspace and permission fields; retain them from the code exchange. */

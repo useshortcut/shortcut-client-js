@@ -1491,6 +1491,39 @@ describe('ShortcutV4Client refresh', () => {
     expect(applyRefresh(unscoped, rotated)).not.toHaveProperty('scope');
   });
 
+  it('carries agent capabilities through a refresh and takes the newer snapshot', () => {
+    const previous = {
+      access_token: 'a1',
+      refresh_token: 'r1',
+      access_token_expires_at: '2026-01-01T00:00:00Z',
+      permission_id: 'p',
+      workspace2_id: 'w',
+      workspace2_slug: 'acme',
+      capabilities: { assignable: true, mentionable: false },
+    };
+    const rotated = {
+      access_token: 'a2',
+      refresh_token: 'r2',
+      access_token_expires_at: '2026-02-01T00:00:00Z',
+    };
+    // A refresh that omits capabilities keeps the ones from the exchange.
+    expect(applyRefresh(previous, rotated).capabilities).toEqual({
+      assignable: true,
+      mentionable: false,
+    });
+    // A refresh that reports them replaces the snapshot, since a builder may
+    // have changed the app's capabilities in the meantime.
+    expect(
+      applyRefresh(previous, {
+        ...rotated,
+        capabilities: { assignable: true, mentionable: true },
+      }).capabilities,
+    ).toEqual({ assignable: true, mentionable: true });
+    // Non-agent tokens never had them, and none appear.
+    const { capabilities: _capabilities, ...person } = previous;
+    expect(applyRefresh(person, rotated)).not.toHaveProperty('capabilities');
+  });
+
   it('merges for the caller when refreshAccessToken is given the previous tokens', async () => {
     const previous = {
       access_token: 'a1',
