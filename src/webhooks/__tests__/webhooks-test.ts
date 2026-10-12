@@ -535,6 +535,49 @@ describe('ShortcutWebhookClient agent-session events', () => {
     expect(isShortcutSessionEventPayload(payload)).toBe(true);
   });
 
+  // Shortcut may add values to these fields within envelope v1. An agent on
+  // this library version must keep answering 200, or the delivery dead-letters
+  // until every agent upgrades.
+  it.each([
+    [
+      'an unknown session status',
+      { ...sessionCreated, session: { ...session, status: 'paused' } },
+    ],
+    [
+      'an unknown closed reason',
+      {
+        ...sessionCreated,
+        session: { ...session, status: 'complete', closed_reason: 'archived' },
+      },
+    ],
+    [
+      'an unknown entity type',
+      { ...sessionCreated, session: { ...session, entity_type: 'doc' } },
+    ],
+    [
+      'an unknown trigger type',
+      {
+        ...sessionCreated,
+        prompt_context: {
+          ...sessionCreated.prompt_context,
+          trigger: { type: 'poked', entity_type: 'story', entity_id: '1' },
+        },
+      },
+    ],
+    [
+      'a signal other than stop',
+      {
+        ...sessionPrompted,
+        activity: { ...sessionPrompted.activity, signal: 'pause' },
+      },
+    ],
+  ])('accepts a signed session event with %s', async (_label, event) => {
+    expect(isShortcutSessionEventPayload(event)).toBe(true);
+    const { payload } = await client.verify(await signed(event));
+    expect(payload).toEqual(event);
+    expect(shortcutWebhookEventType(payload)).toBe('session');
+  });
+
   it.each([
     [
       'an unknown session event type',
@@ -542,6 +585,7 @@ describe('ShortcutWebhookClient agent-session events', () => {
     ],
     ['a missing delivery id', { ...sessionCreated, id: '' }],
     ['a missing version', { ...sessionCreated, version: undefined }],
+    ['a wrong version', { ...sessionCreated, version: 'v2' }],
     ['a missing workspace id', { ...sessionCreated, workspace_id: undefined }],
     ['a missing installation id', { ...sessionCreated, installation_id: '' }],
     ['no session', { ...sessionCreated, session: undefined }],
@@ -550,21 +594,35 @@ describe('ShortcutWebhookClient agent-session events', () => {
       { ...sessionCreated, session: { ...session, turn: undefined } },
     ],
     [
-      'a session with an unknown status',
-      { ...sessionCreated, session: { ...session, status: 'paused' } },
+      'a session whose status is not a string',
+      { ...sessionCreated, session: { ...session, status: 3 } },
     ],
     [
-      'a session on an unknown entity type',
-      { ...sessionCreated, session: { ...session, entity_type: 'doc' } },
+      'a session without an entity type',
+      { ...sessionCreated, session: { ...session, entity_type: '' } },
     ],
     ['no prompt context', { ...sessionCreated, prompt_context: undefined }],
     [
-      'a prompt context with an unknown trigger',
+      'a trigger without an entity',
       {
         ...sessionCreated,
         prompt_context: {
           ...sessionCreated.prompt_context,
-          trigger: { type: 'poked', entity_type: 'story', entity_id: '1' },
+          trigger: { type: 'poked', entity_type: 'story' },
+        },
+      },
+    ],
+    [
+      'a known trigger type missing its fields',
+      {
+        ...sessionCreated,
+        prompt_context: {
+          ...sessionCreated.prompt_context,
+          trigger: {
+            type: 'comment-reply',
+            entity_type: 'story',
+            entity_id: '1',
+          },
         },
       },
     ],
@@ -590,10 +648,10 @@ describe('ShortcutWebhookClient agent-session events', () => {
       },
     ],
     [
-      'a prompt with an unknown signal',
+      'a signal that is not a string',
       {
         ...sessionPrompted,
-        activity: { ...sessionPrompted.activity, signal: 'pause' },
+        activity: { ...sessionPrompted.activity, signal: 1 },
       },
     ],
   ])('rejects a signed session event with %s', async (_label, payload) => {

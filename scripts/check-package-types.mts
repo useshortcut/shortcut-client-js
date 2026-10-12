@@ -19,7 +19,7 @@ import ShortcutV4Client, { ShortcutV4Client as NamedV4, ShortcutOAuth } from '@s
 import { applyRefresh, isShortcutV4RequestError, summarizeShortcutV4Error } from '@shortcut/client/v4';
 import type { ChecklistItemSetPosition, Member, MemberAgent, SetPosition, ShortcutAgentCapabilities, ShortcutOAuthRefreshTokens, ShortcutOAuthTokens, ShortcutV4ErrorBody, ShortcutV4ErrorSummary, ShortcutWorkspaceApi, WorkspaceOperation } from '@shortcut/client/v4';
 import { ShortcutWebhookClient, isShortcutSessionEventPayload } from '@shortcut/client/webhooks';
-import type { ShortcutAgentSession, ShortcutSessionCreatedPayload, ShortcutSessionEventPayload, ShortcutSessionPromptedPayload, ShortcutVerifiedDelivery, ShortcutWebhookPayload } from '@shortcut/client/webhooks';
+import type { ShortcutAgentSession, ShortcutAgentSessionStatus, ShortcutSessionCreatedPayload, ShortcutSessionEventPayload, ShortcutSessionPromptContext, ShortcutSessionPromptedPayload, ShortcutVerifiedDelivery, ShortcutWebhookPayload } from '@shortcut/client/webhooks';
 import axios, { type AxiosInstance } from 'axios';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 const legacy: ShortcutClient = new ShortcutClient('token');
@@ -135,8 +135,24 @@ type SessionEventTypes = Assert<Equal<ShortcutSessionEventPayload['type'], 'sess
 type SessionEventVersion = Assert<Equal<Extract<ShortcutWebhookPayload, { type: 'session.created' }>, ShortcutSessionCreatedPayload>>;
 type SessionEventUnion = Assert<Equal<ShortcutSessionEventPayload, ShortcutSessionCreatedPayload | ShortcutSessionPromptedPayload>>;
 type SessionTurn = Assert<Equal<ShortcutAgentSession['turn'], number>>;
-type SessionEntity = Assert<Equal<ShortcutAgentSession['entity_type'], 'story' | 'epic'>>;
-type PromptSignal = Assert<Equal<ShortcutSessionPromptedPayload['activity']['signal'], 'stop' | null>>;
+type SessionEntity = Assert<Equal<ShortcutAgentSession['entity_type'], 'story' | 'epic' | (string & {})>>;
+type PromptSignal = Assert<Equal<ShortcutSessionPromptedPayload['activity']['signal'], 'stop' | (string & {}) | null>>;
+// Enum-like session fields are open: the known values stay distinct members
+// of the union, so they autocomplete and survive Extract, and a value this
+// version does not know is still assignable instead of a compile error.
+type KnownStatus = Assert<Equal<Extract<ShortcutAgentSessionStatus, 'pending' | 'complete'>, 'pending' | 'complete'>>;
+type KnownClosedReason = Assert<Equal<Extract<ShortcutAgentSession['closed_reason'], 'stop_timed_out' | null>, 'stop_timed_out' | null>>;
+type KnownTriggerType = Assert<Equal<Extract<NonNullable<ShortcutSessionPromptContext['trigger']>['type'], 'mentioned'>, 'mentioned'>>;
+const knownStatus: ShortcutAgentSessionStatus = 'awaiting_input';
+const newerStatus: ShortcutAgentSessionStatus = 'paused';
+const newerClosedReason: ShortcutAgentSession['closed_reason'] = 'archived';
+const newerEntityType: ShortcutAgentSession['entity_type'] = 'doc';
+const newerSignal: ShortcutSessionPromptedPayload['activity']['signal'] = 'pause';
+const newerTrigger: ShortcutSessionPromptContext['trigger'] = { type: 'poked', entity_type: 'story', entity_id: '1' };
+void [knownStatus, newerStatus, newerClosedReason, newerEntityType, newerSignal, newerTrigger];
+// @ts-expect-error A session status is a string, never a number.
+const numericStatus: ShortcutAgentSessionStatus = 3;
+void numericStatus;
 type CreatedActivity = Assert<Equal<ShortcutSessionCreatedPayload['activity'], ShortcutSessionPromptedPayload['activity'] | undefined>>;
 function describeSession(delivery: ShortcutVerifiedDelivery): string {
   const payload = delivery.payload;
