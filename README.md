@@ -165,6 +165,17 @@ export default { fetch: handler }; // Cloudflare Workers
 // http.createServer(handler);      // Node.js
 ```
 
+An installation that enabled agent sessions (`PUT /api/v4/{workspace}/agent-sessions/subscription`) receives `session.created` and `session.prompted` events instead of interaction deliveries. They use the v1 session envelope (`id`, `version`, `type`, `workspace_id`, `installation_id`, `session`, `prompt_context`, and the human `activity`), signed the same way, with no `actor`, `timestamp`, or `workspace2`. The handler dispatches them under `session`, `session.created`, and `session.prompted`, and `isShortcutSessionEventPayload()` narrows a verified payload to `ShortcutSessionEventPayload`. A stop request is a `session.prompted` event whose `activity.signal` is `"stop"`.
+
+```ts
+handler.on('session.prompted', async (payload) => {
+  const { session, activity } = payload;
+  if (activity.signal === 'stop') {
+    // publish a final `response` or `error` activity on session.turn
+  }
+});
+```
+
 For frameworks that already read the body, `verify(request)` and `verifyBody(bytes, signature)` return the verified payload or throw a `ShortcutWebhookError` carrying the HTTP status to return. `signShortcutWebhookBody()` produces a valid signature for testing an agent locally.
 
 The v4 client is generated from `schema/shortcut.v4.openapi.json`, which `yarn sync:schema:v4` downloads and normalizes (the published document names responses and request bodies numerically).

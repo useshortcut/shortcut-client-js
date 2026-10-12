@@ -536,7 +536,10 @@ describe('ShortcutWebhookClient agent-session events', () => {
   });
 
   it.each([
-    ['an unknown session event type', { ...sessionCreated, type: 'session.closed' }],
+    [
+      'an unknown session event type',
+      { ...sessionCreated, type: 'session.closed' },
+    ],
     ['a missing delivery id', { ...sessionCreated, id: '' }],
     ['a missing version', { ...sessionCreated, version: undefined }],
     ['a missing workspace id', { ...sessionCreated, workspace_id: undefined }],
@@ -641,7 +644,9 @@ describe('ShortcutWebhookClient agent-session events', () => {
       seen.push(`created:${payload.prompt_context.trigger?.type}`);
     });
     handler.on('session.prompted', (payload) => {
-      seen.push(`prompted:${payload.activity.signal ?? payload.activity.content.body}`);
+      seen.push(
+        `prompted:${payload.activity.signal ?? payload.activity.content.body}`,
+      );
     });
     handler.on('observer', () => {
       seen.push('observer');

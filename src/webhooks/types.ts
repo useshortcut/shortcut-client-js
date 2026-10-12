@@ -123,15 +123,148 @@ export interface ShortcutValidationPayload {
   [key: string]: unknown;
 }
 
+export type ShortcutAgentSessionStatus =
+  | 'pending'
+  | 'active'
+  | 'awaiting_input'
+  | 'complete'
+  | 'error'
+  | 'stale';
+
+/** Why a session can take no more work. `null` while it is open. */
+export type ShortcutAgentSessionClosedReason =
+  | 'installation_unavailable'
+  | 'access_revoked'
+  | 'stop_timed_out';
+
+export interface ShortcutAgentSessionPlanItem {
+  content: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'canceled';
+}
+
+export interface ShortcutAgentSessionExternalUrl {
+  label: string;
+  url: string;
+}
+
+/**
+ * An agent session as the v4 `agent-sessions` API returns it. Timestamps are
+ * ISO 8601 strings in UTC. A session event carries the snapshot taken when
+ * the event was written, so `turn` is the turn the event belongs to.
+ */
+export interface ShortcutAgentSession {
+  id: string;
+  workspace_id: string;
+  installation_id: string;
+  /** The agent's member id. Activities are published in its name. */
+  agent_member_id: string;
+  /** The member who started the session, or the agent when nobody wrote anything. */
+  created_by: string;
+  entity_type: 'story' | 'epic';
+  /** The Story or Epic public id. */
+  entity_id: number;
+  /** The comment thread the session started from, for a mention or reply. */
+  thread_comment_id: number | null;
+  status: ShortcutAgentSessionStatus;
+  /** Advances on every human prompt that is not a stop request. Send it back with every activity. */
+  turn: number;
+  /** Optimistic-concurrency version required by `PATCH /agent-sessions/{id}`. */
+  version: number;
+  plan: ShortcutAgentSessionPlanItem[];
+  external_urls: ShortcutAgentSessionExternalUrl[];
+  created_at: string;
+  updated_at: string;
+  last_agent_activity_at: string | null;
+  first_delivery_at: string | null;
+  last_delivery_failed_at: string | null;
+  last_delivery_error: string | null;
+  acknowledged_at: string | null;
+  stop_requested_at: string | null;
+  closed_reason: ShortcutAgentSessionClosedReason | null;
+}
+
+/** The human prompt that caused a session event. */
+export interface ShortcutSessionPromptActivity {
+  id: string;
+  workspace_id: string;
+  session_id: string;
+  /** Position in the session's activity list, starting at 1. */
+  sequence: number;
+  /** The turn the prompt opened, or the current turn for a stop request. */
+  turn: number;
+  /** The member who wrote the prompt. */
+  author_id: string;
+  /** The elicitation activity this prompt answers. */
+  in_reply_to: string | null;
+  content: { type: 'prompt'; body: string };
+  /** `stop` asks the agent to finish the turn with a `response` or `error`. It does not advance the turn. */
+  signal: 'stop' | null;
+  signal_metadata: null;
+  ephemeral: boolean;
+  superseded: boolean;
+  created_at: string;
+}
+
+/** Bounded text about the Story or Epic, so the agent can start without a fetch. */
+export interface ShortcutSessionPromptContext {
+  /** Title and description, with the triggering comment when there is one. Cut at 16,000 characters. */
+  text: string;
+  truncated: boolean;
+  /** The comment that mentioned or replied to the agent. */
+  comment_text?: string;
+  /** Present when an assignment, mention, or reply started the session. Absent when the agent created it. */
+  trigger?: ShortcutInteractionTrigger;
+}
+
+export type ShortcutSessionEventType = 'session.created' | 'session.prompted';
+
+interface ShortcutSessionEventEnvelope {
+  /** The event id. Retries reuse it, so persist it before answering. */
+  id: string;
+  version: 'v1';
+  workspace_id: string;
+  installation_id: string;
+  session: ShortcutAgentSession;
+  prompt_context: ShortcutSessionPromptContext;
+}
+
+/**
+ * A session was opened for the agent. Delivered once per session, to the
+ * agent's webhook URL, after an assignment, mention, reply, or the agent's own
+ * `POST /agent-sessions`.
+ */
+export interface ShortcutSessionCreatedPayload extends ShortcutSessionEventEnvelope {
+  type: 'session.created';
+  /** The opening prompt. Absent when no person wrote anything, as for an automation's assignment. */
+  activity?: ShortcutSessionPromptActivity;
+}
+
+/** A person replied to the session or asked it to stop. */
+export interface ShortcutSessionPromptedPayload extends ShortcutSessionEventEnvelope {
+  type: 'session.prompted';
+  activity: ShortcutSessionPromptActivity;
+}
+
+/**
+ * Agent-session deliveries. Unlike observer and interaction deliveries they
+ * carry no `actor`, `timestamp`, or `workspace2`; the workspace slug for API
+ * calls comes from the installation's OAuth token.
+ */
+export type ShortcutSessionEventPayload =
+  | ShortcutSessionCreatedPayload
+  | ShortcutSessionPromptedPayload;
+
 export type ShortcutWebhookPayload =
   | ShortcutObserverPayload
   | ShortcutInteractionPayload
-  | ShortcutValidationPayload;
+  | ShortcutValidationPayload
+  | ShortcutSessionEventPayload;
 
 export type ShortcutWebhookEventType =
   | 'observer'
   | 'interaction'
-  | 'validation';
+  | 'validation'
+  | 'session';
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -245,11 +378,100 @@ export function isShortcutInteractionPayload(
   );
 }
 
+const SESSION_EVENT_TYPES: ReadonlySet<string> = new Set([
+  'session.created',
+  'session.prompted',
+]);
+const SESSION_STATUSES: ReadonlySet<string> = new Set([
+  'pending',
+  'active',
+  'awaiting_input',
+  'complete',
+  'error',
+  'stale',
+]);
+
+const isPositiveInteger = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isInteger(value) && value > 0;
+
+function isShortcutAgentSession(value: unknown): value is ShortcutAgentSession {
+  return (
+    isRecord(value) &&
+    isNonEmptyString(value.id) &&
+    isNonEmptyString(value.workspace_id) &&
+    isNonEmptyString(value.installation_id) &&
+    isNonEmptyString(value.agent_member_id) &&
+    (value.entity_type === 'story' || value.entity_type === 'epic') &&
+    isPositiveInteger(value.entity_id) &&
+    typeof value.status === 'string' &&
+    SESSION_STATUSES.has(value.status) &&
+    isPositiveInteger(value.turn) &&
+    isPositiveInteger(value.version) &&
+    Array.isArray(value.plan) &&
+    Array.isArray(value.external_urls)
+  );
+}
+
+function isShortcutSessionPromptActivity(
+  value: unknown,
+): value is ShortcutSessionPromptActivity {
+  return (
+    isRecord(value) &&
+    isNonEmptyString(value.id) &&
+    isPositiveInteger(value.turn) &&
+    isRecord(value.content) &&
+    value.content.type === 'prompt' &&
+    typeof value.content.body === 'string' &&
+    (value.signal == null || value.signal === 'stop')
+  );
+}
+
+function isShortcutSessionPromptContext(
+  value: unknown,
+): value is ShortcutSessionPromptContext {
+  return (
+    isRecord(value) &&
+    typeof value.text === 'string' &&
+    typeof value.truncated === 'boolean' &&
+    (value.trigger === undefined || isShortcutInteractionTrigger(value.trigger))
+  );
+}
+
+/**
+ * True for a v1 agent-session delivery with a recognized `type`, the session
+ * snapshot, the prompt context, and the human prompt that `session.prompted`
+ * requires.
+ */
+export function isShortcutSessionEventPayload(
+  payload: unknown,
+): payload is ShortcutSessionEventPayload {
+  if (
+    !isRecord(payload) ||
+    typeof payload.type !== 'string' ||
+    !SESSION_EVENT_TYPES.has(payload.type)
+  ) {
+    return false;
+  }
+  return (
+    isNonEmptyString(payload.id) &&
+    isNonEmptyString(payload.version) &&
+    isNonEmptyString(payload.workspace_id) &&
+    isNonEmptyString(payload.installation_id) &&
+    isShortcutAgentSession(payload.session) &&
+    isShortcutSessionPromptContext(payload.prompt_context) &&
+    (payload.type === 'session.prompted'
+      ? isShortcutSessionPromptActivity(payload.activity)
+      : payload.activity === undefined ||
+        isShortcutSessionPromptActivity(payload.activity))
+  );
+}
+
 /** Which event-type name a payload dispatches under. */
 export function shortcutWebhookEventType(
   payload: unknown,
 ): ShortcutWebhookEventType | undefined {
   if (isShortcutValidationPayload(payload)) return 'validation';
+  if (isShortcutSessionEventPayload(payload)) return 'session';
   if (isShortcutInteractionPayload(payload)) return 'interaction';
   if (isShortcutObserverPayload(payload)) return 'observer';
   return undefined;
