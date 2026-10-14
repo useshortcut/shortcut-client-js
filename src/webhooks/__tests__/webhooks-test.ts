@@ -520,12 +520,9 @@ describe('ShortcutWebhookClient agent-session events', () => {
     if (!isShortcutSessionEventPayload(payload)) throw new Error('narrowed');
     expect(payload.session.turn).toBe(event.session.turn);
     expect(payload.prompt_context.text).toBe(event.prompt_context.text);
-    if (payload.type === 'session.prompted') {
-      expect(payload.activity.content.body).toBe(event.activity.content.body);
-      expect(payload.activity.signal === 'stop').toBe(event === sessionStop);
-    } else {
-      expect(payload.activity?.content.body).toBe(prompt.content.body);
-    }
+    expect(payload.type).toBe(event.type);
+    expect(payload.activity?.content.body).toBe(event.activity.content.body);
+    expect(payload.activity?.signal === 'stop').toBe(event === sessionStop);
   });
 
   it('accepts a session.created event without an opening prompt', async () => {
