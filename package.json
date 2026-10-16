@@ -70,7 +70,7 @@
     "@types/jscodeshift": "17.3.0",
     "@types/node": "22.15.30",
     "jscodeshift": "17.3.0",
-    "oxfmt": "0.46.0",
+    "oxfmt": "0.67.0",
     "oxlint": "1.61.0",
     "stream-to-blob": "2.0.1",
     "swagger-cli": "4.0.4",

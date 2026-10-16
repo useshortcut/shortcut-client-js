@@ -5,7 +5,7 @@
 [![Version](https://badge.fury.io/js/@shortcut%2Fclient.svg)](https://badge.fury.io/js/@shortcut%2Fclient)
 [![Monthly Downloads](https://img.shields.io/npm/dm/@shortcut%2Fclient)](https://www.npmjs.org/package/@shortcut%2Fclient)
 [![GitHub License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/useshortcut/shortcut-client-js/blob/main/LICENSE)
-[![PRs welcome!](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)]()
+[![PRs welcome!](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](<>)
 [![X](https://img.shields.io/twitter/follow/shortcut.svg?label=Follow%20@shortcut)](https://twitter.com/intent/follow?screen_name=shortcut)
 
 A library for interacting with the Shortcut REST API.
