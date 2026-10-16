@@ -58,13 +58,14 @@
     "sync:schema:v4": "curl --silent https://developer.shortcut.com/api/rest/v4/shortcut.openapi.json --output ./schema/shortcut.v4.openapi.raw.json && node scripts/normalize-v4-schema.mts ./schema/shortcut.v4.openapi.raw.json ./schema/shortcut.v4.openapi.json && rm ./schema/shortcut.v4.openapi.raw.json && yarn validate:schema:v4",
     "test": "vitest",
     "validate:examples": "npx tsc --project examples/tsconfig.json",
-    "validate:schema": "swagger-cli validate ./schema/shortcut.swagger.json && yarn validate:schema:v4",
-    "validate:schema:v4": "swagger-cli validate ./schema/shortcut.v4.openapi.json"
+    "validate:schema": "node scripts/validate-schema.mts ./schema/shortcut.swagger.json && yarn validate:schema:v4",
+    "validate:schema:v4": "node scripts/validate-schema.mts ./schema/shortcut.v4.openapi.json"
   },
   "dependencies": {
     "axios": "^1.15.0"
   },
   "devDependencies": {
+    "@apidevtools/swagger-parser": "12.1.0",
     "@arethetypeswrong/cli": "0.18.1",
     "@total-typescript/tsconfig": "1.0.4",
     "@types/jscodeshift": "17.3.0",
@@ -73,7 +74,6 @@
     "oxfmt": "0.67.0",
     "oxlint": "1.61.0",
     "stream-to-blob": "2.0.1",
-    "swagger-cli": "4.0.4",
     "swagger-typescript-api": "13.12.2",
     "tsdown": "0.21.10",
     "typedoc": "0.28.19",
