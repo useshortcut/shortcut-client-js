@@ -1,10 +1,14 @@
 import {
   type ShortcutInteractionPayload,
   type ShortcutObserverPayload,
+  type ShortcutSessionCreatedPayload,
+  type ShortcutSessionEventPayload,
+  type ShortcutSessionPromptedPayload,
   type ShortcutValidationPayload,
   type ShortcutWebhookPayload,
   isShortcutInteractionPayload,
   isShortcutObserverPayload,
+  isShortcutSessionEventPayload,
   isShortcutValidationPayload,
 } from './types';
 import {
@@ -41,7 +45,8 @@ export interface ShortcutWebhookClientOptions {
   /**
    * Reject deliveries whose `timestamp` is further than this from the server
    * clock. Off by default: Shortcut redelivers failed deliveries later with
-   * the original timestamp, so a window rejects legitimate retries.
+   * the original timestamp, so a window rejects legitimate retries. Session
+   * events carry no timestamp and are never rejected by it.
    */
   timestampToleranceMs?: number;
   /** Only accept deliveries for this workspace id; others receive `403`. */
@@ -70,6 +75,9 @@ export type ShortcutWebhookEventPayloadMap = {
   'comment-reply': ShortcutInteractionPayload & {
     trigger: { type: 'comment-reply' };
   };
+  session: ShortcutSessionEventPayload;
+  'session.created': ShortcutSessionCreatedPayload;
+  'session.prompted': ShortcutSessionPromptedPayload;
 };
 
 export type ShortcutWebhookEventName = keyof ShortcutWebhookEventPayloadMap;
@@ -192,22 +200,16 @@ export class ShortcutWebhookClient {
     } catch {
       throw new ShortcutWebhookError('invalid_body', 400);
     }
-    if (!isShortcutValidationPayload(payload)) {
+    if (isShortcutSessionEventPayload(payload)) {
+      this.assertBoundTo(payload.workspace_id, payload.installation_id);
+    } else if (!isShortcutValidationPayload(payload)) {
       if (
         !isShortcutObserverPayload(payload) &&
         !isShortcutInteractionPayload(payload)
       ) {
         throw new ShortcutWebhookError('invalid_body', 400);
       }
-      if (this.workspaceId && payload.workspace2.id !== this.workspaceId) {
-        throw new ShortcutWebhookError('wrong_workspace', 403);
-      }
-      if (
-        this.installationId &&
-        payload.installation_id !== this.installationId
-      ) {
-        throw new ShortcutWebhookError('wrong_installation', 403);
-      }
+      this.assertBoundTo(payload.workspace2.id, payload.installation_id);
       if (this.timestampToleranceMs !== undefined) {
         const sent = Date.parse(payload.timestamp);
         if (
@@ -292,10 +294,22 @@ export class ShortcutWebhookClient {
     return typed;
   }
 
+  private assertBoundTo(workspaceId: string, installationId: string): void {
+    if (this.workspaceId && workspaceId !== this.workspaceId) {
+      throw new ShortcutWebhookError('wrong_workspace', 403);
+    }
+    if (this.installationId && installationId !== this.installationId) {
+      throw new ShortcutWebhookError('wrong_installation', 403);
+    }
+  }
+
   private eventsFor(
     payload: ShortcutWebhookPayload,
   ): ShortcutWebhookEventName[] {
     if (isShortcutValidationPayload(payload)) return ['validation'];
+    if (isShortcutSessionEventPayload(payload)) {
+      return ['session', payload.type];
+    }
     if (isShortcutInteractionPayload(payload)) {
       return ['interaction', payload.trigger.type];
     }

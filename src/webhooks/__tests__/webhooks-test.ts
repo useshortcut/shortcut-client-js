@@ -8,6 +8,7 @@ import {
   ShortcutWebhookError,
   isShortcutInteractionPayload,
   isShortcutObserverPayload,
+  isShortcutSessionEventPayload,
   shortcutWebhookEventType,
   signShortcutWebhookBody,
   verifyShortcutWebhookSignature,
@@ -46,6 +47,94 @@ const interaction = {
     entity_id: '123',
     context: 'comment',
     comment_id: '9',
+  },
+};
+// The v1 agent-session envelope: no actor, timestamp, or workspace2. The
+// session is the public row, the activity is the human prompt that caused
+// the event, and the field values mirror the outbox payload in
+// clubhouse.models.agent-session.
+const session = {
+  id: '6f1b4a6e-6c6a-4b7e-9d3b-2b1a0c9d8e7f',
+  workspace_id: 'workspace-1',
+  installation_id: 'install-1',
+  agent_member_id: 'agent-1',
+  created_by: 'member-1',
+  entity_type: 'story',
+  entity_id: 123,
+  thread_comment_id: null,
+  status: 'pending',
+  turn: 1,
+  version: 1,
+  plan: [],
+  external_urls: [],
+  created_at: '2026-10-12T20:00:00Z',
+  updated_at: '2026-10-12T20:00:00Z',
+  last_agent_activity_at: null,
+  first_delivery_at: null,
+  last_delivery_failed_at: null,
+  last_delivery_error: null,
+  acknowledged_at: null,
+  stop_requested_at: null,
+  closed_reason: null,
+};
+const prompt = {
+  id: 'activity-1',
+  workspace_id: 'workspace-1',
+  session_id: session.id,
+  sequence: 1,
+  turn: 1,
+  author_id: 'member-1',
+  in_reply_to: null,
+  content: { type: 'prompt', body: 'Help me improve Story SC-123' },
+  signal: null,
+  signal_metadata: null,
+  ephemeral: false,
+  superseded: false,
+  created_at: '2026-10-12T20:00:00Z',
+};
+const sessionCreated = {
+  id: 'event-1',
+  version: 'v1',
+  type: 'session.created',
+  workspace_id: 'workspace-1',
+  installation_id: 'install-1',
+  session,
+  prompt_context: {
+    text: 'Story 123: Fix login\n\nUsers cannot log in.',
+    truncated: false,
+    trigger: { type: 'assigned', entity_type: 'story', entity_id: '123' },
+  },
+  activity: prompt,
+};
+const sessionPrompted = {
+  ...sessionCreated,
+  id: 'event-2',
+  type: 'session.prompted',
+  session: { ...session, turn: 2, version: 4, status: 'pending' },
+  activity: {
+    ...prompt,
+    id: 'activity-3',
+    sequence: 3,
+    turn: 2,
+    in_reply_to: 'activity-2',
+    content: { type: 'prompt', body: 'Use the backend repository.' },
+  },
+};
+const sessionStop = {
+  ...sessionPrompted,
+  id: 'event-3',
+  session: {
+    ...sessionPrompted.session,
+    status: 'active',
+    stop_requested_at: '2026-10-12T20:05:00Z',
+  },
+  activity: {
+    ...sessionPrompted.activity,
+    id: 'activity-4',
+    sequence: 4,
+    in_reply_to: null,
+    content: { type: 'prompt', body: 'Stop' },
+    signal: 'stop',
   },
 };
 
@@ -404,6 +493,234 @@ describe('ShortcutWebhookClient.verify', () => {
     expect(
       () => new ShortcutWebhookClient(secret, { timestampToleranceMs: -1 }),
     ).toThrow(TypeError);
+  });
+});
+
+describe('ShortcutWebhookClient agent-session events', () => {
+  const client = new ShortcutWebhookClient(secret);
+
+  it.each([
+    ['session.created', sessionCreated],
+    ['session.prompted', sessionPrompted],
+    ['stop request', sessionStop],
+  ])('verifies a signed %s event and narrows it', async (_label, event) => {
+    const text = JSON.stringify(event);
+    const delivery = await client.verifyBody(
+      new TextEncoder().encode(text),
+      await signShortcutWebhookBody(secret, text),
+    );
+    expect(delivery.deliveryId).toBe(event.id);
+    expect(delivery.payload).toEqual(event);
+    expect((await client.verify(await signed(event))).payload).toEqual(event);
+    const { payload } = delivery;
+    expect(isShortcutSessionEventPayload(payload)).toBe(true);
+    expect(isShortcutObserverPayload(payload)).toBe(false);
+    expect(isShortcutInteractionPayload(payload)).toBe(false);
+    expect(shortcutWebhookEventType(payload)).toBe('session');
+    if (!isShortcutSessionEventPayload(payload)) throw new Error('narrowed');
+    expect(payload.session.turn).toBe(event.session.turn);
+    expect(payload.prompt_context.text).toBe(event.prompt_context.text);
+    expect(payload.type).toBe(event.type);
+    expect(payload.activity?.content.body).toBe(event.activity.content.body);
+    expect(payload.activity?.signal === 'stop').toBe(event === sessionStop);
+  });
+
+  it('accepts a session.created event without an opening prompt', async () => {
+    const { activity: _activity, ...silent } = sessionCreated;
+    const { payload } = await client.verify(await signed(silent));
+    expect(payload).toEqual(silent);
+    expect(isShortcutSessionEventPayload(payload)).toBe(true);
+  });
+
+  // Shortcut may add values to these fields within envelope v1. An agent on
+  // this library version must keep answering 200, or the delivery dead-letters
+  // until every agent upgrades.
+  it.each([
+    [
+      'an unknown session status',
+      { ...sessionCreated, session: { ...session, status: 'paused' } },
+    ],
+    [
+      'an unknown closed reason',
+      {
+        ...sessionCreated,
+        session: { ...session, status: 'complete', closed_reason: 'archived' },
+      },
+    ],
+    [
+      'an unknown entity type',
+      { ...sessionCreated, session: { ...session, entity_type: 'doc' } },
+    ],
+    [
+      'an unknown trigger type',
+      {
+        ...sessionCreated,
+        prompt_context: {
+          ...sessionCreated.prompt_context,
+          trigger: { type: 'poked', entity_type: 'story', entity_id: '1' },
+        },
+      },
+    ],
+    [
+      'a signal other than stop',
+      {
+        ...sessionPrompted,
+        activity: { ...sessionPrompted.activity, signal: 'pause' },
+      },
+    ],
+  ])('accepts a signed session event with %s', async (_label, event) => {
+    expect(isShortcutSessionEventPayload(event)).toBe(true);
+    const { payload } = await client.verify(await signed(event));
+    expect(payload).toEqual(event);
+    expect(shortcutWebhookEventType(payload)).toBe('session');
+  });
+
+  it.each([
+    [
+      'an unknown session event type',
+      { ...sessionCreated, type: 'session.closed' },
+    ],
+    ['a missing delivery id', { ...sessionCreated, id: '' }],
+    ['a missing version', { ...sessionCreated, version: undefined }],
+    ['a wrong version', { ...sessionCreated, version: 'v2' }],
+    ['a missing workspace id', { ...sessionCreated, workspace_id: undefined }],
+    ['a missing installation id', { ...sessionCreated, installation_id: '' }],
+    ['no session', { ...sessionCreated, session: undefined }],
+    [
+      'a session without a turn',
+      { ...sessionCreated, session: { ...session, turn: undefined } },
+    ],
+    [
+      'a session whose status is not a string',
+      { ...sessionCreated, session: { ...session, status: 3 } },
+    ],
+    [
+      'a session without an entity type',
+      { ...sessionCreated, session: { ...session, entity_type: '' } },
+    ],
+    ['no prompt context', { ...sessionCreated, prompt_context: undefined }],
+    [
+      'a trigger without an entity',
+      {
+        ...sessionCreated,
+        prompt_context: {
+          ...sessionCreated.prompt_context,
+          trigger: { type: 'poked', entity_type: 'story' },
+        },
+      },
+    ],
+    [
+      'a known trigger type missing its fields',
+      {
+        ...sessionCreated,
+        prompt_context: {
+          ...sessionCreated.prompt_context,
+          trigger: {
+            type: 'comment-reply',
+            entity_type: 'story',
+            entity_id: '1',
+          },
+        },
+      },
+    ],
+    [
+      'a session.prompted event without the prompt',
+      { ...sessionPrompted, activity: undefined },
+    ],
+    [
+      'a prompt without a body',
+      {
+        ...sessionPrompted,
+        activity: { ...sessionPrompted.activity, content: { type: 'prompt' } },
+      },
+    ],
+    [
+      'an activity that is not a prompt',
+      {
+        ...sessionPrompted,
+        activity: {
+          ...sessionPrompted.activity,
+          content: { type: 'response', body: 'Done.' },
+        },
+      },
+    ],
+    [
+      'a signal that is not a string',
+      {
+        ...sessionPrompted,
+        activity: { ...sessionPrompted.activity, signal: 1 },
+      },
+    ],
+  ])('rejects a signed session event with %s', async (_label, payload) => {
+    expect(isShortcutSessionEventPayload(payload)).toBe(false);
+    const error = await client
+      .verify(await signed(payload))
+      .catch((caught: unknown) => caught);
+    expect(error).toBeInstanceOf(ShortcutWebhookError);
+    expect((error as ShortcutWebhookError).code).toBe('invalid_body');
+    expect((error as ShortcutWebhookError).status).toBe(400);
+  });
+
+  it('binds session events to the configured workspace and installation', async () => {
+    const bound = new ShortcutWebhookClient(secret, {
+      workspaceId: 'workspace-1',
+      installationId: 'install-1',
+    });
+    await expect(
+      bound.verify(await signed(sessionCreated)),
+    ).resolves.toBeDefined();
+    const workspace = await bound
+      .verify(await signed({ ...sessionCreated, workspace_id: 'workspace-2' }))
+      .catch((caught: unknown) => caught);
+    expect((workspace as ShortcutWebhookError).code).toBe('wrong_workspace');
+    expect((workspace as ShortcutWebhookError).status).toBe(403);
+    const install = await bound
+      .verify(await signed({ ...sessionCreated, installation_id: 'install-2' }))
+      .catch((caught: unknown) => caught);
+    expect((install as ShortcutWebhookError).code).toBe('wrong_installation');
+    expect((install as ShortcutWebhookError).status).toBe(403);
+  });
+
+  it('does not apply the timestamp window to session events, which carry none', async () => {
+    const strict = new ShortcutWebhookClient(secret, {
+      timestampToleranceMs: 60_000,
+    });
+    const { payload } = await strict.verify(await signed(sessionPrompted));
+    expect(payload).toEqual(sessionPrompted);
+  });
+
+  it('dispatches session events by kind and by event type', async () => {
+    const handler = new ShortcutWebhookClient(secret).createHandler();
+    const seen: string[] = [];
+    handler.on('session', (payload) => {
+      seen.push(`session:${payload.type}:${payload.session.turn}`);
+    });
+    handler.on('session.created', (payload) => {
+      seen.push(`created:${payload.prompt_context.trigger?.type}`);
+    });
+    handler.on('session.prompted', (payload) => {
+      seen.push(
+        `prompted:${payload.activity.signal ?? payload.activity.content.body}`,
+      );
+    });
+    handler.on('observer', () => {
+      seen.push('observer');
+    });
+    handler.on('interaction', () => {
+      seen.push('interaction');
+    });
+    for (const event of [sessionCreated, sessionPrompted, sessionStop]) {
+      const response = await handler(await signed(event));
+      expect(response.status).toBe(200);
+    }
+    expect(seen).toEqual([
+      'session:session.created:1',
+      'created:assigned',
+      'session:session.prompted:2',
+      'prompted:Use the backend repository.',
+      'session:session.prompted:2',
+      'prompted:stop',
+    ]);
   });
 });
 

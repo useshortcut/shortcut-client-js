@@ -18,7 +18,8 @@ import ShortcutClient, { ShortcutClient as NamedV3 } from '@shortcut/client';
 import ShortcutV4Client, { ShortcutV4Client as NamedV4, ShortcutOAuth } from '@shortcut/client/v4';
 import { applyRefresh, isShortcutV4RequestError, summarizeShortcutV4Error } from '@shortcut/client/v4';
 import type { ChecklistItemSetPosition, Member, MemberAgent, SetPosition, ShortcutAgentCapabilities, ShortcutOAuthRefreshTokens, ShortcutOAuthTokens, ShortcutV4ErrorBody, ShortcutV4ErrorSummary, ShortcutWorkspaceApi, WorkspaceOperation } from '@shortcut/client/v4';
-import { ShortcutWebhookClient } from '@shortcut/client/webhooks';
+import { ShortcutWebhookClient, isShortcutSessionEventPayload } from '@shortcut/client/webhooks';
+import type { ShortcutAgentSession, ShortcutAgentSessionStatus, ShortcutSessionCreatedPayload, ShortcutSessionEventPayload, ShortcutSessionPromptContext, ShortcutSessionPromptedPayload, ShortcutVerifiedDelivery, ShortcutWebhookPayload } from '@shortcut/client/webhooks';
 import axios, { type AxiosInstance } from 'axios';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 const legacy: ShortcutClient = new ShortcutClient('token');
@@ -128,6 +129,60 @@ void describeFailure;
 const summary: ShortcutV4ErrorSummary | null = summarizeShortcutV4Error(new Error('x'));
 const summarized: string | undefined = summary?.tag;
 void summarized;
+// Agent-session events (sc-322021): a verified payload may be a v1 session
+// envelope, and its type field narrows session.created from session.prompted.
+type SessionEventTypes = Assert<Equal<ShortcutSessionEventPayload['type'], 'session.created' | 'session.prompted'>>;
+type SessionEventVersion = Assert<Equal<Extract<ShortcutWebhookPayload, { type: 'session.created' }>, ShortcutSessionCreatedPayload>>;
+type SessionEventUnion = Assert<Equal<ShortcutSessionEventPayload, ShortcutSessionCreatedPayload | ShortcutSessionPromptedPayload>>;
+type SessionTurn = Assert<Equal<ShortcutAgentSession['turn'], number>>;
+type SessionEntity = Assert<Equal<ShortcutAgentSession['entity_type'], 'story' | 'epic' | (string & {})>>;
+type PromptSignal = Assert<Equal<ShortcutSessionPromptedPayload['activity']['signal'], 'stop' | (string & {}) | null>>;
+// Enum-like session fields are open: the known values stay distinct members
+// of the union, so they autocomplete and survive Extract, and a value this
+// version does not know is still assignable instead of a compile error.
+type KnownStatus = Assert<Equal<Extract<ShortcutAgentSessionStatus, 'pending' | 'complete'>, 'pending' | 'complete'>>;
+type KnownClosedReason = Assert<Equal<Extract<ShortcutAgentSession['closed_reason'], 'stop_timed_out' | null>, 'stop_timed_out' | null>>;
+type KnownTriggerType = Assert<Equal<Extract<NonNullable<ShortcutSessionPromptContext['trigger']>['type'], 'mentioned'>, 'mentioned'>>;
+const knownStatus: ShortcutAgentSessionStatus = 'awaiting_input';
+const newerStatus: ShortcutAgentSessionStatus = 'paused';
+const newerClosedReason: ShortcutAgentSession['closed_reason'] = 'archived';
+const newerEntityType: ShortcutAgentSession['entity_type'] = 'doc';
+const newerSignal: ShortcutSessionPromptedPayload['activity']['signal'] = 'pause';
+const newerTrigger: ShortcutSessionPromptContext['trigger'] = { type: 'poked', entity_type: 'story', entity_id: '1' };
+void [knownStatus, newerStatus, newerClosedReason, newerEntityType, newerSignal, newerTrigger];
+// @ts-expect-error A session status is a string, never a number.
+const numericStatus: ShortcutAgentSessionStatus = 3;
+void numericStatus;
+type CreatedActivity = Assert<Equal<ShortcutSessionCreatedPayload['activity'], ShortcutSessionPromptedPayload['activity'] | undefined>>;
+function describeSession(delivery: ShortcutVerifiedDelivery): string {
+  const payload = delivery.payload;
+  if (!isShortcutSessionEventPayload(payload)) return '';
+  const version: 'v1' = payload.version;
+  const turn: number = payload.session.turn;
+  const context: string = payload.prompt_context.text;
+  const trigger: string | undefined = payload.prompt_context.trigger?.type;
+  // @ts-expect-error Session events carry workspace_id, not a workspace2 record.
+  payload.workspace2;
+  if (payload.type === 'session.prompted') {
+    const body: string = payload.activity.content.body;
+    const stop: boolean = payload.activity.signal === 'stop';
+    return [version, turn, context, trigger, body, stop].join(' ');
+  }
+  const created: ShortcutSessionCreatedPayload = payload;
+  // @ts-expect-error A session.created event may carry no opening prompt.
+  created.activity.content.body;
+  const opening: string | undefined = created.activity?.content.body;
+  return opening ?? '';
+}
+void describeSession;
+handler.on('session', (payload) => {
+  const sessionId: string = payload.session.id;
+  void sessionId;
+});
+handler.on('session.prompted', (payload) => {
+  const prompted: ShortcutSessionPromptedPayload = payload;
+  void prompted;
+});
 `;
 // A Workers-style project: no Node types at all, only the DOM's Fetch API.
 // The webhooks declarations must not reach for `node:http`.
@@ -139,6 +194,7 @@ client.workspace('acme').getWhoami();
 const webhooks = new ShortcutWebhookClient('s');
 const handler = webhooks.createHandler();
 handler.on('mentioned', async () => {});
+handler.on('session.created', async () => {});
 const response: Promise<Response> = handler(new Request('https://x'));
 webhooks.verify(new Request('https://x'));
 export default { fetch: handler };
