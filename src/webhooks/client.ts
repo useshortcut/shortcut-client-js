@@ -46,12 +46,13 @@ export interface ShortcutWebhookClientOptions {
   /** Maximum request-body size in bytes. Defaults to 2 MiB. */
   bodyLimit?: number;
   /**
-   * Reject deliveries verified by `Payload-Signature` alone whose payload
-   * `timestamp` is further than this from the server clock. Off by default:
-   * Shortcut redelivers failed deliveries later with the original timestamp,
-   * so a window rejects legitimate retries. A delivery verified by
-   * `Shortcut-Signature` is already bound to a `Shortcut-Timestamp` within
-   * 300 seconds of each attempt, so this window does not apply to it. Session
+   * How far a delivery's timestamp may be from this clock, either way. A
+   * delivery verified by `Shortcut-Signature` is bound to a
+   * `Shortcut-Timestamp` that is fresh on every attempt, so the window is 300
+   * seconds by default and this option can only tighten it. A delivery
+   * verified by `Payload-Signature` alone carries only the payload
+   * `timestamp`, which a redelivery keeps from the first attempt, so that
+   * window is off by default and this option turns it on as given; session
    * events carry no payload timestamp and are never rejected by it.
    */
   timestampToleranceMs?: number;
@@ -225,7 +226,10 @@ export class ShortcutWebhookClient {
       typeof headers === 'object' && headers !== null
         ? headers
         : { [PAYLOAD_SIGNATURE_HEADER]: headers ?? undefined },
-      { allowLegacySignature: this.allowLegacySignature },
+      {
+        allowLegacySignature: this.allowLegacySignature,
+        timestampToleranceMs: this.timestampToleranceMs,
+      },
     );
     if (!check.verified) throw new ShortcutWebhookError(check.reason, 401);
     let payload: unknown;

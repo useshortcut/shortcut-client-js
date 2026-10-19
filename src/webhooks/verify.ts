@@ -57,6 +57,13 @@ export interface ShortcutWebhookSignatureOptions {
    * whatever this says.
    */
   allowLegacySignature?: boolean;
+  /**
+   * Reject a `Shortcut-Timestamp` further than this from the clock, either
+   * way. The window is 300 seconds by default and this can only tighten it:
+   * a larger value still leaves 300 seconds, since Shortcut's own retries are
+   * timestamped at each attempt and a wider window only helps a replay.
+   */
+  timestampToleranceMs?: number;
 }
 
 export type ShortcutWebhookSignatureResult =
@@ -64,7 +71,7 @@ export type ShortcutWebhookSignatureResult =
   | { verified: true; scheme: 'payload-signature'; deliveryId?: undefined }
   | {
       verified: false;
-      /** `stale_timestamp` means the signature was genuine but `Shortcut-Timestamp` is outside the 300-second window. */
+      /** `stale_timestamp` means the signature was genuine but `Shortcut-Timestamp` is outside the window: 300 seconds, or a tighter `timestampToleranceMs`. */
       reason: 'invalid_signature' | 'stale_timestamp';
     };
 
@@ -197,8 +204,9 @@ export async function verifyShortcutWebhookSignature(
  * Verifies a delivery's signature headers against the raw body. When
  * `Shortcut-Signature` is present it must verify over `Shortcut-Timestamp`,
  * `Shortcut-Delivery`, and the body, and the timestamp must be within 300
- * seconds of this clock; a missing or malformed companion header, or a
- * mismatch, is rejected without consulting `Payload-Signature`. Only when
+ * seconds of this clock, or within `timestampToleranceMs` when that is
+ * tighter; a missing or malformed companion header, or a mismatch, is
+ * rejected without consulting `Payload-Signature`. Only when
  * `Shortcut-Signature` is absent does `Payload-Signature` verify the body
  * alone, unless `allowLegacySignature` is `false`.
  *
@@ -230,10 +238,19 @@ export async function verifyShortcutWebhookHeaders(
   const content = signedContent(timestamp, deliveryId, body);
   if (!(await hmacMatches(secret, content, signature))) return INVALID;
   const skew = Math.abs(Math.floor(Date.now() / 1000) - Number(timestamp));
-  if (skew > TIMESTAMP_TOLERANCE_SECONDS) {
+  if (skew > toleranceSeconds(options.timestampToleranceMs)) {
     return { verified: false, reason: 'stale_timestamp' };
   }
   return { verified: true, scheme: 'shortcut-signature', deliveryId };
+}
+
+/** The 300-second window, tightened to `timestampToleranceMs` when that is a smaller positive number. */
+function toleranceSeconds(timestampToleranceMs: number | undefined): number {
+  return timestampToleranceMs !== undefined &&
+    Number.isFinite(timestampToleranceMs) &&
+    timestampToleranceMs > 0
+    ? Math.min(TIMESTAMP_TOLERANCE_SECONDS, timestampToleranceMs / 1000)
+    : TIMESTAMP_TOLERANCE_SECONDS;
 }
 
 /**

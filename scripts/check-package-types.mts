@@ -263,7 +263,7 @@ async function resend(delivery: ShortcutVerifiedDelivery): Promise<string> {
   const legacyValue: string = signed['payload-signature'];
   // A signed header set is a plain string record, so it serves as HeadersInit.
   const request = new Request('https://x', { method: 'POST', body: 'x', headers: signed });
-  const result: ShortcutWebhookSignatureResult = await verifyShortcutWebhookHeaders('secret', delivery.rawBody, request.headers, { allowLegacySignature: false });
+  const result: ShortcutWebhookSignatureResult = await verifyShortcutWebhookHeaders('secret', delivery.rawBody, request.headers, { allowLegacySignature: false, timestampToleranceMs: 60_000 });
   if (result.verified) {
     const verifiedScheme: ShortcutWebhookSignatureScheme = result.scheme;
     const verifiedId: string | undefined = result.deliveryId;

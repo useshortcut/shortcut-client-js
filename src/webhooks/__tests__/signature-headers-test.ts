@@ -364,6 +364,15 @@ describe('Shortcut-Signature headers', () => {
       verified: false,
       reason: 'invalid_signature',
     });
+    vi.setSystemTime((now + 200) * 1000);
+    expect(
+      await verifyShortcutWebhookHeaders('test-secret', body, headers),
+    ).toEqual(verified);
+    expect(
+      await verifyShortcutWebhookHeaders('test-secret', body, headers, {
+        timestampToleranceMs: 60_000,
+      }),
+    ).toEqual({ verified: false, reason: 'stale_timestamp' });
     vi.setSystemTime((now + 301) * 1000);
     expect(
       await verifyShortcutWebhookHeaders('test-secret', body, headers),
