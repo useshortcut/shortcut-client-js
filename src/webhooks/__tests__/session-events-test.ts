@@ -99,6 +99,52 @@ describe('ShortcutWebhookClient agent-session events', () => {
       },
     ],
     [
+      'a mention in a context this version does not know',
+      {
+        ...sessionCreated,
+        prompt_context: {
+          ...sessionCreated.prompt_context,
+          trigger: {
+            type: 'mentioned',
+            entity_type: 'story',
+            entity_id: '1',
+            context: 'title',
+          },
+        },
+      },
+    ],
+    [
+      'a mention in a top-level comment, whose parent id is null',
+      {
+        ...sessionCreated,
+        prompt_context: {
+          ...sessionCreated.prompt_context,
+          trigger: {
+            type: 'mentioned',
+            entity_type: 'story',
+            entity_id: '1',
+            context: 'comment',
+            comment_id: '9',
+            comment_parent_id: null,
+          },
+        },
+      },
+    ],
+    [
+      'a known trigger type missing a field',
+      {
+        ...sessionCreated,
+        prompt_context: {
+          ...sessionCreated.prompt_context,
+          trigger: {
+            type: 'comment-reply',
+            entity_type: 'story',
+            entity_id: '1',
+          },
+        },
+      },
+    ],
+    [
       'a signal other than stop',
       {
         ...sessionPrompted,
@@ -110,6 +156,33 @@ describe('ShortcutWebhookClient agent-session events', () => {
     const { payload } = await client.verify(await signed(event));
     expect(payload).toEqual(event);
     expect(shortcutWebhookEventType(payload)).toBe('session');
+  });
+
+  // The session is the event; the trigger only says what started it. A 400
+  // here stalls the session's ordered deliveries, so a mention context this
+  // version does not know must still reach the handler.
+  it('dispatches a session.created whose mention context this version does not know', async () => {
+    const mentionedInTitle = {
+      ...sessionCreated,
+      prompt_context: {
+        ...sessionCreated.prompt_context,
+        trigger: {
+          type: 'mentioned',
+          entity_type: 'story',
+          entity_id: '123',
+          context: 'title',
+        },
+      },
+    };
+    const handler = client.createHandler();
+    const seen: string[] = [];
+    handler.on('session.created', (payload) => {
+      const trigger = payload.prompt_context.trigger;
+      seen.push(`${trigger?.type}:${trigger?.context}:${trigger?.entity_id}`);
+    });
+    const response = await handler(await signed(mentionedInTitle));
+    expect(response.status).toBe(200);
+    expect(seen).toEqual(['mentioned:title:123']);
   });
 
   // Every subscribed agent receives every session event, so an unknown
@@ -193,7 +266,7 @@ describe('ShortcutWebhookClient agent-session events', () => {
       },
     ],
     [
-      'a known trigger type missing its fields',
+      'a trigger whose comment id is not a string',
       {
         ...sessionCreated,
         prompt_context: {
@@ -202,6 +275,8 @@ describe('ShortcutWebhookClient agent-session events', () => {
             type: 'comment-reply',
             entity_type: 'story',
             entity_id: '1',
+            comment_id: 2,
+            parent_comment_id: '3',
           },
         },
       },
