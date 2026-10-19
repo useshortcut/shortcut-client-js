@@ -257,7 +257,6 @@ interface ShortcutSessionEventEnvelope {
   workspace_id: string;
   installation_id: string;
   session: ShortcutAgentSession;
-  prompt_context: ShortcutSessionPromptContext;
 }
 
 /**
@@ -267,11 +266,13 @@ interface ShortcutSessionEventEnvelope {
  */
 export interface ShortcutSessionCreatedPayload extends ShortcutSessionEventEnvelope {
   type: 'session.created';
+  /** Only `session.created` carries the prompt context. Later prompts arrive with the activity alone. */
+  prompt_context: ShortcutSessionPromptContext;
   /** The opening prompt. Absent when no person wrote anything, as for an automation's assignment. */
   activity?: ShortcutSessionPromptActivity;
 }
 
-/** A person replied to the session or asked it to stop. */
+/** A person replied to the session or asked it to stop. Carries no `prompt_context`. */
 export interface ShortcutSessionPromptedPayload extends ShortcutSessionEventEnvelope {
   type: 'session.prompted';
   activity: ShortcutSessionPromptActivity;
@@ -467,10 +468,10 @@ function isShortcutSessionPromptContext(
 }
 
 /**
- * True for a `v1` agent-session delivery with a recognized `type`, the session
- * snapshot, the prompt context, and the human prompt that `session.prompted`
- * requires. Enum-like fields only have to be strings; see the note above
- * `ShortcutAgentSessionStatus`.
+ * True for a `v1` agent-session delivery with a recognized `type` and the
+ * session snapshot, plus the prompt context that `session.created` carries or
+ * the human prompt that `session.prompted` requires. Enum-like fields only
+ * have to be strings; see the note above `ShortcutAgentSessionStatus`.
  */
 export function isShortcutSessionEventPayload(
   payload: unknown,
@@ -488,11 +489,11 @@ export function isShortcutSessionEventPayload(
     isNonEmptyString(payload.workspace_id) &&
     isNonEmptyString(payload.installation_id) &&
     isShortcutAgentSession(payload.session) &&
-    isShortcutSessionPromptContext(payload.prompt_context) &&
     (payload.type === 'session.prompted'
       ? isShortcutSessionPromptActivity(payload.activity)
-      : payload.activity === undefined ||
-        isShortcutSessionPromptActivity(payload.activity))
+      : isShortcutSessionPromptContext(payload.prompt_context) &&
+        (payload.activity === undefined ||
+          isShortcutSessionPromptActivity(payload.activity)))
   );
 }
 
