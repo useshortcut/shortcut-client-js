@@ -149,7 +149,9 @@ const newerClosedReason: ShortcutAgentSession['closed_reason'] = 'archived';
 const newerEntityType: ShortcutAgentSession['entity_type'] = 'doc';
 const newerSignal: ShortcutSessionPromptedPayload['activity']['signal'] = 'pause';
 const newerTrigger: ShortcutSessionPromptContext['trigger'] = { type: 'poked', entity_type: 'story', entity_id: '1' };
-void [knownStatus, newerStatus, newerClosedReason, newerEntityType, newerSignal, newerTrigger];
+type KnownPlanStatus = Assert<Equal<Extract<ShortcutAgentSession['plan'][number]['status'], 'in_progress'>, 'in_progress'>>;
+const newerPlanStatus: ShortcutAgentSession['plan'][number]['status'] = 'blocked';
+void [knownStatus, newerStatus, newerClosedReason, newerEntityType, newerSignal, newerTrigger, newerPlanStatus];
 // @ts-expect-error A session status is a string, never a number.
 const numericStatus: ShortcutAgentSessionStatus = 3;
 void numericStatus;

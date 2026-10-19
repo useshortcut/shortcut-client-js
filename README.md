@@ -165,13 +165,12 @@ export default { fetch: handler }; // Cloudflare Workers
 // http.createServer(handler);      // Node.js
 ```
 
-An installation that enabled agent sessions (`PUT /api/v4/{workspace}/agent-sessions/subscription`) receives `session.created` and `session.prompted` events instead of interaction deliveries. They use the v1 session envelope (`id`, `version`, `type`, `workspace_id`, `installation_id`, `session`), signed the same way, with no `actor`, `timestamp`, or `workspace2`. `session.created` adds `prompt_context` and, when a person wrote one, the opening `activity`; `session.prompted` adds the human `activity` and no `prompt_context`. The handler dispatches them under `session`, `session.created`, and `session.prompted`, and `isShortcutSessionEventPayload()` narrows a verified payload to `ShortcutSessionEventPayload`. A `session.*` event of a type this release does not know still verifies, as `ShortcutUnknownSessionEventPayload`, and the handler answers `200` without dispatching it, so a type Shortcut adds later never stalls a session; `isShortcutUnknownSessionEventPayload()` narrows it when you want to log or persist it. A stop request is a `session.prompted` event whose `activity.signal` is `"stop"`. The enum-like fields (`session.status`, `session.closed_reason`, `session.entity_type`, `prompt_context.trigger.type`, `activity.signal`) type the values this release knows and accept any other string, so a value Shortcut adds within envelope `v1` still verifies; compare against the known values and treat the rest as unknown.
+An installation that enabled agent sessions (`PUT /api/v4/{workspace}/agent-sessions/subscription`) receives `session.created` and `session.prompted` events instead of interaction deliveries. They use the v1 session envelope (`id`, `version`, `type`, `workspace_id`, `installation_id`, `session`), signed the same way, with no `actor`, `timestamp`, or `workspace2`. `session.created` adds `prompt_context` and, when a person wrote one, the opening `activity`; `session.prompted` adds the human `activity` and no `prompt_context`. The handler dispatches them under `session`, `session.created`, and `session.prompted`, and `isShortcutSessionEventPayload()` narrows a verified payload to `ShortcutSessionEventPayload`. A `session.*` event of a type this release does not know still verifies, as `ShortcutUnknownSessionEventPayload`, and the handler answers `200` without dispatching it, so a type Shortcut adds later never stalls a session; `isShortcutUnknownSessionEventPayload()` narrows it when you want to log or persist it. A stop request is a `session.prompted` event whose `activity.signal` is `"stop"`. The enum-like fields (`session.status`, `session.closed_reason`, `session.entity_type`, `session.plan[].status`, `prompt_context.trigger.type`, `activity.signal`) type the values this release knows and accept any other string, so a value Shortcut adds within envelope `v1` still verifies; compare against the known values and treat the rest as unknown.
 
 ```ts
 handler.on('session.prompted', async (payload) => {
-  const { session, activity } = payload;
-  if (activity.signal === 'stop') {
-    // publish a final `response` or `error` activity on session.turn
+  if (payload.activity.signal === 'stop') {
+    // publish a final `response` or `error` activity on payload.session.turn
   }
 });
 ```

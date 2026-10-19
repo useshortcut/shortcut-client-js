@@ -125,7 +125,8 @@ export interface ShortcutValidationPayload {
 
 /*
  * The enum-like session fields (`status`, `closed_reason`, `entity_type`,
- * the prompt-context `trigger.type`, and the prompt `signal`) list the values
+ * `plan[].status`, the prompt-context `trigger.type`, and the prompt
+ * `signal`) list the values
  * this version knows and also admit any other string, because Shortcut adds
  * values inside envelope `v1` without a version bump. A guard that rejected
  * them would make every agent on this version answer 400 to the new
@@ -149,9 +150,16 @@ export type ShortcutAgentSessionClosedReason =
   | 'stop_timed_out'
   | (string & {});
 
+export type ShortcutAgentSessionPlanItemStatus =
+  | 'pending'
+  | 'in_progress'
+  | 'completed'
+  | 'canceled'
+  | (string & {});
+
 export interface ShortcutAgentSessionPlanItem {
   content: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'canceled';
+  status: ShortcutAgentSessionPlanItemStatus;
 }
 
 export interface ShortcutAgentSessionExternalUrl {
