@@ -7,7 +7,13 @@ import {
   signShortcutWebhookHeaders,
   verifyShortcutWebhookHeaders,
 } from '../index';
-import { observer, secret, sessionPrompted, signed } from './fixtures';
+import {
+  interaction,
+  observer,
+  secret,
+  sessionPrompted,
+  signed,
+} from './fixtures';
 
 // Shortcut signs every agent webhook with Shortcut-Signature, the HMAC of
 // `${timestamp}.${delivery}.${body}`, and still sends the body-only
@@ -77,6 +83,28 @@ describe('Shortcut-Signature headers', () => {
       '5f25068c9b8163303be6cecda87dc52af76e53409f703e6fea054f23b2fb5069',
     );
   });
+
+  // Under Shortcut-Signature the header is the per-delivery key. Under the
+  // Payload-Signature fallback the payload id stands in, and for observer and
+  // interaction bodies that is the transaction key, which every interaction
+  // one save produces shares.
+  it.each([
+    ['an observer', observer, 'delivery-1'],
+    ['an interaction', interaction, 'delivery-2'],
+    ['a session event', sessionPrompted, 'event-2'],
+  ])(
+    'reports the Shortcut-Delivery header, or the payload id under Payload-Signature, for %s',
+    async (_label, body, payloadId) => {
+      const header = await client.verify(
+        await signedRequest(body, { deliveryId: 'a0b1c2d3-header-id' }),
+      );
+      expect(header.signatureScheme).toBe('shortcut-signature');
+      expect(header.deliveryId).toBe('a0b1c2d3-header-id');
+      const legacy = await client.verify(await signed(body));
+      expect(legacy.signatureScheme).toBe('payload-signature');
+      expect(legacy.deliveryId).toBe(payloadId);
+    },
+  );
 
   it('accepts a delivery signed with the new headers and hands its delivery id to handlers', async () => {
     const delivery = await client.verify(

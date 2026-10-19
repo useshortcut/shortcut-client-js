@@ -78,12 +78,17 @@ export interface ShortcutVerifiedDelivery {
   /** The exact bytes that were verified. */
   rawBody: Uint8Array;
   /**
-   * The `Shortcut-Delivery` header, or the payload's `id` when only
-   * `Payload-Signature` was sent. Retries reuse it, so persist it and
-   * acknowledge a duplicate without processing it again. For session events
-   * the two values are the same; for observer and interaction deliveries they
-   * differ, so a receiver that deduplicates across the upgrade should key on
-   * `signatureScheme` as well.
+   * The `Shortcut-Delivery` header when the delivery carried one
+   * (`signatureScheme === 'shortcut-signature'`). That is a per-delivery key
+   * that every retry of the delivery reuses, so persist it and acknowledge a
+   * duplicate without processing it again.
+   *
+   * Under the `Payload-Signature` fallback it is the payload `id` instead.
+   * For session events that is the event id, the value the header would
+   * carry. For observer and interaction deliveries it is the key of the
+   * transaction that produced them, and one save can produce several
+   * interaction deliveries (an assignment and a mention, say) that all carry
+   * it, so it is not a per-delivery key there.
    */
   deliveryId?: string;
   /** Which signature header verified the delivery. */
