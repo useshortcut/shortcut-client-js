@@ -14,7 +14,9 @@ import {
 } from './types';
 import {
   SHORTCUT_WEBHOOK_SIGNATURE_HEADER,
-  verifyShortcutWebhookSignature,
+  type ShortcutWebhookHeaders,
+  type ShortcutWebhookSignatureScheme,
+  verifyShortcutWebhookHeaders,
 } from './verify';
 
 export type ShortcutWebhookErrorCode =
@@ -44,12 +46,22 @@ export interface ShortcutWebhookClientOptions {
   /** Maximum request-body size in bytes. Defaults to 2 MiB. */
   bodyLimit?: number;
   /**
-   * Reject deliveries whose `timestamp` is further than this from the server
-   * clock. Off by default: Shortcut redelivers failed deliveries later with
-   * the original timestamp, so a window rejects legitimate retries. Session
-   * events carry no timestamp and are never rejected by it.
+   * Reject deliveries verified by `Payload-Signature` alone whose payload
+   * `timestamp` is further than this from the server clock. Off by default:
+   * Shortcut redelivers failed deliveries later with the original timestamp,
+   * so a window rejects legitimate retries. A delivery verified by
+   * `Shortcut-Signature` is already bound to a `Shortcut-Timestamp` within
+   * 300 seconds of each attempt, so this window does not apply to it. Session
+   * events carry no payload timestamp and are never rejected by it.
    */
   timestampToleranceMs?: number;
+  /**
+   * Accept `Payload-Signature` when `Shortcut-Signature` is absent. On by
+   * default, for senders that predate `Shortcut-Signature`. Set it to `false`
+   * once every sender carries the new headers. A request that carries
+   * `Shortcut-Signature` is never verified by `Payload-Signature` either way.
+   */
+  allowLegacySignature?: boolean;
   /** Only accept deliveries for this workspace id; others receive `403`. */
   workspaceId?: string;
   /** Only accept deliveries for this installation id; others receive `403`. */
@@ -61,8 +73,14 @@ export interface ShortcutVerifiedDelivery {
   payload: ShortcutWebhookPayload;
   /** The exact bytes that were verified. */
   rawBody: Uint8Array;
-  /** The delivery id, when the payload carries one. Redeliveries reuse it. */
+  /**
+   * The `Shortcut-Delivery` header, or the payload's `id` when only
+   * `Payload-Signature` was sent. Retries reuse it, so persist it and
+   * acknowledge a duplicate without processing it again.
+   */
   deliveryId?: string;
+  /** Which signature header verified the delivery. */
+  signatureScheme: ShortcutWebhookSignatureScheme;
 }
 
 export type ShortcutWebhookEventPayloadMap = {
@@ -126,7 +144,7 @@ interface HttpAdapter {
   method: string;
   contentType: string | null;
   contentLength: string | null;
-  signature: string | null;
+  headers: ShortcutWebhookHeaders;
   readRawBody(limit: number): Promise<Uint8Array | typeof TOO_LARGE>;
   send(status: number, body: string): Response | void;
 }
@@ -147,6 +165,7 @@ export class ShortcutWebhookClient {
   private readonly secret: string;
   private readonly bodyLimit: number;
   private readonly timestampToleranceMs?: number;
+  private readonly allowLegacySignature: boolean;
   private readonly workspaceId?: string;
   private readonly installationId?: string;
 
@@ -174,6 +193,7 @@ export class ShortcutWebhookClient {
     this.secret = secret;
     this.bodyLimit = bodyLimit;
     this.timestampToleranceMs = tolerance;
+    this.allowLegacySignature = options.allowLegacySignature ?? true;
     this.workspaceId = options.workspaceId;
     this.installationId = options.installationId;
   }
@@ -181,18 +201,27 @@ export class ShortcutWebhookClient {
   /**
    * Verifies the signature, size, and shape of a delivery already read into
    * memory. Throws {@link ShortcutWebhookError} with the status to return.
+   *
+   * @param headers The request headers, as a Fetch `Headers` object or a
+   *   record like Node's `req.headers`, so `Shortcut-Signature` can be
+   *   checked. A bare string is the `Payload-Signature` value alone, which
+   *   `allowLegacySignature: false` rejects.
    */
   async verifyBody(
     rawBody: Uint8Array,
-    signature: string | null | undefined,
+    headers: ShortcutWebhookHeaders | string | null | undefined,
   ): Promise<ShortcutVerifiedDelivery> {
     if (rawBody.byteLength > this.bodyLimit)
       throw new ShortcutWebhookError('payload_too_large', 413);
-    if (
-      !(await verifyShortcutWebhookSignature(this.secret, rawBody, signature))
-    ) {
-      throw new ShortcutWebhookError('invalid_signature', 401);
-    }
+    const check = await verifyShortcutWebhookHeaders(
+      this.secret,
+      rawBody,
+      typeof headers === 'object' && headers !== null
+        ? headers
+        : { [SHORTCUT_WEBHOOK_SIGNATURE_HEADER]: headers ?? undefined },
+      { allowLegacySignature: this.allowLegacySignature },
+    );
+    if (!check.verified) throw new ShortcutWebhookError(check.reason, 401);
     let payload: unknown;
     try {
       payload = JSON.parse(
@@ -214,7 +243,10 @@ export class ShortcutWebhookClient {
         throw new ShortcutWebhookError('invalid_body', 400);
       }
       this.assertBoundTo(payload.workspace2.id, payload.installation_id);
-      if (this.timestampToleranceMs !== undefined) {
+      if (
+        this.timestampToleranceMs !== undefined &&
+        check.scheme === 'payload-signature'
+      ) {
         const sent = Date.parse(payload.timestamp);
         if (
           !Number.isFinite(sent) ||
@@ -224,11 +256,15 @@ export class ShortcutWebhookClient {
         }
       }
     }
-    const deliveryId = (payload as { id?: unknown }).id;
+    const payloadId = (payload as { id?: unknown }).id;
+    const deliveryId =
+      check.deliveryId ??
+      (typeof payloadId === 'string' && payloadId ? payloadId : undefined);
     return {
       payload,
       rawBody,
-      ...(typeof deliveryId === 'string' && deliveryId ? { deliveryId } : {}),
+      ...(deliveryId ? { deliveryId } : {}),
+      signatureScheme: check.scheme,
     };
   }
 
@@ -349,7 +385,7 @@ export class ShortcutWebhookClient {
     const rawBody = await adapter.readRawBody(this.bodyLimit);
     if (rawBody === TOO_LARGE)
       throw new ShortcutWebhookError('payload_too_large', 413);
-    return this.verifyBody(rawBody, adapter.signature);
+    return this.verifyBody(rawBody, adapter.headers);
   }
 
   private isFetchRequest(value: unknown): value is Request {
@@ -366,7 +402,7 @@ export class ShortcutWebhookClient {
       method: request.method,
       contentType: request.headers.get('content-type'),
       contentLength: request.headers.get('content-length'),
-      signature: request.headers.get(SHORTCUT_WEBHOOK_SIGNATURE_HEADER),
+      headers: request.headers,
       readRawBody: async (limit) => {
         if (!request.body) return new Uint8Array();
         const reader = request.body.getReader();
@@ -408,7 +444,7 @@ export class ShortcutWebhookClient {
       method: message.method ?? '',
       contentType: header('content-type'),
       contentLength: header('content-length'),
-      signature: header(SHORTCUT_WEBHOOK_SIGNATURE_HEADER),
+      headers: message.headers,
       readRawBody: async (limit) => {
         const chunks: Uint8Array[] = [];
         let total = 0;

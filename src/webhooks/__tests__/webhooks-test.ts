@@ -962,8 +962,8 @@ describe('Shortcut-Signature headers', () => {
       async () => signedRequest(observer, { timestamp: `${now}.0` }),
     ],
     [
-      'a timestamp in milliseconds',
-      'invalid_signature',
+      'a timestamp in milliseconds, well-formed but 54,000 years ahead',
+      'stale_timestamp',
       async () => signedRequest(observer, { timestamp: String(now * 1000) }),
     ],
     [

@@ -142,18 +142,21 @@ const client = new ShortcutV4Client({
 
 ### `@shortcut/client/webhooks`
 
-Deliveries are signed with HMAC-SHA256 over the raw request body; the hex digest arrives in the `Payload-Signature` header. `ShortcutWebhookClient` verifies the signature in constant time, caps the body (2 MiB by default), rejects payloads that lack the delivery envelope or carry an unrecognized action or trigger shape, and optionally pins deliveries to one workspace or installation. `createHandler()` works as a Fetch handler and as a Node.js `(req, res)` handler, and dispatches typed payloads by kind and by interaction trigger. The Node handler is typed structurally (`ShortcutNodeRequest`, `ShortcutNodeResponse`), so the entrypoint's declarations never import `node:http` and other runtimes need no `@types/node`.
+Every delivery carries three signature headers. `Shortcut-Timestamp` is the Unix time in seconds when Shortcut sent that attempt, fresh on each retry. `Shortcut-Delivery` is an id that stays the same across retries of one delivery; for session events it equals the event `id`. `Shortcut-Signature` is the lowercase hex HMAC-SHA256 of `${timestamp}.${delivery}.${body}`, keyed with the webhook secret, over the raw body bytes. `ShortcutWebhookClient` verifies `Shortcut-Signature` in constant time and rejects a `Shortcut-Timestamp` more than 300 seconds from its clock, either way. Only when `Shortcut-Signature` is absent does it fall back to the deprecated `Payload-Signature`, the HMAC of the body alone, which Shortcut still sends beside the new headers until sc-322342; a request whose `Shortcut-Signature` is missing a companion header or does not verify is rejected whatever its `Payload-Signature` says. Pass `allowLegacySignature: false` to accept the new headers only. The client also caps the body (2 MiB by default), rejects payloads that lack the delivery envelope or carry an unrecognized action or trigger shape, and optionally pins deliveries to one workspace or installation. `createHandler()` works as a Fetch handler and as a Node.js `(req, res)` handler, and dispatches typed payloads by kind and by interaction trigger. The Node handler is typed structurally (`ShortcutNodeRequest`, `ShortcutNodeResponse`), so the entrypoint's declarations never import `node:http` and other runtimes need no `@types/node`.
 
 ```ts
 import { ShortcutWebhookClient } from '@shortcut/client/webhooks';
 
 const webhooks = new ShortcutWebhookClient(process.env.WEBHOOK_SECRET, {
   workspaceId: process.env.WORKSPACE_ID, // optional: 403 for any other workspace
+  allowLegacySignature: false, // optional: require Shortcut-Signature
 });
 const handler = webhooks.createHandler();
 
-handler.on('mentioned', async (payload) => {
-  // payload.trigger is narrowed to the `mentioned` shape
+handler.on('mentioned', async (payload, delivery) => {
+  // payload.trigger is narrowed to the `mentioned` shape.
+  // delivery.deliveryId is the Shortcut-Delivery header: a retry reuses it,
+  // so acknowledge one you already handled without processing it again.
 });
 handler.on('observer', async (payload) => {
   for (const action of payload.actions) {
@@ -175,7 +178,7 @@ handler.on('session.prompted', async (payload) => {
 });
 ```
 
-For frameworks that already read the body, `verify(request)` and `verifyBody(bytes, signature)` return the verified payload or throw a `ShortcutWebhookError` carrying the HTTP status to return. `signShortcutWebhookBody()` produces a valid signature for testing an agent locally.
+For frameworks that already read the body, `verify(request)` and `verifyBody(bytes, headers)` return the verified payload, with `deliveryId` and the `signatureScheme` that verified it, or throw a `ShortcutWebhookError` carrying the HTTP status to return. `verifyBody` takes a Fetch `Headers` object, a header record like Node's `req.headers`, or, as before, the bare `Payload-Signature` value. `verifyShortcutWebhookHeaders(secret, body, headers)` runs the same signature check without parsing the payload and reports which header verified the request or why it was rejected. `signShortcutWebhookHeaders(secret, body, { delivery })` produces all four headers for testing an agent locally; `signShortcutWebhookBody()` produces `Payload-Signature` alone.
 
 The v4 client is generated from `schema/shortcut.v4.openapi.json`, which `yarn sync:schema:v4` downloads and normalizes (the published document names responses and request bodies numerically).
 

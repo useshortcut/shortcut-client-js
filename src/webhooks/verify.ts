@@ -1,7 +1,90 @@
-/** Header carrying the hex HMAC-SHA256 digest of the raw request body. */
+/**
+ * Header carrying the lowercase hex HMAC-SHA256 of
+ * `${timestamp}.${delivery}.${body}`, keyed with the webhook secret, where the
+ * first two parts are the raw `Shortcut-Timestamp` and `Shortcut-Delivery`
+ * values and the body is the exact request bytes.
+ */
+export const SHORTCUT_SIGNATURE_HEADER = 'shortcut-signature';
+/** Header carrying the Unix time in seconds when Shortcut sent this attempt. A retry gets a new one. */
+export const SHORTCUT_TIMESTAMP_HEADER = 'shortcut-timestamp';
+/** Header carrying an id that stays the same across retries of one delivery. For session events it equals the event `id`. */
+export const SHORTCUT_DELIVERY_HEADER = 'shortcut-delivery';
+/**
+ * Header carrying the hex HMAC-SHA256 of the raw request body alone. It is
+ * deprecated: with no timestamp, a captured request verifies forever. Shortcut
+ * sends it beside `Shortcut-Signature` until sc-322342.
+ */
 export const SHORTCUT_WEBHOOK_SIGNATURE_HEADER = 'payload-signature';
 
+/** How far `Shortcut-Timestamp` may be from this clock, in seconds, either way. */
+const TIMESTAMP_TOLERANCE_SECONDS = 300;
+const TIMESTAMP_PATTERN = /^\d{1,18}$/;
+
+/**
+ * Request headers in either runtime's shape: a Fetch `Headers` object, or a
+ * record like Node's `IncomingMessage.headers`. Names are matched without
+ * regard to case.
+ */
+export type ShortcutWebhookHeaders =
+  | { get(name: string): string | null }
+  | Readonly<Record<string, string | string[] | undefined>>;
+
+/** The headers Shortcut sends with one delivery attempt, keyed by lowercase name. */
+export type ShortcutWebhookSignatureHeaders = {
+  'shortcut-timestamp': string;
+  'shortcut-signature': string;
+  'shortcut-delivery': string;
+  /** The deprecated body-only signature Shortcut still sends; see {@link SHORTCUT_WEBHOOK_SIGNATURE_HEADER}. */
+  'payload-signature': string;
+};
+
+/** Which header verified a delivery. */
+export type ShortcutWebhookSignatureScheme =
+  | 'shortcut-signature'
+  | 'payload-signature';
+
+export interface ShortcutWebhookSignatureOptions {
+  /**
+   * Accept `Payload-Signature` when `Shortcut-Signature` is absent. On by
+   * default, for senders that predate `Shortcut-Signature`. A request that
+   * carries `Shortcut-Signature` is never verified by `Payload-Signature`,
+   * whatever this says.
+   */
+  allowLegacySignature?: boolean;
+}
+
+export type ShortcutWebhookSignatureResult =
+  | { verified: true; scheme: 'shortcut-signature'; deliveryId: string }
+  | { verified: true; scheme: 'payload-signature'; deliveryId?: undefined }
+  | {
+      verified: false;
+      /** `stale_timestamp` means the signature was genuine but `Shortcut-Timestamp` is outside the 300-second window. */
+      reason: 'invalid_signature' | 'stale_timestamp';
+    };
+
 const encoder = new TextEncoder();
+
+const INVALID: ShortcutWebhookSignatureResult = {
+  verified: false,
+  reason: 'invalid_signature',
+};
+
+function readHeader(headers: ShortcutWebhookHeaders, name: string) {
+  if (typeof (headers as { get?: unknown }).get === 'function') {
+    return (headers as { get(name: string): string | null }).get(name);
+  }
+  const record = headers as Readonly<
+    Record<string, string | string[] | undefined>
+  >;
+  const key =
+    name in record
+      ? name
+      : Object.keys(record).find(
+          (candidate) => candidate.toLowerCase() === name,
+        );
+  const value = key === undefined ? undefined : record[key];
+  return Array.isArray(value) ? (value[0] ?? null) : (value ?? null);
+}
 
 function parseSignature(
   value: string | null | undefined,
@@ -27,9 +110,68 @@ function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
   return copy.buffer;
 }
 
+function toBytes(rawBody: Uint8Array | string): Uint8Array {
+  return typeof rawBody === 'string' ? encoder.encode(rawBody) : rawBody;
+}
+
+/** `${timestamp}.${delivery}.` followed by the body bytes: what `Shortcut-Signature` covers. */
+function signedContent(
+  timestamp: string,
+  delivery: string,
+  body: Uint8Array,
+): Uint8Array {
+  const prefix = encoder.encode(`${timestamp}.${delivery}.`);
+  const content = new Uint8Array(prefix.byteLength + body.byteLength);
+  content.set(prefix);
+  content.set(body, prefix.byteLength);
+  return content;
+}
+
+function hmacKey(secret: string, usage: 'sign' | 'verify'): Promise<CryptoKey> {
+  return crypto.subtle.importKey(
+    'raw',
+    toArrayBuffer(encoder.encode(secret)),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    [usage],
+  );
+}
+
+async function hmacHex(secret: string, content: Uint8Array): Promise<string> {
+  const digest = new Uint8Array(
+    await crypto.subtle.sign(
+      'HMAC',
+      await hmacKey(secret, 'sign'),
+      toArrayBuffer(content),
+    ),
+  );
+  return Array.from(digest, (byte) => byte.toString(16).padStart(2, '0')).join(
+    '',
+  );
+}
+
+/** Constant-time check that `signature` is the hex HMAC of `content`. */
+async function hmacMatches(
+  secret: string,
+  content: Uint8Array,
+  signature: string | null | undefined,
+): Promise<boolean> {
+  if (typeof secret !== 'string' || secret.length === 0) return false;
+  const expected = parseSignature(signature);
+  if (!expected) return false;
+  return crypto.subtle.verify(
+    'HMAC',
+    await hmacKey(secret, 'verify'),
+    toArrayBuffer(expected),
+    toArrayBuffer(content),
+  );
+}
+
 /**
- * Verifies a Shortcut webhook signature in constant time using WebCrypto,
- * which is available on Node.js 20+, Cloudflare Workers, Deno, and Bun.
+ * Verifies the deprecated body-only `Payload-Signature` in constant time using
+ * WebCrypto, which is available on Node.js 20+, Cloudflare Workers, Deno, and
+ * Bun. Prefer {@link verifyShortcutWebhookHeaders}, which checks
+ * `Shortcut-Signature` and its timestamp window.
  *
  * @param secret The agent app's webhook signing secret.
  * @param rawBody The exact request bytes. Passing a re-serialized string only
@@ -42,45 +184,83 @@ export async function verifyShortcutWebhookSignature(
   rawBody: Uint8Array | string,
   signature: string | null | undefined,
 ): Promise<boolean> {
-  if (typeof secret !== 'string' || secret.length === 0) return false;
-  const expected = parseSignature(signature);
-  if (!expected) return false;
-  const body = typeof rawBody === 'string' ? encoder.encode(rawBody) : rawBody;
-  const key = await crypto.subtle.importKey(
-    'raw',
-    toArrayBuffer(encoder.encode(secret)),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['verify'],
-  );
-  return crypto.subtle.verify(
-    'HMAC',
-    key,
-    toArrayBuffer(expected),
-    toArrayBuffer(body),
-  );
+  return hmacMatches(secret, toBytes(rawBody), signature);
 }
 
 /**
- * Computes the `Payload-Signature` value for a body. Useful for signing test
- * deliveries against a local agent.
+ * Verifies a delivery's signature headers against the raw body. When
+ * `Shortcut-Signature` is present it must verify over `Shortcut-Timestamp`,
+ * `Shortcut-Delivery`, and the body, and the timestamp must be within 300
+ * seconds of this clock; a missing or malformed companion header, or a
+ * mismatch, is rejected without consulting `Payload-Signature`. Only when
+ * `Shortcut-Signature` is absent does `Payload-Signature` verify the body
+ * alone, unless `allowLegacySignature` is `false`.
+ *
+ * @param headers The request headers, as a Fetch `Headers` object or a
+ *   record like Node's `req.headers`.
+ * @returns Which header verified the request, with the `Shortcut-Delivery`
+ *   value for deduplication, or why it was rejected.
+ */
+export async function verifyShortcutWebhookHeaders(
+  secret: string,
+  rawBody: Uint8Array | string,
+  headers: ShortcutWebhookHeaders,
+  options: ShortcutWebhookSignatureOptions = {},
+): Promise<ShortcutWebhookSignatureResult> {
+  const body = toBytes(rawBody);
+  const signature = readHeader(headers, SHORTCUT_SIGNATURE_HEADER);
+  if (signature === null) {
+    if (options.allowLegacySignature === false) return INVALID;
+    const legacy = readHeader(headers, SHORTCUT_WEBHOOK_SIGNATURE_HEADER);
+    return (await hmacMatches(secret, body, legacy))
+      ? { verified: true, scheme: 'payload-signature' }
+      : INVALID;
+  }
+  const timestamp = readHeader(headers, SHORTCUT_TIMESTAMP_HEADER);
+  const delivery = readHeader(headers, SHORTCUT_DELIVERY_HEADER);
+  if (!timestamp || !TIMESTAMP_PATTERN.test(timestamp) || !delivery) {
+    return INVALID;
+  }
+  const content = signedContent(timestamp, delivery, body);
+  if (!(await hmacMatches(secret, content, signature))) return INVALID;
+  const skew = Math.abs(Math.floor(Date.now() / 1000) - Number(timestamp));
+  if (skew > TIMESTAMP_TOLERANCE_SECONDS) {
+    return { verified: false, reason: 'stale_timestamp' };
+  }
+  return { verified: true, scheme: 'shortcut-signature', deliveryId: delivery };
+}
+
+/**
+ * Computes the deprecated `Payload-Signature` value for a body. Prefer
+ * {@link signShortcutWebhookHeaders}, which produces every header Shortcut
+ * sends.
  */
 export async function signShortcutWebhookBody(
   secret: string,
   rawBody: Uint8Array | string,
 ): Promise<string> {
-  const body = typeof rawBody === 'string' ? encoder.encode(rawBody) : rawBody;
-  const key = await crypto.subtle.importKey(
-    'raw',
-    toArrayBuffer(encoder.encode(secret)),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign'],
-  );
-  const digest = new Uint8Array(
-    await crypto.subtle.sign('HMAC', key, toArrayBuffer(body)),
-  );
-  return Array.from(digest, (byte) => byte.toString(16).padStart(2, '0')).join(
-    '',
-  );
+  return hmacHex(secret, toBytes(rawBody));
+}
+
+/**
+ * Computes the headers Shortcut sends with one delivery attempt of `rawBody`,
+ * for signing test deliveries against a local agent. The timestamp defaults
+ * to now. The result is a plain string record, so it serves as `HeadersInit`.
+ */
+export async function signShortcutWebhookHeaders(
+  secret: string,
+  rawBody: Uint8Array | string,
+  options: { delivery: string; timestamp?: string },
+): Promise<ShortcutWebhookSignatureHeaders> {
+  const body = toBytes(rawBody);
+  const timestamp = options.timestamp ?? String(Math.floor(Date.now() / 1000));
+  return {
+    'shortcut-timestamp': timestamp,
+    'shortcut-signature': await hmacHex(
+      secret,
+      signedContent(timestamp, options.delivery, body),
+    ),
+    'shortcut-delivery': options.delivery,
+    'payload-signature': await hmacHex(secret, body),
+  };
 }
