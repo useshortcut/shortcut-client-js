@@ -740,6 +740,7 @@ describe('ShortcutWebhookClient agent-session events', () => {
   ])('rejects a signed session event with %s', async (_label, payload) => {
     expect(isShortcutSessionEventPayload(payload)).toBe(false);
     expect(isShortcutUnknownSessionEventPayload(payload)).toBe(false);
+    expect(shortcutWebhookEventType(payload)).toBeUndefined();
     const error = await client
       .verify(await signed(payload))
       .catch((caught: unknown) => caught);
@@ -994,6 +995,18 @@ describe('Shortcut-Signature headers', () => {
       'invalid_signature',
       async () => signedRequest(observer, { secret: 'other' }),
     ],
+    [
+      'an empty Shortcut-Signature beside a valid Payload-Signature',
+      'invalid_signature',
+      async () =>
+        signedRequest(observer, { headers: { 'shortcut-signature': '' } }),
+    ],
+    [
+      'an empty delivery id',
+      'invalid_signature',
+      async () =>
+        signedRequest(observer, { headers: { 'shortcut-delivery': '' } }),
+    ],
   ])('rejects %s with %s', async (_label, code, make) => {
     const error = await client
       .verify(await make())
@@ -1143,6 +1156,12 @@ describe('Shortcut-Signature headers', () => {
     expect(await verifyShortcutWebhookHeaders('test-secret', body, {})).toEqual(
       { verified: false, reason: 'invalid_signature' },
     );
+    // A header bag whose get() answers undefined for a missing header, as a
+    // Map or an untyped framework wrapper does, has no Shortcut-Signature.
+    const bag = new Map(Object.entries(legacy));
+    expect(
+      await verifyShortcutWebhookHeaders('test-secret', body, bag as never),
+    ).toEqual({ verified: true, scheme: 'payload-signature' });
   });
 });
 

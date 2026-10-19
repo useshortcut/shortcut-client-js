@@ -19,7 +19,7 @@ import ShortcutV4Client, { ShortcutV4Client as NamedV4, ShortcutOAuth } from '@s
 import { applyRefresh, isShortcutV4RequestError, summarizeShortcutV4Error } from '@shortcut/client/v4';
 import type { ChecklistItemSetPosition, Member, MemberAgent, SetPosition, ShortcutAgentCapabilities, ShortcutOAuthRefreshTokens, ShortcutOAuthTokens, ShortcutV4ErrorBody, ShortcutV4ErrorSummary, ShortcutWorkspaceApi, WorkspaceOperation } from '@shortcut/client/v4';
 import { SHORTCUT_DELIVERY_HEADER, SHORTCUT_SIGNATURE_HEADER, SHORTCUT_TIMESTAMP_HEADER, ShortcutWebhookClient, isShortcutSessionEventPayload, isShortcutUnknownSessionEventPayload, signShortcutWebhookHeaders, verifyShortcutWebhookHeaders } from '@shortcut/client/webhooks';
-import type { ShortcutAgentSession, ShortcutAgentSessionStatus, ShortcutSessionCreatedPayload, ShortcutSessionEventPayload, ShortcutSessionPromptContext, ShortcutSessionPromptedPayload, ShortcutUnknownSessionEventPayload, ShortcutVerifiedDelivery, ShortcutWebhookHeaders, ShortcutWebhookPayload, ShortcutWebhookSignatureHeaders, ShortcutWebhookSignatureResult, ShortcutWebhookSignatureScheme } from '@shortcut/client/webhooks';
+import type { ShortcutAgentSession, ShortcutAgentSessionStatus, ShortcutSessionCreatedPayload, ShortcutSessionEventPayload, ShortcutSessionPromptContext, ShortcutSessionPromptedPayload, ShortcutUnknownSessionEventPayload, ShortcutValidationPayload, ShortcutVerifiedDelivery, ShortcutWebhookHeaders, ShortcutWebhookPayload, ShortcutWebhookSignatureHeaders, ShortcutWebhookSignatureResult, ShortcutWebhookSignatureScheme } from '@shortcut/client/webhooks';
 import axios, { type AxiosInstance } from 'axios';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 const legacy: ShortcutClient = new ShortcutClient('token');
@@ -180,19 +180,35 @@ function describeSession(delivery: ShortcutVerifiedDelivery): string {
 }
 type PromptedWithoutContext = Assert<Equal<Extract<keyof ShortcutSessionPromptedPayload, 'prompt_context'>, never>>;
 // A session.* type this version does not know verifies as its own union
-// member, whose type is any string, so narrowing the known types on a literal
-// still works (SessionEventVersion above) and session handlers never see it.
+// member. Its type is branded so that control-flow narrowing on a literal
+// (not only Extract, which tests assignability) still removes it, and the
+// guard's false branch keeps the known session payloads.
 const unknownSession: ShortcutWebhookPayload = {} as ShortcutUnknownSessionEventPayload;
 void unknownSession;
-type UnknownSessionType = Assert<Equal<ShortcutUnknownSessionEventPayload['type'], string>>;
 function describeUnknownSession(delivery: ShortcutVerifiedDelivery): string {
   const payload = delivery.payload;
+  if ('type' in payload && payload.type === 'validation') {
+    const validation: ShortcutValidationPayload = payload;
+    void validation;
+  }
+  if ('type' in payload && payload.type === 'session.created') {
+    const created: ShortcutSessionCreatedPayload = payload;
+    void created;
+  }
+  if (!isShortcutUnknownSessionEventPayload(payload) && isShortcutSessionEventPayload(payload)) {
+    const known: 'session.created' | 'session.prompted' = payload.type;
+    void known;
+  }
   if (!isShortcutUnknownSessionEventPayload(payload)) return '';
   const type: string = payload.type;
+  const prefixed: boolean = payload.type.startsWith('session.');
   const turn: number = payload.session.turn;
   // @ts-expect-error An unknown session event carries only the envelope.
   payload.activity;
-  return [payload.id, type, turn].join(' ');
+  // @ts-expect-error An unknown type is never a literal this version knows; compare through String() or a cast.
+  const direct: boolean = payload.type === 'session.closed';
+  const later: boolean = (payload.type as string) === 'session.closed';
+  return [payload.id, type, prefixed, turn, direct, later].join(' ');
 }
 void describeUnknownSession;
 void describeSession;
