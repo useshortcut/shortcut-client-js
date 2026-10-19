@@ -9,6 +9,7 @@ import {
   isShortcutInteractionPayload,
   isShortcutObserverPayload,
   isShortcutSessionEventPayload,
+  isShortcutUnknownSessionEventPayload,
   shortcutWebhookEventType,
   signShortcutWebhookBody,
   verifyShortcutWebhookSignature,
@@ -141,6 +142,16 @@ const sessionStop = {
     content: { type: 'prompt', body: 'Stop' },
     signal: 'stop',
   },
+};
+// A session event type this version does not know, as Shortcut would add one
+// within envelope v1.
+const sessionClosed = {
+  id: 'event-4',
+  version: 'v1',
+  type: 'session.closed',
+  workspace_id: 'workspace-1',
+  installation_id: 'install-1',
+  session: { ...session, status: 'complete', closed_reason: 'access_revoked' },
 };
 
 async function signed(
@@ -594,10 +605,56 @@ describe('ShortcutWebhookClient agent-session events', () => {
     expect(shortcutWebhookEventType(payload)).toBe('session');
   });
 
+  // Every subscribed agent receives every session event, so an unknown
+  // session.* type is acknowledged (below) rather than rejected. An unknown
+  // type outside session.* is still rejected: nothing in this version sends one.
+  it('acknowledges a session event of an unknown type without dispatching it', async () => {
+    const { payload } = await client.verify(await signed(sessionClosed));
+    expect(payload).toEqual(sessionClosed);
+    expect(isShortcutSessionEventPayload(payload)).toBe(false);
+    expect(isShortcutUnknownSessionEventPayload(payload)).toBe(true);
+    expect(isShortcutUnknownSessionEventPayload(sessionCreated)).toBe(false);
+    expect(isShortcutUnknownSessionEventPayload(sessionPrompted)).toBe(false);
+    expect(shortcutWebhookEventType(payload)).toBe('session');
+    const handler = client.createHandler();
+    const seen: string[] = [];
+    for (const event of [
+      'session',
+      'session.created',
+      'session.prompted',
+      'observer',
+      'interaction',
+      'validation',
+    ] as const) {
+      handler.on(event, () => {
+        seen.push(event);
+      });
+    }
+    const response = await handler(await signed(sessionClosed));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ ok: true });
+    expect(seen).toEqual([]);
+    const bound = new ShortcutWebhookClient(secret, {
+      workspaceId: 'workspace-2',
+    });
+    const error = await bound
+      .verify(await signed(sessionClosed))
+      .catch((caught: unknown) => caught);
+    expect((error as ShortcutWebhookError).code).toBe('wrong_workspace');
+  });
+
   it.each([
     [
-      'an unknown session event type',
-      { ...sessionCreated, type: 'session.closed' },
+      'an unknown event type outside session.*',
+      { ...sessionCreated, type: 'turn.ended' },
+    ],
+    [
+      'an unknown session event type without a session',
+      { ...sessionClosed, session: undefined },
+    ],
+    [
+      'an unknown session event type with a wrong version',
+      { ...sessionClosed, version: 'v2' },
     ],
     ['a missing delivery id', { ...sessionCreated, id: '' }],
     ['a missing version', { ...sessionCreated, version: undefined }],

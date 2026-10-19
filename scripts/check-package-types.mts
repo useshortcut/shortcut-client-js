@@ -18,8 +18,8 @@ import ShortcutClient, { ShortcutClient as NamedV3 } from '@shortcut/client';
 import ShortcutV4Client, { ShortcutV4Client as NamedV4, ShortcutOAuth } from '@shortcut/client/v4';
 import { applyRefresh, isShortcutV4RequestError, summarizeShortcutV4Error } from '@shortcut/client/v4';
 import type { ChecklistItemSetPosition, Member, MemberAgent, SetPosition, ShortcutAgentCapabilities, ShortcutOAuthRefreshTokens, ShortcutOAuthTokens, ShortcutV4ErrorBody, ShortcutV4ErrorSummary, ShortcutWorkspaceApi, WorkspaceOperation } from '@shortcut/client/v4';
-import { ShortcutWebhookClient, isShortcutSessionEventPayload } from '@shortcut/client/webhooks';
-import type { ShortcutAgentSession, ShortcutAgentSessionStatus, ShortcutSessionCreatedPayload, ShortcutSessionEventPayload, ShortcutSessionPromptContext, ShortcutSessionPromptedPayload, ShortcutVerifiedDelivery, ShortcutWebhookPayload } from '@shortcut/client/webhooks';
+import { ShortcutWebhookClient, isShortcutSessionEventPayload, isShortcutUnknownSessionEventPayload } from '@shortcut/client/webhooks';
+import type { ShortcutAgentSession, ShortcutAgentSessionStatus, ShortcutSessionCreatedPayload, ShortcutSessionEventPayload, ShortcutSessionPromptContext, ShortcutSessionPromptedPayload, ShortcutUnknownSessionEventPayload, ShortcutVerifiedDelivery, ShortcutWebhookPayload } from '@shortcut/client/webhooks';
 import axios, { type AxiosInstance } from 'axios';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 const legacy: ShortcutClient = new ShortcutClient('token');
@@ -177,10 +177,27 @@ function describeSession(delivery: ShortcutVerifiedDelivery): string {
   return [context, trigger, opening].join(' ');
 }
 type PromptedWithoutContext = Assert<Equal<Extract<keyof ShortcutSessionPromptedPayload, 'prompt_context'>, never>>;
+// A session.* type this version does not know verifies as its own union
+// member, whose type is any string, so narrowing the known types on a literal
+// still works (SessionEventVersion above) and session handlers never see it.
+const unknownSession: ShortcutWebhookPayload = {} as ShortcutUnknownSessionEventPayload;
+void unknownSession;
+type UnknownSessionType = Assert<Equal<ShortcutUnknownSessionEventPayload['type'], string>>;
+function describeUnknownSession(delivery: ShortcutVerifiedDelivery): string {
+  const payload = delivery.payload;
+  if (!isShortcutUnknownSessionEventPayload(payload)) return '';
+  const type: string = payload.type;
+  const turn: number = payload.session.turn;
+  // @ts-expect-error An unknown session event carries only the envelope.
+  payload.activity;
+  return [payload.id, type, turn].join(' ');
+}
+void describeUnknownSession;
 void describeSession;
 handler.on('session', (payload) => {
   const sessionId: string = payload.session.id;
-  void sessionId;
+  const known: 'session.created' | 'session.prompted' = payload.type;
+  void [sessionId, known];
 });
 handler.on('session.prompted', (payload) => {
   const prompted: ShortcutSessionPromptedPayload = payload;
