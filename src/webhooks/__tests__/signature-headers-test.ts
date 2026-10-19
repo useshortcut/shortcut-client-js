@@ -254,7 +254,7 @@ describe('Shortcut-Signature headers', () => {
     expect((bare as ShortcutWebhookError).code).toBe('invalid_signature');
   });
 
-  it('does not apply the payload timestamp window to a delivery verified by Shortcut-Signature', async () => {
+  it('bounds Shortcut-Timestamp, not the payload timestamp, by timestampToleranceMs', async () => {
     const strict = new ShortcutWebhookClient(secret, {
       timestampToleranceMs: 60_000,
     });
@@ -262,14 +262,40 @@ describe('Shortcut-Signature headers', () => {
     expect((await strict.verify(await signedRequest(stale))).payload).toEqual(
       stale,
     );
-    const session = await strict.verify(
-      await signedRequest(sessionPrompted, { deliveryId: sessionPrompted.id }),
-    );
-    expect(session.deliveryId).toBe('event-2');
     const legacy = await strict
       .verify(await signed(stale))
       .catch((caught: unknown) => caught);
     expect((legacy as ShortcutWebhookError).code).toBe('stale_timestamp');
+    const recent = await strict.verify(
+      await signedRequest(sessionPrompted, {
+        deliveryId: sessionPrompted.id,
+        timestamp: String(now - 30),
+      }),
+    );
+    expect(recent.deliveryId).toBe('event-2');
+    for (const timestamp of [String(now - 200), String(now + 200)]) {
+      const error = await strict
+        .verify(await signedRequest(observer, { timestamp }))
+        .catch((caught: unknown) => caught);
+      expect(error).toBeInstanceOf(ShortcutWebhookError);
+      expect((error as ShortcutWebhookError).code).toBe('stale_timestamp');
+      expect((error as ShortcutWebhookError).status).toBe(401);
+    }
+    // The option only tightens the window: 300 seconds is the ceiling.
+    const loose = new ShortcutWebhookClient(secret, {
+      timestampToleranceMs: 3_600_000,
+    });
+    const over = await loose
+      .verify(await signedRequest(observer, { timestamp: String(now - 301) }))
+      .catch((caught: unknown) => caught);
+    expect((over as ShortcutWebhookError).code).toBe('stale_timestamp');
+    expect(
+      (
+        await client.verify(
+          await signedRequest(observer, { timestamp: String(now - 200) }),
+        )
+      ).signatureScheme,
+    ).toBe('shortcut-signature');
   });
 
   it('serves the new headers to the Node.js handler', async () => {
