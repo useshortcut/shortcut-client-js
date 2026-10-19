@@ -103,7 +103,8 @@ export type ShortcutInteractionTrigger =
       entity_id: string;
       context: 'comment' | 'description';
       comment_id?: string;
-      comment_parent_id?: string;
+      /** For a `comment` context: the parent comment's id when the mentioning comment is a reply, `null` when it is top-level. */
+      comment_parent_id?: string | null;
     };
 
 export type ShortcutInteractionTriggerType = ShortcutInteractionTrigger['type'];
@@ -229,9 +230,12 @@ export interface ShortcutSessionPromptActivity {
 
 /**
  * What started a session. The known shapes are the `ShortcutInteractionTrigger`
- * variants, and every one of them is assignable here. A `type` this version
- * does not know arrives with only the entity reference guaranteed, so the
- * per-type fields are optional rather than discriminated.
+ * variants, and every one of them is assignable here. The session is the
+ * event, so only the entity reference is required and each per-type field is
+ * checked for its type, never for this version's enum values or for the
+ * combination a known `type` usually carries: a value Shortcut adds within
+ * envelope `v1` must not stall the session with a 400. Narrowing on `type`
+ * therefore leaves the per-type fields optional.
  */
 export interface ShortcutSessionTrigger {
   type: ShortcutInteractionTriggerType | (string & {});
@@ -241,10 +245,10 @@ export interface ShortcutSessionTrigger {
   comment_id?: string;
   /** `comment-reply` only. */
   parent_comment_id?: string;
-  /** `mentioned` only. */
-  context?: 'comment' | 'description';
-  /** `mentioned` in a threaded comment. */
-  comment_parent_id?: string;
+  /** `mentioned` only. The values this version knows, or one Shortcut added later. */
+  context?: 'comment' | 'description' | (string & {});
+  /** `mentioned` in a comment: the parent comment's id for a reply, `null` for a top-level comment. */
+  comment_parent_id?: string | null;
 }
 
 /** Bounded text about the Story or Epic, so the agent can start without a fetch. */
@@ -393,23 +397,38 @@ function isShortcutObserverAction(
   );
 }
 
+const isOptionalString = (value: unknown): value is string | undefined =>
+  value === undefined || typeof value === 'string';
+
 /**
- * A known trigger `type` must carry that type's fields. An interaction
- * delivery rejects an unknown `type`, since the handler dispatches on it; a
- * session's prompt context accepts one, since the session is the event.
+ * The entity reference every trigger carries, with each per-type field of
+ * its type when present. What a session's prompt context requires: see
+ * `ShortcutSessionTrigger`.
  */
-function isShortcutTrigger(
+function isShortcutTriggerShape(
   value: unknown,
-  unknownType: 'accept' | 'reject',
 ): value is ShortcutSessionTrigger {
-  if (
-    !isRecord(value) ||
-    !isNonEmptyString(value.type) ||
-    !isNonEmptyString(value.entity_type) ||
-    !isNonEmptyString(value.entity_id)
-  ) {
-    return false;
-  }
+  return (
+    isRecord(value) &&
+    isNonEmptyString(value.type) &&
+    isNonEmptyString(value.entity_type) &&
+    isNonEmptyString(value.entity_id) &&
+    isOptionalString(value.comment_id) &&
+    isOptionalString(value.parent_comment_id) &&
+    isOptionalString(value.context) &&
+    (value.comment_parent_id === null ||
+      isOptionalString(value.comment_parent_id))
+  );
+}
+
+/**
+ * A trigger of a `type` this version knows, carrying that type's fields. What
+ * an interaction delivery requires, since the handler dispatches on it.
+ */
+function isShortcutInteractionTrigger(
+  value: unknown,
+): value is ShortcutInteractionTrigger {
+  if (!isShortcutTriggerShape(value)) return false;
   switch (value.type) {
     case 'assigned':
       return true;
@@ -421,7 +440,7 @@ function isShortcutTrigger(
     case 'mentioned':
       return value.context === 'comment' || value.context === 'description';
     default:
-      return unknownType === 'accept';
+      return false;
   }
 }
 
@@ -448,7 +467,7 @@ export function isShortcutInteractionPayload(
 ): payload is ShortcutInteractionPayload {
   return (
     hasShortcutWebhookEnvelope(payload) &&
-    isShortcutTrigger(payload.trigger, 'reject')
+    isShortcutInteractionTrigger(payload.trigger)
   );
 }
 
@@ -498,7 +517,7 @@ function isShortcutSessionPromptContext(
     isRecord(value) &&
     typeof value.text === 'string' &&
     typeof value.truncated === 'boolean' &&
-    (value.trigger === undefined || isShortcutTrigger(value.trigger, 'accept'))
+    (value.trigger === undefined || isShortcutTriggerShape(value.trigger))
   );
 }
 

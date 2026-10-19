@@ -149,6 +149,10 @@ const newerClosedReason: ShortcutAgentSession['closed_reason'] = 'archived';
 const newerEntityType: ShortcutAgentSession['entity_type'] = 'doc';
 const newerSignal: ShortcutSessionPromptedPayload['activity']['signal'] = 'pause';
 const newerTrigger: ShortcutSessionPromptContext['trigger'] = { type: 'poked', entity_type: 'story', entity_id: '1' };
+// A session trigger's per-type fields admit values Shortcut adds later and the
+// null the backend sends for a mention in a top-level comment.
+const newerContext: ShortcutSessionPromptContext['trigger'] = { type: 'mentioned', entity_type: 'story', entity_id: '1', context: 'title', comment_id: '9', comment_parent_id: null };
+void newerContext;
 type KnownPlanStatus = Assert<Equal<Extract<ShortcutAgentSession['plan'][number]['status'], 'in_progress'>, 'in_progress'>>;
 const newerPlanStatus: ShortcutAgentSession['plan'][number]['status'] = 'blocked';
 void [knownStatus, newerStatus, newerClosedReason, newerEntityType, newerSignal, newerTrigger, newerPlanStatus];
@@ -220,6 +224,17 @@ handler.on('session', (payload) => {
 handler.on('session.prompted', (payload) => {
   const prompted: ShortcutSessionPromptedPayload = payload;
   void prompted;
+});
+// An interaction delivery is validated per trigger type, so narrowing on the
+// event name gives the fields that type carries.
+handler.on('comment-reply', (payload) => {
+  const parent: string = payload.trigger.parent_comment_id;
+  void parent;
+});
+handler.on('mentioned', (payload) => {
+  const context: 'comment' | 'description' = payload.trigger.context;
+  const parent: string | null | undefined = payload.trigger.comment_parent_id;
+  void [context, parent];
 });
 // Timestamped signatures (sc-322332): the client verifies Shortcut-Signature
 // and falls back to Payload-Signature unless allowLegacySignature is false.
