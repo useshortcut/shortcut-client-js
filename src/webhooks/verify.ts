@@ -130,7 +130,7 @@ function signedContent(
   return content;
 }
 
-function hmacKey(secret: string, usage: 'sign' | 'verify'): Promise<CryptoKey> {
+function hmacKey(secret: string, usage: 'sign' | 'verify') {
   return crypto.subtle.importKey(
     'raw',
     toArrayBuffer(encoder.encode(secret)),
