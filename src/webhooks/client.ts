@@ -58,8 +58,10 @@ export interface ShortcutWebhookClientOptions {
   timestampToleranceMs?: number;
   /**
    * Accept `Payload-Signature` when `Shortcut-Signature` is absent. On by
-   * default, for senders that predate `Shortcut-Signature`. Set it to `false`
-   * once every sender carries the new headers: only then does the 300-second
+   * default, since senders that predate `Shortcut-Signature` send only
+   * `Payload-Signature`, as does the validation ping when a URL is saved.
+   * Set it to `false` once every delivery arrives with
+   * `signatureScheme === 'shortcut-signature'`: only then does the timestamp
    * window stop a captured request from being replayed, since a replay can
    * drop the new headers and verify by `Payload-Signature`. A request that
    * carries `Shortcut-Signature` is never verified by `Payload-Signature`

@@ -142,21 +142,23 @@ const client = new ShortcutV4Client({
 
 ### `@shortcut/client/webhooks`
 
-Every delivery carries three headers that sign it. `Shortcut-Timestamp` is the Unix time in seconds when Shortcut sent that attempt, fresh on each retry. `Shortcut-Delivery` is an id that stays the same across retries of one delivery; for session events it equals the event `id`. `Shortcut-Signature` is the lowercase hex HMAC-SHA256 of `${timestamp}.${delivery}.${body}`, keyed with the webhook secret, over the raw body bytes. `ShortcutWebhookClient` verifies `Shortcut-Signature` in constant time and rejects a `Shortcut-Timestamp` more than 300 seconds from its clock, either way. Only when `Shortcut-Signature` is absent does it fall back to the deprecated `Payload-Signature`, the HMAC of the body alone, which Shortcut still sends beside the new headers until a later release removes it; a request whose `Shortcut-Signature` is missing a companion header or does not verify is rejected whatever its `Payload-Signature` says. Pass `allowLegacySignature: false` to accept the new headers only. Until you do, the 300-second window is not replay protection: a captured request can drop the new headers and verify by `Payload-Signature`, so set the option as soon as your deliveries arrive with `Shortcut-Signature` (`delivery.signatureScheme` tells you). The client also caps the body (2 MiB by default), rejects payloads that lack the delivery envelope or carry an unrecognized action or trigger shape, and optionally pins deliveries to one workspace or installation. `createHandler()` works as a Fetch handler and as a Node.js `(req, res)` handler, and dispatches typed payloads by kind and by interaction trigger. The Node handler is typed structurally (`ShortcutNodeRequest`, `ShortcutNodeResponse`), so the entrypoint's declarations never import `node:http` and other runtimes need no `@types/node`.
+`ShortcutWebhookClient` verifies the signature on each delivery, caps the body (2 MiB by default), rejects payloads that lack the delivery envelope or carry an unrecognized action or trigger shape, and optionally pins deliveries to one workspace or installation. `createHandler()` works as a Fetch handler and as a Node.js `(req, res)` handler, and dispatches typed payloads by kind and by interaction trigger. The Node handler is typed structurally (`ShortcutNodeRequest`, `ShortcutNodeResponse`), so the entrypoint's declarations never import `node:http` and other runtimes need no `@types/node`.
+
+Shortcut is moving agent-application webhooks (observer, interaction, and session deliveries) to three signing headers. `Shortcut-Timestamp` is the Unix time in seconds when Shortcut sent that attempt, fresh on each retry. `Shortcut-Delivery` is an id that stays the same across retries of one delivery; for session events it equals the event `id`. `Shortcut-Signature` is the lowercase hex HMAC-SHA256 of `${timestamp}.${delivery}.${body}`, keyed with the webhook secret, over the raw body bytes. Until that change is deployed every delivery carries only `Payload-Signature`, the HMAC of the body alone; after it, agent-application deliveries carry all three beside `Payload-Signature` until a later release drops it, and classic workspace webhooks keep sending `Payload-Signature` alone. The client handles both: when `Shortcut-Signature` is present it verifies it in constant time and rejects a `Shortcut-Timestamp` more than 300 seconds from its clock, either way (`timestampToleranceMs` tightens that window); a request whose `Shortcut-Signature` is missing a companion header or does not verify is rejected whatever its `Payload-Signature` says. Only when `Shortcut-Signature` is absent does it fall back to `Payload-Signature`. `delivery.signatureScheme` reports which header verified each delivery.
 
 ```ts
 import { ShortcutWebhookClient } from '@shortcut/client/webhooks';
 
 const webhooks = new ShortcutWebhookClient(process.env.WEBHOOK_SECRET, {
   workspaceId: process.env.WORKSPACE_ID, // optional: 403 for any other workspace
-  allowLegacySignature: false, // recommended: a captured request cannot replay through Payload-Signature
 });
 const handler = webhooks.createHandler();
 
 handler.on('mentioned', async (payload, delivery) => {
   // payload.trigger is narrowed to the `mentioned` shape.
-  // delivery.deliveryId is the Shortcut-Delivery header: a retry reuses it,
-  // so acknowledge one you already handled without processing it again.
+  // delivery.deliveryId is the Shortcut-Delivery header when the delivery
+  // carried one: a retry reuses it, so acknowledge one you already handled
+  // without processing it again.
 });
 handler.on('observer', async (payload) => {
   for (const action of payload.actions) {
@@ -166,6 +168,16 @@ handler.on('observer', async (payload) => {
 
 export default { fetch: handler }; // Cloudflare Workers
 // http.createServer(handler);      // Node.js
+```
+
+`deliveryId` is a per-delivery key only when `delivery.signatureScheme` is `'shortcut-signature'`. Under the `Payload-Signature` fallback it is the payload `id`: the event id for a session event, and for observer and interaction deliveries the key of the transaction that produced them, which every interaction one save produces shares, so it does not tell those apart.
+
+Once your deliveries arrive with `delivery.signatureScheme === 'shortcut-signature'`, turn the fallback off. Until then, the 300-second window is not replay protection, since a captured request can drop the new headers and verify by `Payload-Signature`. Do not set it before: every delivery, including the validation ping when the URL is saved, would answer `401`.
+
+```ts
+const webhooks = new ShortcutWebhookClient(process.env.WEBHOOK_SECRET, {
+  allowLegacySignature: false, // only after every delivery carries Shortcut-Signature
+});
 ```
 
 An installation that enabled agent sessions (`PUT /api/v4/{workspace}/agent-sessions/subscription`) receives `session.created` and `session.prompted` events instead of interaction deliveries. They use the v1 session envelope (`id`, `version`, `type`, `workspace_id`, `installation_id`, `session`), signed the same way, with no `actor`, `timestamp`, or `workspace2`. `session.created` adds `prompt_context` and, when a person wrote one, the opening `activity`; `session.prompted` adds the human `activity` and no `prompt_context`. The handler dispatches them under `session`, `session.created`, and `session.prompted`, and `isShortcutSessionEventPayload()` narrows a verified payload to `ShortcutSessionEventPayload`. A `session.*` event of a type this release does not know still verifies, as `ShortcutUnknownSessionEventPayload`, and the handler answers `200` without dispatching it, so a type Shortcut adds later never stalls a session; `isShortcutUnknownSessionEventPayload()` narrows it when you want to log or persist it. A stop request is a `session.prompted` event whose `activity.signal` is `"stop"`. The enum-like fields (`session.status`, `session.closed_reason`, `session.entity_type`, `session.plan[].status`, `prompt_context.trigger.type`, `activity.signal`) type the values this release knows and accept any other string, so a value Shortcut adds within envelope `v1` still verifies; compare against the known values and treat the rest as unknown.

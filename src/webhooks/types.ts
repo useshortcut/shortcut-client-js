@@ -1,11 +1,14 @@
 /**
  * Payload shapes delivered to Shortcut Custom Agent webhooks.
  *
- * Every delivery is a JSON body signed with HMAC-SHA256 over the
+ * Every delivery is a JSON body signed with HMAC-SHA256 and the webhook
+ * secret. Agent-application deliveries are moving to a signature over the
  * `Shortcut-Timestamp`, the `Shortcut-Delivery` id, and the exact request
- * bytes; the hex digest arrives in the `Shortcut-Signature` header, beside the
- * deprecated body-only `Payload-Signature`. See `verify.ts` for the scheme and
- * the Custom Agents reference for trigger semantics.
+ * bytes, whose hex digest arrives in `Shortcut-Signature` beside the
+ * body-only `Payload-Signature`; until that is deployed, and for classic
+ * workspace webhooks after it, only `Payload-Signature` is sent. See
+ * `verify.ts` for both schemes and the Custom Agents reference for trigger
+ * semantics.
  */
 
 /** Who performed the change. Exactly one id is present in practice. */
