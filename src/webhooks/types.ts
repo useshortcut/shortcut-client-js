@@ -279,6 +279,17 @@ export interface ShortcutSessionPromptedPayload extends ShortcutSessionEventEnve
 }
 
 /**
+ * A `session.*` event whose `type` this version does not know. Shortcut adds
+ * event types within envelope `v1`, and every subscribed agent receives every
+ * session event, so the client verifies the envelope and answers `200` to
+ * keep the session's later events flowing, but dispatches it to no handler.
+ * Read it from `verify()` or `verifyBody()` to log or persist it.
+ */
+export interface ShortcutUnknownSessionEventPayload extends ShortcutSessionEventEnvelope {
+  type: string;
+}
+
+/**
  * Agent-session deliveries. Unlike observer and interaction deliveries they
  * carry no `actor`, `timestamp`, or `workspace2`; the workspace slug for API
  * calls comes from the installation's OAuth token.
@@ -291,7 +302,8 @@ export type ShortcutWebhookPayload =
   | ShortcutObserverPayload
   | ShortcutInteractionPayload
   | ShortcutValidationPayload
-  | ShortcutSessionEventPayload;
+  | ShortcutSessionEventPayload
+  | ShortcutUnknownSessionEventPayload;
 
 export type ShortcutWebhookEventType =
   | 'observer'
@@ -467,6 +479,23 @@ function isShortcutSessionPromptContext(
   );
 }
 
+/** The `v1` envelope every `session.*` delivery carries, whatever its `type`. */
+function hasShortcutSessionEnvelope(
+  payload: unknown,
+): payload is Record<string, unknown> &
+  ShortcutSessionEventEnvelope & { type: string } {
+  return (
+    isRecord(payload) &&
+    typeof payload.type === 'string' &&
+    payload.type.startsWith('session.') &&
+    isNonEmptyString(payload.id) &&
+    payload.version === 'v1' &&
+    isNonEmptyString(payload.workspace_id) &&
+    isNonEmptyString(payload.installation_id) &&
+    isShortcutAgentSession(payload.session)
+  );
+}
+
 /**
  * True for a `v1` agent-session delivery with a recognized `type` and the
  * session snapshot, plus the prompt context that `session.created` carries or
@@ -476,33 +505,40 @@ function isShortcutSessionPromptContext(
 export function isShortcutSessionEventPayload(
   payload: unknown,
 ): payload is ShortcutSessionEventPayload {
-  if (
-    !isRecord(payload) ||
-    typeof payload.type !== 'string' ||
-    !SESSION_EVENT_TYPES.has(payload.type)
-  ) {
-    return false;
-  }
-  return (
-    isNonEmptyString(payload.id) &&
-    payload.version === 'v1' &&
-    isNonEmptyString(payload.workspace_id) &&
-    isNonEmptyString(payload.installation_id) &&
-    isShortcutAgentSession(payload.session) &&
-    (payload.type === 'session.prompted'
-      ? isShortcutSessionPromptActivity(payload.activity)
-      : isShortcutSessionPromptContext(payload.prompt_context) &&
+  if (!hasShortcutSessionEnvelope(payload)) return false;
+  switch (payload.type) {
+    case 'session.created':
+      return (
+        isShortcutSessionPromptContext(payload.prompt_context) &&
         (payload.activity === undefined ||
-          isShortcutSessionPromptActivity(payload.activity)))
+          isShortcutSessionPromptActivity(payload.activity))
+      );
+    case 'session.prompted':
+      return isShortcutSessionPromptActivity(payload.activity);
+    default:
+      return false;
+  }
+}
+
+/** True for a well-formed `v1` session envelope whose `type` this version does not know. */
+export function isShortcutUnknownSessionEventPayload(
+  payload: unknown,
+): payload is ShortcutUnknownSessionEventPayload {
+  return (
+    hasShortcutSessionEnvelope(payload) &&
+    !SESSION_EVENT_TYPES.has(payload.type)
   );
 }
 
-/** Which event-type name a payload dispatches under. */
+/**
+ * Which kind a payload belongs to. An unknown `session.*` type is `session`,
+ * although `createHandler()` dispatches it to no handler.
+ */
 export function shortcutWebhookEventType(
   payload: unknown,
 ): ShortcutWebhookEventType | undefined {
   if (isShortcutValidationPayload(payload)) return 'validation';
-  if (isShortcutSessionEventPayload(payload)) return 'session';
+  if (hasShortcutSessionEnvelope(payload)) return 'session';
   if (isShortcutInteractionPayload(payload)) return 'interaction';
   if (isShortcutObserverPayload(payload)) return 'observer';
   return undefined;

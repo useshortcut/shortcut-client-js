@@ -729,6 +729,7 @@ describe('ShortcutWebhookClient agent-session events', () => {
     ],
   ])('rejects a signed session event with %s', async (_label, payload) => {
     expect(isShortcutSessionEventPayload(payload)).toBe(false);
+    expect(isShortcutUnknownSessionEventPayload(payload)).toBe(false);
     const error = await client
       .verify(await signed(payload))
       .catch((caught: unknown) => caught);

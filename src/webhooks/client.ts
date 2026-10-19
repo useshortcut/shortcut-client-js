@@ -9,6 +9,7 @@ import {
   isShortcutInteractionPayload,
   isShortcutObserverPayload,
   isShortcutSessionEventPayload,
+  isShortcutUnknownSessionEventPayload,
   isShortcutValidationPayload,
 } from './types';
 import {
@@ -200,7 +201,10 @@ export class ShortcutWebhookClient {
     } catch {
       throw new ShortcutWebhookError('invalid_body', 400);
     }
-    if (isShortcutSessionEventPayload(payload)) {
+    if (
+      isShortcutSessionEventPayload(payload) ||
+      isShortcutUnknownSessionEventPayload(payload)
+    ) {
       this.assertBoundTo(payload.workspace_id, payload.installation_id);
     } else if (!isShortcutValidationPayload(payload)) {
       if (
@@ -237,7 +241,9 @@ export class ShortcutWebhookClient {
    * Creates a request handler for Fetch runtimes (`(request) => Response`)
    * and Node.js HTTP (`(req, res) => void`). Register handlers with `.on()`.
    * Every verified delivery is acknowledged with `200` once its handlers
-   * settle; a throwing handler yields `500`, which Shortcut retries.
+   * settle; a throwing handler yields `500`, which Shortcut retries. A
+   * `session.*` event of a type this version does not know is acknowledged
+   * and dispatched to no handler.
    */
   createHandler(): ShortcutWebhookHandler {
     const listeners = new Map<
@@ -310,6 +316,7 @@ export class ShortcutWebhookClient {
     if (isShortcutSessionEventPayload(payload)) {
       return ['session', payload.type];
     }
+    if (isShortcutUnknownSessionEventPayload(payload)) return [];
     if (isShortcutInteractionPayload(payload)) {
       return ['interaction', payload.trigger.type];
     }
