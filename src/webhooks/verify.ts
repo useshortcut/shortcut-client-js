@@ -12,7 +12,7 @@ export const SHORTCUT_DELIVERY_HEADER = 'shortcut-delivery';
 /**
  * Header carrying the hex HMAC-SHA256 of the raw request body alone. It is
  * deprecated: with no timestamp, a captured request verifies forever. Shortcut
- * sends it beside `Shortcut-Signature` until sc-322342.
+ * sends it beside `Shortcut-Signature` until a later release removes it.
  */
 export const SHORTCUT_WEBHOOK_SIGNATURE_HEADER = 'payload-signature';
 
@@ -71,7 +71,10 @@ const INVALID: ShortcutWebhookSignatureResult = {
 
 function readHeader(headers: ShortcutWebhookHeaders, name: string) {
   if (typeof (headers as { get?: unknown }).get === 'function') {
-    return (headers as { get(name: string): string | null }).get(name);
+    return (
+      (headers as { get(name: string): string | null | undefined }).get(name) ??
+      null
+    );
   }
   const record = headers as Readonly<
     Record<string, string | string[] | undefined>

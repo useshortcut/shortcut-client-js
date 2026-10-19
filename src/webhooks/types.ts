@@ -128,9 +128,9 @@ export interface ShortcutValidationPayload {
 /*
  * The enum-like session fields (`status`, `closed_reason`, `entity_type`,
  * `plan[].status`, the prompt-context `trigger.type`, and the prompt
- * `signal`) list the values
- * this version knows and also admit any other string, because Shortcut adds
- * values inside envelope `v1` without a version bump. A guard that rejected
+ * `signal`) list the values this version knows and also admit any other
+ * string, because Shortcut adds values inside envelope `v1` without a version
+ * bump. A guard that rejected
  * them would make every agent on this version answer 400 to the new
  * delivery, which Shortcut retries and dead-letters. Compare against the
  * known values and treat anything else as unknown.
@@ -288,6 +288,19 @@ export interface ShortcutSessionPromptedPayload extends ShortcutSessionEventEnve
   activity: ShortcutSessionPromptActivity;
 }
 
+declare const unknownSessionEventType: unique symbol;
+
+/**
+ * The `type` of a session event this version does not know. It is a
+ * `session.*` string, branded so TypeScript never narrows a known literal
+ * (`'validation'`, `'session.created'`) to the unknown payload and never
+ * drops the known payloads from the unknown guard's false branch. Read it as
+ * a string, as in `String(payload.type)`, or compare it through a cast.
+ */
+export type ShortcutUnknownSessionEventType = `session.${string}` & {
+  readonly [unknownSessionEventType]: true;
+};
+
 /**
  * A `session.*` event whose `type` this version does not know. Shortcut adds
  * event types within envelope `v1`, and every subscribed agent receives every
@@ -296,7 +309,7 @@ export interface ShortcutSessionPromptedPayload extends ShortcutSessionEventEnve
  * Read it from `verify()` or `verifyBody()` to log or persist it.
  */
 export interface ShortcutUnknownSessionEventPayload extends ShortcutSessionEventEnvelope {
-  type: string;
+  type: ShortcutUnknownSessionEventType;
 }
 
 /**
@@ -541,14 +554,20 @@ export function isShortcutUnknownSessionEventPayload(
 }
 
 /**
- * Which kind a payload belongs to. An unknown `session.*` type is `session`,
- * although `createHandler()` dispatches it to no handler.
+ * Which kind a payload `verify()` would accept belongs to. An unknown
+ * `session.*` type is `session`, although `createHandler()` dispatches it to
+ * no handler.
  */
 export function shortcutWebhookEventType(
   payload: unknown,
 ): ShortcutWebhookEventType | undefined {
   if (isShortcutValidationPayload(payload)) return 'validation';
-  if (hasShortcutSessionEnvelope(payload)) return 'session';
+  if (
+    isShortcutSessionEventPayload(payload) ||
+    isShortcutUnknownSessionEventPayload(payload)
+  ) {
+    return 'session';
+  }
   if (isShortcutInteractionPayload(payload)) return 'interaction';
   if (isShortcutObserverPayload(payload)) return 'observer';
   return undefined;

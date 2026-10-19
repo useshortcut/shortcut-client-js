@@ -58,8 +58,11 @@ export interface ShortcutWebhookClientOptions {
   /**
    * Accept `Payload-Signature` when `Shortcut-Signature` is absent. On by
    * default, for senders that predate `Shortcut-Signature`. Set it to `false`
-   * once every sender carries the new headers. A request that carries
-   * `Shortcut-Signature` is never verified by `Payload-Signature` either way.
+   * once every sender carries the new headers: only then does the 300-second
+   * window stop a captured request from being replayed, since a replay can
+   * drop the new headers and verify by `Payload-Signature`. A request that
+   * carries `Shortcut-Signature` is never verified by `Payload-Signature`
+   * either way.
    */
   allowLegacySignature?: boolean;
   /** Only accept deliveries for this workspace id; others receive `403`. */
@@ -76,7 +79,10 @@ export interface ShortcutVerifiedDelivery {
   /**
    * The `Shortcut-Delivery` header, or the payload's `id` when only
    * `Payload-Signature` was sent. Retries reuse it, so persist it and
-   * acknowledge a duplicate without processing it again.
+   * acknowledge a duplicate without processing it again. For session events
+   * the two values are the same; for observer and interaction deliveries they
+   * differ, so a receiver that deduplicates across the upgrade should key on
+   * `signatureScheme` as well.
    */
   deliveryId?: string;
   /** Which signature header verified the delivery. */
