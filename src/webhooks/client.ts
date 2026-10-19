@@ -13,8 +13,8 @@ import {
   isShortcutValidationPayload,
 } from './types';
 import {
-  SHORTCUT_WEBHOOK_SIGNATURE_HEADER,
-  type ShortcutWebhookHeaders,
+  PAYLOAD_SIGNATURE_HEADER,
+  type ShortcutWebhookHeaderSource,
   type ShortcutWebhookSignatureScheme,
   verifyShortcutWebhookHeaders,
 } from './verify';
@@ -150,7 +150,7 @@ interface HttpAdapter {
   method: string;
   contentType: string | null;
   contentLength: string | null;
-  headers: ShortcutWebhookHeaders;
+  headers: ShortcutWebhookHeaderSource;
   readRawBody(limit: number): Promise<Uint8Array | typeof TOO_LARGE>;
   send(status: number, body: string): Response | void;
 }
@@ -215,7 +215,7 @@ export class ShortcutWebhookClient {
    */
   async verifyBody(
     rawBody: Uint8Array,
-    headers: ShortcutWebhookHeaders | string | null | undefined,
+    headers: ShortcutWebhookHeaderSource | string | null | undefined,
   ): Promise<ShortcutVerifiedDelivery> {
     if (rawBody.byteLength > this.bodyLimit)
       throw new ShortcutWebhookError('payload_too_large', 413);
@@ -224,7 +224,7 @@ export class ShortcutWebhookClient {
       rawBody,
       typeof headers === 'object' && headers !== null
         ? headers
-        : { [SHORTCUT_WEBHOOK_SIGNATURE_HEADER]: headers ?? undefined },
+        : { [PAYLOAD_SIGNATURE_HEADER]: headers ?? undefined },
       { allowLegacySignature: this.allowLegacySignature },
     );
     if (!check.verified) throw new ShortcutWebhookError(check.reason, 401);

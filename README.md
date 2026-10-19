@@ -178,7 +178,7 @@ handler.on('session.prompted', async (payload) => {
 });
 ```
 
-For frameworks that already read the body, `verify(request)` and `verifyBody(bytes, headers)` return the verified payload, with `deliveryId` and the `signatureScheme` that verified it, or throw a `ShortcutWebhookError` carrying the HTTP status to return. `verifyBody` takes a Fetch `Headers` object, a header record like Node's `req.headers`, or, as before, the bare `Payload-Signature` value. `verifyShortcutWebhookHeaders(secret, body, headers)` runs the same signature check without parsing the payload and reports which header verified the request or why it was rejected. `signShortcutWebhookHeaders(secret, body, { delivery })` produces all four headers for testing an agent locally; `signShortcutWebhookBody()` produces `Payload-Signature` alone.
+For frameworks that already read the body, `verify(request)` and `verifyBody(bytes, headers)` return the verified payload, with `deliveryId` and the `signatureScheme` that verified it, or throw a `ShortcutWebhookError` carrying the HTTP status to return. `verifyBody` takes a Fetch `Headers` object, a header record like Node's `req.headers`, or, as before, the bare `Payload-Signature` value. `verifyShortcutWebhookHeaders(secret, body, headers)` runs the same signature check without parsing the payload and reports which header verified the request or why it was rejected. `signShortcutWebhookHeaders(secret, body, { deliveryId })` produces all four headers for testing an agent locally; `signShortcutWebhookBody()` produces `Payload-Signature` alone.
 
 The v4 client is generated from `schema/shortcut.v4.openapi.json`, which `yarn sync:schema:v4` downloads and normalizes (the published document names responses and request bodies numerically).
 

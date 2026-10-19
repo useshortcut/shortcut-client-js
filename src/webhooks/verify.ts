@@ -10,23 +10,29 @@ export const SHORTCUT_TIMESTAMP_HEADER = 'shortcut-timestamp';
 /** Header carrying an id that stays the same across retries of one delivery. For session events it equals the event `id`. */
 export const SHORTCUT_DELIVERY_HEADER = 'shortcut-delivery';
 /**
- * Header carrying the hex HMAC-SHA256 of the raw request body alone. It is
- * deprecated: with no timestamp, a captured request verifies forever. Shortcut
- * sends it beside `Shortcut-Signature` until a later release removes it.
+ * Header carrying the hex HMAC-SHA256 of the raw request body alone. With no
+ * timestamp, a captured request verifies forever, so it is deprecated.
+ * Senders that predate `Shortcut-Signature` send it alone; agent-application
+ * senders that carry `Shortcut-Signature` send it beside the new headers until
+ * a later release removes it.
  */
-export const SHORTCUT_WEBHOOK_SIGNATURE_HEADER = 'payload-signature';
+export const PAYLOAD_SIGNATURE_HEADER = 'payload-signature';
+/** @deprecated Renamed {@link PAYLOAD_SIGNATURE_HEADER} in 3.5.0; this alias is kept for 3.4.x callers. */
+export const SHORTCUT_WEBHOOK_SIGNATURE_HEADER = PAYLOAD_SIGNATURE_HEADER;
 
 /** How far `Shortcut-Timestamp` may be from this clock, in seconds, either way. */
 const TIMESTAMP_TOLERANCE_SECONDS = 300;
 const TIMESTAMP_PATTERN = /^\d{1,18}$/;
 
 /**
- * Request headers in either runtime's shape: a Fetch `Headers` object, or a
- * record like Node's `IncomingMessage.headers`. Names are matched without
- * regard to case.
+ * Where to read a request's headers from, in either runtime's shape: a Fetch
+ * `Headers` object (or anything with a `get()`, such as a `Map`), or a record
+ * like Node's `IncomingMessage.headers`. Names are matched without regard to
+ * case. Distinct from {@link ShortcutWebhookSignatureHeaders}, the record
+ * {@link signShortcutWebhookHeaders} produces.
  */
-export type ShortcutWebhookHeaders =
-  | { get(name: string): string | null }
+export type ShortcutWebhookHeaderSource =
+  | { get(name: string): string | null | undefined }
   | Readonly<Record<string, string | string[] | undefined>>;
 
 /** The headers Shortcut sends with one delivery attempt, keyed by lowercase name. */
@@ -34,7 +40,7 @@ export type ShortcutWebhookSignatureHeaders = {
   'shortcut-timestamp': string;
   'shortcut-signature': string;
   'shortcut-delivery': string;
-  /** The deprecated body-only signature Shortcut still sends; see {@link SHORTCUT_WEBHOOK_SIGNATURE_HEADER}. */
+  /** The deprecated body-only signature Shortcut still sends; see {@link PAYLOAD_SIGNATURE_HEADER}. */
   'payload-signature': string;
 };
 
@@ -69,12 +75,9 @@ const INVALID: ShortcutWebhookSignatureResult = {
   reason: 'invalid_signature',
 };
 
-function readHeader(headers: ShortcutWebhookHeaders, name: string) {
-  if (typeof (headers as { get?: unknown }).get === 'function') {
-    return (
-      (headers as { get(name: string): string | null | undefined }).get(name) ??
-      null
-    );
+function readHeader(headers: ShortcutWebhookHeaderSource, name: string) {
+  if ('get' in headers && typeof headers.get === 'function') {
+    return headers.get(name) ?? null;
   }
   const record = headers as Readonly<
     Record<string, string | string[] | undefined>
@@ -117,13 +120,13 @@ function toBytes(rawBody: Uint8Array | string): Uint8Array {
   return typeof rawBody === 'string' ? encoder.encode(rawBody) : rawBody;
 }
 
-/** `${timestamp}.${delivery}.` followed by the body bytes: what `Shortcut-Signature` covers. */
+/** `${timestamp}.${deliveryId}.` followed by the body bytes: what `Shortcut-Signature` covers. */
 function signedContent(
   timestamp: string,
-  delivery: string,
+  deliveryId: string,
   body: Uint8Array,
 ): Uint8Array {
-  const prefix = encoder.encode(`${timestamp}.${delivery}.`);
+  const prefix = encoder.encode(`${timestamp}.${deliveryId}.`);
   const content = new Uint8Array(prefix.byteLength + body.byteLength);
   content.set(prefix);
   content.set(body, prefix.byteLength);
@@ -207,30 +210,30 @@ export async function verifyShortcutWebhookSignature(
 export async function verifyShortcutWebhookHeaders(
   secret: string,
   rawBody: Uint8Array | string,
-  headers: ShortcutWebhookHeaders,
+  headers: ShortcutWebhookHeaderSource,
   options: ShortcutWebhookSignatureOptions = {},
 ): Promise<ShortcutWebhookSignatureResult> {
   const body = toBytes(rawBody);
   const signature = readHeader(headers, SHORTCUT_SIGNATURE_HEADER);
   if (signature === null) {
     if (options.allowLegacySignature === false) return INVALID;
-    const legacy = readHeader(headers, SHORTCUT_WEBHOOK_SIGNATURE_HEADER);
+    const legacy = readHeader(headers, PAYLOAD_SIGNATURE_HEADER);
     return (await hmacMatches(secret, body, legacy))
       ? { verified: true, scheme: 'payload-signature' }
       : INVALID;
   }
   const timestamp = readHeader(headers, SHORTCUT_TIMESTAMP_HEADER);
-  const delivery = readHeader(headers, SHORTCUT_DELIVERY_HEADER);
-  if (!timestamp || !TIMESTAMP_PATTERN.test(timestamp) || !delivery) {
+  const deliveryId = readHeader(headers, SHORTCUT_DELIVERY_HEADER);
+  if (!timestamp || !TIMESTAMP_PATTERN.test(timestamp) || !deliveryId) {
     return INVALID;
   }
-  const content = signedContent(timestamp, delivery, body);
+  const content = signedContent(timestamp, deliveryId, body);
   if (!(await hmacMatches(secret, content, signature))) return INVALID;
   const skew = Math.abs(Math.floor(Date.now() / 1000) - Number(timestamp));
   if (skew > TIMESTAMP_TOLERANCE_SECONDS) {
     return { verified: false, reason: 'stale_timestamp' };
   }
-  return { verified: true, scheme: 'shortcut-signature', deliveryId: delivery };
+  return { verified: true, scheme: 'shortcut-signature', deliveryId };
 }
 
 /**
@@ -253,7 +256,7 @@ export async function signShortcutWebhookBody(
 export async function signShortcutWebhookHeaders(
   secret: string,
   rawBody: Uint8Array | string,
-  options: { delivery: string; timestamp?: string },
+  options: { deliveryId: string; timestamp?: string },
 ): Promise<ShortcutWebhookSignatureHeaders> {
   const body = toBytes(rawBody);
   const timestamp = options.timestamp ?? String(Math.floor(Date.now() / 1000));
@@ -261,9 +264,9 @@ export async function signShortcutWebhookHeaders(
     'shortcut-timestamp': timestamp,
     'shortcut-signature': await hmacHex(
       secret,
-      signedContent(timestamp, options.delivery, body),
+      signedContent(timestamp, options.deliveryId, body),
     ),
-    'shortcut-delivery': options.delivery,
+    'shortcut-delivery': options.deliveryId,
     'payload-signature': await hmacHex(secret, body),
   };
 }

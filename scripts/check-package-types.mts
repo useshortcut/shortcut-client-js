@@ -18,8 +18,8 @@ import ShortcutClient, { ShortcutClient as NamedV3 } from '@shortcut/client';
 import ShortcutV4Client, { ShortcutV4Client as NamedV4, ShortcutOAuth } from '@shortcut/client/v4';
 import { applyRefresh, isShortcutV4RequestError, summarizeShortcutV4Error } from '@shortcut/client/v4';
 import type { ChecklistItemSetPosition, Member, MemberAgent, SetPosition, ShortcutAgentCapabilities, ShortcutOAuthRefreshTokens, ShortcutOAuthTokens, ShortcutV4ErrorBody, ShortcutV4ErrorSummary, ShortcutWorkspaceApi, WorkspaceOperation } from '@shortcut/client/v4';
-import { SHORTCUT_DELIVERY_HEADER, SHORTCUT_SIGNATURE_HEADER, SHORTCUT_TIMESTAMP_HEADER, ShortcutWebhookClient, isShortcutSessionEventPayload, isShortcutUnknownSessionEventPayload, signShortcutWebhookHeaders, verifyShortcutWebhookHeaders } from '@shortcut/client/webhooks';
-import type { ShortcutAgentSession, ShortcutAgentSessionStatus, ShortcutSessionCreatedPayload, ShortcutSessionEventPayload, ShortcutSessionPromptContext, ShortcutSessionPromptedPayload, ShortcutUnknownSessionEventPayload, ShortcutValidationPayload, ShortcutVerifiedDelivery, ShortcutWebhookHeaders, ShortcutWebhookPayload, ShortcutWebhookSignatureHeaders, ShortcutWebhookSignatureResult, ShortcutWebhookSignatureScheme } from '@shortcut/client/webhooks';
+import { PAYLOAD_SIGNATURE_HEADER, SHORTCUT_DELIVERY_HEADER, SHORTCUT_SIGNATURE_HEADER, SHORTCUT_TIMESTAMP_HEADER, SHORTCUT_WEBHOOK_SIGNATURE_HEADER, ShortcutWebhookClient, isShortcutSessionEventPayload, isShortcutUnknownSessionEventPayload, signShortcutWebhookHeaders, verifyShortcutWebhookHeaders } from '@shortcut/client/webhooks';
+import type { ShortcutAgentSession, ShortcutAgentSessionStatus, ShortcutSessionCreatedPayload, ShortcutSessionEventPayload, ShortcutSessionPromptContext, ShortcutSessionPromptedPayload, ShortcutUnknownSessionEventPayload, ShortcutValidationPayload, ShortcutVerifiedDelivery, ShortcutWebhookHeaderSource, ShortcutWebhookPayload, ShortcutWebhookSignatureHeaders, ShortcutWebhookSignatureResult, ShortcutWebhookSignatureScheme } from '@shortcut/client/webhooks';
 import axios, { type AxiosInstance } from 'axios';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 const legacy: ShortcutClient = new ShortcutClient('token');
@@ -233,7 +233,10 @@ webhooks.verifyBody(new Uint8Array(), new Headers());
 webhooks.verifyBody(new Uint8Array(), 'payload-signature-hex');
 webhooks.verifyBody(new Uint8Array(), null);
 type HeaderNames = Assert<Equal<[typeof SHORTCUT_SIGNATURE_HEADER, typeof SHORTCUT_TIMESTAMP_HEADER, typeof SHORTCUT_DELIVERY_HEADER], ['shortcut-signature', 'shortcut-timestamp', 'shortcut-delivery']>>;
-type AcceptedHeaders = Assert<Equal<Parameters<typeof verifyShortcutWebhookHeaders>[2], ShortcutWebhookHeaders>>;
+type LegacyHeaderName = Assert<Equal<[typeof PAYLOAD_SIGNATURE_HEADER, typeof SHORTCUT_WEBHOOK_SIGNATURE_HEADER], ['payload-signature', 'payload-signature']>>;
+// A header source only needs a get(); a Map answers undefined for a missing name.
+verifyShortcutWebhookHeaders('secret', 'body', new Map<string, string>());
+type AcceptedHeaders = Assert<Equal<Parameters<typeof verifyShortcutWebhookHeaders>[2], ShortcutWebhookHeaderSource>>;
 type Schemes = Assert<Equal<ShortcutWebhookSignatureScheme, 'shortcut-signature' | 'payload-signature'>>;
 handler.on('observer', (_payload, delivery) => {
   const id: string | undefined = delivery.deliveryId;
@@ -241,7 +244,7 @@ handler.on('observer', (_payload, delivery) => {
   void [id, scheme];
 });
 async function resend(delivery: ShortcutVerifiedDelivery): Promise<string> {
-  const signed: ShortcutWebhookSignatureHeaders = await signShortcutWebhookHeaders('secret', delivery.rawBody, { delivery: delivery.deliveryId ?? 'd', timestamp: '1700000000' });
+  const signed: ShortcutWebhookSignatureHeaders = await signShortcutWebhookHeaders('secret', delivery.rawBody, { deliveryId: delivery.deliveryId ?? 'd', timestamp: '1700000000' });
   const legacyValue: string = signed['payload-signature'];
   // A signed header set is a plain string record, so it serves as HeadersInit.
   const request = new Request('https://x', { method: 'POST', body: 'x', headers: signed });

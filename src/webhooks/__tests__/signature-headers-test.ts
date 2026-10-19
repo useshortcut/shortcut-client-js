@@ -29,7 +29,7 @@ describe('Shortcut-Signature headers', () => {
     options: {
       secret?: string;
       timestamp?: string;
-      delivery?: string;
+      deliveryId?: string;
       headers?: Record<string, string>;
       omit?: string[];
       send?: string;
@@ -39,7 +39,7 @@ describe('Shortcut-Signature headers', () => {
     const headers: Record<string, string> = {
       'content-type': 'application/json',
       ...(await signShortcutWebhookHeaders(options.secret ?? secret, text, {
-        delivery: options.delivery ?? 'delivery-1',
+        deliveryId: options.deliveryId ?? 'delivery-1',
         timestamp: options.timestamp,
       })),
       ...options.headers,
@@ -56,7 +56,7 @@ describe('Shortcut-Signature headers', () => {
     // Known-answer vector from clubhouse.lib.webhook-signature's tests.
     expect(
       await signShortcutWebhookHeaders('test-secret', '{"id":"evt_1"}', {
-        delivery: 'delivery-1',
+        deliveryId: 'delivery-1',
         timestamp: '1700000000',
       }),
     ).toEqual({
@@ -70,7 +70,7 @@ describe('Shortcut-Signature headers', () => {
     const fresh = await signShortcutWebhookHeaders(
       'test-secret',
       Buffer.from('{"id":"evt_1"}'),
-      { delivery: 'delivery-1' },
+      { deliveryId: 'delivery-1' },
     );
     expect(fresh['shortcut-timestamp']).toBe('1700000000');
     expect(fresh['shortcut-signature']).toBe(
@@ -80,7 +80,9 @@ describe('Shortcut-Signature headers', () => {
 
   it('accepts a delivery signed with the new headers and hands its delivery id to handlers', async () => {
     const delivery = await client.verify(
-      await signedRequest(observer, { delivery: 'c1d2e3f4-0000-4000-8000-1' }),
+      await signedRequest(observer, {
+        deliveryId: 'c1d2e3f4-0000-4000-8000-1',
+      }),
     );
     expect(delivery.payload).toEqual(observer);
     expect(delivery.deliveryId).toBe('c1d2e3f4-0000-4000-8000-1');
@@ -91,7 +93,9 @@ describe('Shortcut-Signature headers', () => {
       seen.push(received.deliveryId);
     });
     const response = await handler(
-      await signedRequest(observer, { delivery: 'c1d2e3f4-0000-4000-8000-1' }),
+      await signedRequest(observer, {
+        deliveryId: 'c1d2e3f4-0000-4000-8000-1',
+      }),
     );
     expect(response.status).toBe(200);
     expect(seen).toEqual(['c1d2e3f4-0000-4000-8000-1']);
@@ -100,7 +104,7 @@ describe('Shortcut-Signature headers', () => {
   it('verifies a body already read against a Headers object or a header record', async () => {
     const text = JSON.stringify(sessionPrompted);
     const headers = await signShortcutWebhookHeaders(secret, text, {
-      delivery: sessionPrompted.id,
+      deliveryId: sessionPrompted.id,
     });
     const fromRecord = await client.verifyBody(Buffer.from(text), headers);
     expect(fromRecord.deliveryId).toBe('event-2');
@@ -259,7 +263,7 @@ describe('Shortcut-Signature headers', () => {
       stale,
     );
     const session = await strict.verify(
-      await signedRequest(sessionPrompted, { delivery: sessionPrompted.id }),
+      await signedRequest(sessionPrompted, { deliveryId: sessionPrompted.id }),
     );
     expect(session.deliveryId).toBe('event-2');
     const legacy = await strict
@@ -280,7 +284,7 @@ describe('Shortcut-Signature headers', () => {
       headers: {
         'content-type': 'application/json',
         ...(await signShortcutWebhookHeaders(secret, text, {
-          delivery: sessionPrompted.id,
+          deliveryId: sessionPrompted.id,
         })),
       },
       destroy() {},
@@ -357,7 +361,7 @@ describe('Shortcut-Signature headers', () => {
     // Map or an untyped framework wrapper does, has no Shortcut-Signature.
     const bag = new Map(Object.entries(legacy));
     expect(
-      await verifyShortcutWebhookHeaders('test-secret', body, bag as never),
+      await verifyShortcutWebhookHeaders('test-secret', body, bag),
     ).toEqual({ verified: true, scheme: 'payload-signature' });
   });
 });
