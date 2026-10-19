@@ -106,10 +106,15 @@ const sessionCreated = {
   },
   activity: prompt,
 };
+// Built without spreading sessionCreated: enqueue! adds prompt_context to
+// session.created only, so a prompted event carries the envelope and the
+// activity and nothing else.
 const sessionPrompted = {
-  ...sessionCreated,
   id: 'event-2',
+  version: 'v1',
   type: 'session.prompted',
+  workspace_id: 'workspace-1',
+  installation_id: 'install-1',
   session: { ...session, turn: 2, version: 4, status: 'pending' },
   activity: {
     ...prompt,
@@ -519,10 +524,24 @@ describe('ShortcutWebhookClient agent-session events', () => {
     expect(shortcutWebhookEventType(payload)).toBe('session');
     if (!isShortcutSessionEventPayload(payload)) throw new Error('narrowed');
     expect(payload.session.turn).toBe(event.session.turn);
-    expect(payload.prompt_context.text).toBe(event.prompt_context.text);
     expect(payload.type).toBe(event.type);
     expect(payload.activity?.content.body).toBe(event.activity.content.body);
     expect(payload.activity?.signal === 'stop').toBe(event === sessionStop);
+  });
+
+  it('accepts a session.prompted event, which carries no prompt context', async () => {
+    const { payload } = await client.verify(await signed(sessionPrompted));
+    expect(payload).toEqual(sessionPrompted);
+    if (!isShortcutSessionEventPayload(payload)) throw new Error('narrowed');
+    expect(payload.type).toBe('session.prompted');
+    expect('prompt_context' in payload).toBe(false);
+    const handler = client.createHandler();
+    const seen: string[] = [];
+    handler.on('session.prompted', (prompted) => {
+      seen.push(prompted.activity.content.body);
+    });
+    expect((await handler(await signed(sessionPrompted))).status).toBe(200);
+    expect(seen).toEqual(['Use the backend repository.']);
   });
 
   it('accepts a session.created event without an opening prompt', async () => {

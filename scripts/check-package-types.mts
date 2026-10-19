@@ -159,21 +159,24 @@ function describeSession(delivery: ShortcutVerifiedDelivery): string {
   if (!isShortcutSessionEventPayload(payload)) return '';
   const version: 'v1' = payload.version;
   const turn: number = payload.session.turn;
-  const context: string = payload.prompt_context.text;
-  const trigger: string | undefined = payload.prompt_context.trigger?.type;
   // @ts-expect-error Session events carry workspace_id, not a workspace2 record.
   payload.workspace2;
   if (payload.type === 'session.prompted') {
     const body: string = payload.activity.content.body;
     const stop: boolean = payload.activity.signal === 'stop';
-    return [version, turn, context, trigger, body, stop].join(' ');
+    // @ts-expect-error Only session.created carries the prompt context.
+    payload.prompt_context;
+    return [version, turn, body, stop].join(' ');
   }
   const created: ShortcutSessionCreatedPayload = payload;
+  const context: string = created.prompt_context.text;
+  const trigger: string | undefined = created.prompt_context.trigger?.type;
   // @ts-expect-error A session.created event may carry no opening prompt.
   created.activity.content.body;
   const opening: string | undefined = created.activity?.content.body;
-  return opening ?? '';
+  return [context, trigger, opening].join(' ');
 }
+type PromptedWithoutContext = Assert<Equal<Extract<keyof ShortcutSessionPromptedPayload, 'prompt_context'>, never>>;
 void describeSession;
 handler.on('session', (payload) => {
   const sessionId: string = payload.session.id;
