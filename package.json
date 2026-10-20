@@ -59,7 +59,15 @@
     "test": "vitest",
     "validate:examples": "npx tsc --project examples/tsconfig.json",
     "validate:schema": "node scripts/validate-schema.mts ./schema/shortcut.swagger.json && yarn validate:schema:v4",
-    "validate:schema:v4": "node scripts/validate-schema.mts ./schema/shortcut.v4.openapi.json"
+    "validate:schema:v4": "node scripts/validate-schema.mts ./schema/shortcut.v4.openapi.json",
+    "verify": "node scripts/verify.mts",
+    "verify:build": "yarn build && yarn check-exports",
+    "verify:docs": "yarn build:docs",
+    "verify:format-check": "yarn format:check",
+    "verify:lint": "yarn lint",
+    "verify:test": "vitest run",
+    "verify:validate-examples": "yarn build && yarn validate:examples",
+    "verify:validate-schema": "yarn validate:schema"
   },
   "dependencies": {
     "axios": "^1.15.0"

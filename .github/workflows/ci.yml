@@ -7,26 +7,26 @@ on:
       - main
 
 jobs:
+  list:
+    name: list verify steps
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    outputs:
+      names: ${{ steps.list.outputs.names }}
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - name: Use Node.js
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version-file: '.nvmrc'
+      - id: list
+        run: echo "names=$(node scripts/verify.mts --list)" >> "$GITHUB_OUTPUT"
   ci:
+    needs: list
     runs-on: blacksmith-2vcpu-ubuntu-2404
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - name: lint
-            command: yarn lint
-          - name: validate-schema
-            command: yarn validate:schema
-          - name: test
-            command: yarn test
-          - name: format-check
-            command: yarn format:check
-          - name: validate-examples
-            command: yarn build && yarn validate:examples
-          - name: build
-            command: yarn build && yarn check-exports
-          - name: docs
-            command: yarn build:docs
+        name: ${{ fromJSON(needs.list.outputs.names) }}
     name: ${{ matrix.name }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
@@ -40,4 +40,4 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
       - name: ${{ matrix.name }}
-        run: ${{ matrix.command }}
+        run: yarn verify:${{ matrix.name }}
