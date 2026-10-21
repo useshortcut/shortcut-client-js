@@ -1,4 +1,4 @@
-import { signShortcutWebhookBody } from '../index';
+import { signShortcutWebhookBody, signShortcutWebhookHeaders } from '../index';
 
 export const secret = 'signing-secret';
 export const observer = {
@@ -154,6 +154,23 @@ export async function signed(
         text,
       ),
       ...options.headers,
+    },
+  });
+}
+
+// Session events as Shortcut sends them: with Shortcut-Signature, whose
+// Shortcut-Delivery is the event id, beside Payload-Signature.
+export async function signedSession(body: unknown) {
+  const text = JSON.stringify(body);
+  const id = (body as { id?: unknown }).id;
+  return new Request('https://agent.example/webhook', {
+    method: 'POST',
+    body: text,
+    headers: {
+      'content-type': 'application/json',
+      ...(await signShortcutWebhookHeaders(secret, text, {
+        deliveryId: typeof id === 'string' && id ? id : 'delivery-1',
+      })),
     },
   });
 }

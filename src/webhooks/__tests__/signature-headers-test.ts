@@ -87,11 +87,10 @@ describe('Shortcut-Signature headers', () => {
   // Under Shortcut-Signature the header is the per-delivery key. Under the
   // Payload-Signature fallback the payload id stands in, and for observer and
   // interaction bodies that is the transaction key, which every interaction
-  // one save produces shares.
+  // one save produces shares. Session events have no fallback.
   it.each([
     ['an observer', observer, 'delivery-1'],
     ['an interaction', interaction, 'delivery-2'],
-    ['a session event', sessionPrompted, 'event-2'],
   ])(
     'reports the Shortcut-Delivery header, or the payload id under Payload-Signature, for %s',
     async (_label, body, payloadId) => {
@@ -425,6 +424,42 @@ describe('Shortcut-Signature headers', () => {
     const bag = new Map(Object.entries(legacy));
     expect(
       await verifyShortcutWebhookHeaders('test-secret', body, bag),
+    ).toEqual({ verified: true, scheme: 'payload-signature' });
+  });
+
+  // A Map is a documented header source, and its get() matches case exactly,
+  // so header names written the way HTTP prints them must still be found.
+  it('reads header names from a Map without regard to case', async () => {
+    const body = '{"id":"evt_1"}';
+    const headers = new Map([
+      ['Shortcut-Timestamp', '1700000000'],
+      ['Shortcut-Delivery', 'delivery-1'],
+      [
+        'Shortcut-Signature',
+        '5f25068c9b8163303be6cecda87dc52af76e53409f703e6fea054f23b2fb5069',
+      ],
+      [
+        'Payload-Signature',
+        'c0bd8e4de35355b11e7e98d53bb0d0122736ca05c58eb9c138a2dfa24725ac6d',
+      ],
+    ]);
+    expect(
+      await verifyShortcutWebhookHeaders('test-secret', body, headers),
+    ).toEqual({
+      verified: true,
+      scheme: 'shortcut-signature',
+      deliveryId: 'delivery-1',
+    });
+    headers.set('Shortcut-Signature', '0'.repeat(64));
+    expect(
+      await verifyShortcutWebhookHeaders('test-secret', body, headers),
+    ).toEqual({ verified: false, reason: 'invalid_signature' });
+    expect(
+      await verifyShortcutWebhookHeaders(
+        'test-secret',
+        body,
+        new Map([['Payload-Signature', headers.get('Payload-Signature')]]),
+      ),
     ).toEqual({ verified: true, scheme: 'payload-signature' });
   });
 });
