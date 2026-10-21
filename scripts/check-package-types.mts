@@ -184,7 +184,8 @@ function describeSession(delivery: ShortcutVerifiedDelivery): string {
   const trigger: string | undefined = created.prompt_context.trigger?.type;
   // @ts-expect-error A session.created event may carry no opening prompt.
   created.activity.content.body;
-  const opening: string | undefined = created.activity?.content.body;
+  // A content type added later may carry a null body.
+  const opening: string | null | undefined = created.activity?.content.body;
   return [context, trigger, opening].join(' ');
 }
 type PromptedWithoutContext = Assert<Equal<Extract<keyof ShortcutSessionPromptedPayload, 'prompt_context'>, never>>;

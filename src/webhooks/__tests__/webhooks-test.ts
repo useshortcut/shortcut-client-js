@@ -183,6 +183,7 @@ describe('ShortcutWebhookClient.verify', () => {
   it('passes the actor mention name through and accepts actors without one', async () => {
     const client = new ShortcutWebhookClient(secret);
     const { payload } = await client.verify(await signed(observer));
+    if (!isShortcutObserverPayload(payload)) throw new Error('narrowed');
     expect(payload.actor).toEqual({
       displayable_name: 'Ada',
       member_id: 'member-1',
@@ -194,6 +195,9 @@ describe('ShortcutWebhookClient.verify', () => {
         actor: { displayable_name: 'Automation', automation_id: 'a-1' },
       }),
     );
+    if (!isShortcutObserverPayload(anonymous.payload)) {
+      throw new Error('narrowed');
+    }
     expect(anonymous.payload.actor.mention_name).toBeUndefined();
   });
 

@@ -10,6 +10,8 @@
  * semantics.
  */
 
+import { isSessionEventType } from './session-type';
+
 /** Who performed the change. Exactly one id is present in practice. */
 export interface ShortcutWebhookActor {
   displayable_name: string;
@@ -216,8 +218,8 @@ export interface ShortcutAgentSession {
  */
 export interface ShortcutSessionPromptContent {
   type: 'prompt' | (string & {});
-  /** The text. Always present for `prompt`. */
-  body?: string;
+  /** The text. Always present for `prompt`; absent or `null` for a type without one. */
+  body?: string | null;
   [field: string]: unknown;
 }
 
@@ -528,7 +530,7 @@ function isShortcutSessionPromptActivity(
     isRecord(value.content) &&
     isNonEmptyString(value.content.type) &&
     (typeof value.content.body === 'string' ||
-      (value.content.body === undefined && value.content.type !== 'prompt')) &&
+      (value.content.body == null && value.content.type !== 'prompt')) &&
     (value.signal == null || isNonEmptyString(value.signal))
   );
 }
@@ -551,8 +553,7 @@ function hasShortcutSessionEventBinding(
   ShortcutSessionEventBinding & { type: string } {
   return (
     isRecord(payload) &&
-    typeof payload.type === 'string' &&
-    payload.type.startsWith('session.') &&
+    isSessionEventType(payload.type) &&
     isNonEmptyString(payload.id) &&
     payload.version === 'v1' &&
     isNonEmptyString(payload.workspace_id) &&

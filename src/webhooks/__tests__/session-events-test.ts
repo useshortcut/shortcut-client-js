@@ -62,7 +62,7 @@ describe('ShortcutWebhookClient agent-session events', () => {
     const handler = client.createHandler();
     const seen: string[] = [];
     handler.on('session.prompted', (prompted) => {
-      seen.push(prompted.activity.content.body);
+      seen.push(prompted.activity.content.body ?? '');
     });
     expect((await handler(await signedSession(sessionPrompted))).status).toBe(
       200,

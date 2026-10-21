@@ -1,3 +1,5 @@
+import { isSessionEventType } from './session-type';
+
 /**
  * Header carrying the lowercase hex HMAC-SHA256 of
  * `${timestamp}.${delivery}.${body}`, keyed with the webhook secret, where the
@@ -27,9 +29,14 @@ const TIMESTAMP_PATTERN = /^\d{1,18}$/;
  * Where to read a request's headers from: a Fetch `Headers` object, a `Map`,
  * or a record like Node's `IncomingMessage.headers`. Every source is read the
  * same way: the exact lowercase name first, then any other case among its
- * entries, and a multi-valued header's first value. A source with a `get()`
- * is searched by case only when it is iterable over `[name, value]` pairs, as
- * `Headers` and every `Map` are. Distinct from
+ * entries, skipping entries whose value is `undefined` or `null`. An array
+ * value gives its first element. A source that joins a repeated header into
+ * one string, as `Headers` and Node do, is read as given, so a repeated
+ * signature header never verifies. A header that is present but empty, or not
+ * a string, counts as present: an empty `Shortcut-Signature` is rejected, not
+ * treated as absent. A source with a `get()` is searched by case only when it
+ * is iterable over `[name, value]` pairs, as `Headers` and every `Map` are.
+ * Distinct from
  * {@link ShortcutWebhookSignatureHeaders}, the record
  * {@link signShortcutWebhookHeaders} produces.
  */
@@ -85,9 +92,11 @@ const INVALID: ShortcutWebhookSignatureResult = {
   reason: 'invalid_signature',
 };
 
+/** `null` when absent; `''` when present without a usable value, which no check accepts. */
 function headerValue(value: unknown): string | null {
+  if (value == null) return null;
   const first: unknown = Array.isArray(value) ? value[0] : value;
-  return typeof first === 'string' ? first : null;
+  return typeof first === 'string' ? first : '';
 }
 
 /** Reads `name`, which is lowercase, as {@link ShortcutWebhookHeaderSource} describes. */
@@ -96,12 +105,14 @@ function readHeader(
   name: string,
 ): string | null {
   const hasGet = 'get' in headers && typeof headers.get === 'function';
-  const exact = hasGet
-    ? headers.get(name)
-    : Object.hasOwn(headers, name)
-      ? (headers as Record<string, unknown>)[name]
-      : undefined;
-  if (exact != null) return headerValue(exact);
+  const exact = headerValue(
+    hasGet
+      ? headers.get(name)
+      : Object.hasOwn(headers, name)
+        ? (headers as Record<string, unknown>)[name]
+        : undefined,
+  );
+  if (exact !== null) return exact;
   const entries: Iterable<unknown> =
     Symbol.iterator in headers
       ? (headers as Iterable<unknown>)
@@ -112,9 +123,11 @@ function readHeader(
     if (
       Array.isArray(entry) &&
       typeof entry[0] === 'string' &&
+      entry[0] !== name &&
       entry[0].toLowerCase() === name
     ) {
-      return headerValue(entry[1]);
+      const value = headerValue(entry[1]);
+      if (value !== null) return value;
     }
   }
   return null;
@@ -129,8 +142,7 @@ function isSessionEventBody(body: Uint8Array): boolean {
     return (
       typeof payload === 'object' &&
       payload !== null &&
-      typeof (payload as { type?: unknown }).type === 'string' &&
-      (payload as { type: string }).type.startsWith('session.')
+      isSessionEventType((payload as { type?: unknown }).type)
     );
   } catch {
     return false;
@@ -222,9 +234,10 @@ async function hmacMatches(
  * Verifies the deprecated body-only `Payload-Signature` in constant time using
  * WebCrypto, which is available on Node.js 20+, Cloudflare Workers, Deno, and
  * Bun. Prefer {@link verifyShortcutWebhookHeaders}, which checks
- * `Shortcut-Signature` and its timestamp window. This function knows nothing
- * of the payload, so it also accepts a session event, which Shortcut never
- * sends without `Shortcut-Signature`.
+ * `Shortcut-Signature` and its timestamp window. Do not use it for session
+ * events: it knows nothing of the payload, so it accepts a session event
+ * signed by `Payload-Signature` alone, which Shortcut never sends and which
+ * is how a captured event would be replayed.
  *
  * @param secret The agent app's webhook signing secret.
  * @param rawBody The exact request bytes. Passing a re-serialized string only
@@ -252,8 +265,9 @@ export async function verifyShortcutWebhookSignature(
  * event: Shortcut signs every session event with `Shortcut-Signature`, so one
  * without it had the timestamped headers stripped, as a replay would.
  *
- * @param headers The request headers, as a Fetch `Headers` object or a
- *   record like Node's `req.headers`.
+ * @param headers The request headers, as a Fetch `Headers` object, a `Map`,
+ *   or a record like Node's `req.headers`; see
+ *   {@link ShortcutWebhookHeaderSource} for how each is read.
  * @returns Which header verified the request, with the `Shortcut-Delivery`
  *   value for deduplication, or why it was rejected.
  */

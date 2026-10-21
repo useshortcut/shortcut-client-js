@@ -88,9 +88,9 @@ export interface ShortcutVerifiedDelivery {
    * that every retry of the delivery reuses, so persist it and acknowledge a
    * duplicate without processing it again.
    *
-   * Under the `Payload-Signature` fallback, which only observer and
-   * interaction deliveries can take, it is the payload `id` instead: the key
-   * of the transaction that produced them. One save can produce several
+   * Under the `Payload-Signature` fallback, which session events never take,
+   * it is the payload `id` instead. For observer and interaction deliveries
+   * that is the key of the transaction that produced them. One save can produce several
    * interaction deliveries (an assignment and a mention, say) that all carry
    * it, so it is not a per-delivery key there.
    */
@@ -218,8 +218,8 @@ export class ShortcutWebhookClient {
    * Verifies the signature, size, and shape of a delivery already read into
    * memory. Throws {@link ShortcutWebhookError} with the status to return.
    *
-   * @param headers The request headers, as a Fetch `Headers` object or a
-   *   record like Node's `req.headers`, so `Shortcut-Signature` can be
+   * @param headers The request headers, as a Fetch `Headers` object, a
+   *   `Map`, or a record like Node's `req.headers`, so `Shortcut-Signature` can be
    *   checked. A bare string is the `Payload-Signature` value alone, which
    *   `allowLegacySignature: false` rejects, as does every session event.
    */
