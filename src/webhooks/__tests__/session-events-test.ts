@@ -255,26 +255,29 @@ describe('ShortcutWebhookClient agent-session events', () => {
 
   // A human prompt is the only content Shortcut sends today. A content type
   // added within envelope v1 must still reach the handler, which compares
-  // content.type against the values it knows.
-  it('dispatches a session.prompted whose content type this version does not know', async () => {
-    const attachment = {
-      ...sessionPrompted,
-      activity: {
-        ...sessionPrompted.activity,
-        content: { type: 'command', body: '/retry' },
-      },
-    };
-    expect(isShortcutSessionEventPayload(attachment)).toBe(true);
-    const handler = client.createHandler();
-    const seen: string[] = [];
-    handler.on('session.prompted', (payload) => {
-      const { content } = payload.activity;
-      seen.push(`${content.type}:${content.body}`);
-    });
-    const response = await handler(await signedSession(attachment));
-    expect(response.status).toBe(200);
-    expect(seen).toEqual(['command:/retry']);
-  });
+  // content.type against the values it knows. Only a prompt must carry a text
+  // body: agent `action` content already has none.
+  it.each([
+    ['a text body', { type: 'command', body: '/retry' }, 'command'],
+    ['no body', { type: 'reaction', emoji: '+1' }, 'reaction'],
+  ])(
+    'dispatches a session.prompted whose content type this version does not know, with %s',
+    async (_label, content, contentType) => {
+      const event = {
+        ...sessionPrompted,
+        activity: { ...sessionPrompted.activity, content },
+      };
+      expect(isShortcutSessionEventPayload(event)).toBe(true);
+      const handler = client.createHandler();
+      const seen: string[] = [];
+      handler.on('session.prompted', (payload) => {
+        seen.push(payload.activity.content.type);
+      });
+      const response = await handler(await signedSession(event));
+      expect(response.status).toBe(200);
+      expect(seen).toEqual([contentType]);
+    },
+  );
 
   it.each([
     [

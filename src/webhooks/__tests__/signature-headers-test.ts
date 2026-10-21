@@ -420,11 +420,95 @@ describe('Shortcut-Signature headers', () => {
       { verified: false, reason: 'invalid_signature' },
     );
     // A header bag whose get() answers undefined for a missing header, as a
-    // Map or an untyped framework wrapper does, has no Shortcut-Signature.
+    // Map does, has no Shortcut-Signature.
     const bag = new Map(Object.entries(legacy));
     expect(
       await verifyShortcutWebhookHeaders('test-secret', body, bag),
     ).toEqual({ verified: true, scheme: 'payload-signature' });
+  });
+
+  // Shortcut never sends a session event without Shortcut-Signature, so the
+  // standalone check refuses one signed by Payload-Signature alone, as the
+  // client does. Other bodies keep the fallback.
+  it('verifyShortcutWebhookHeaders rejects a session event signed only by Payload-Signature', async () => {
+    for (const body of [
+      JSON.stringify(sessionPrompted),
+      '{"type":"session.closed"}',
+    ]) {
+      const legacy = {
+        'payload-signature': await signShortcutWebhookBody(secret, body),
+      };
+      expect(await verifyShortcutWebhookHeaders(secret, body, legacy)).toEqual({
+        verified: false,
+        reason: 'invalid_signature',
+      });
+      expect(
+        await verifyShortcutWebhookHeaders(
+          secret,
+          body,
+          await signShortcutWebhookHeaders(secret, body, {
+            deliveryId: 'event-2',
+          }),
+        ),
+      ).toEqual({
+        verified: true,
+        scheme: 'shortcut-signature',
+        deliveryId: 'event-2',
+      });
+    }
+    const observerBody = JSON.stringify(observer);
+    expect(
+      await verifyShortcutWebhookHeaders(secret, observerBody, {
+        'payload-signature': await signShortcutWebhookBody(
+          secret,
+          observerBody,
+        ),
+      }),
+    ).toEqual({ verified: true, scheme: 'payload-signature' });
+  });
+
+  // An iterable header source is read the way a header record is: the exact
+  // lowercase name first, then any other case, and an array's first value.
+  // That covers a Map from another realm, which fails instanceof Map.
+  it('reads iterable header sources the way it reads a header record', async () => {
+    const body = '{"id":"evt_1"}';
+    const signature =
+      '5f25068c9b8163303be6cecda87dc52af76e53409f703e6fea054f23b2fb5069';
+    const verified = {
+      verified: true,
+      scheme: 'shortcut-signature',
+      deliveryId: 'delivery-1',
+    };
+    const canonical: Array<[string, string]> = [
+      ['Shortcut-Timestamp', '1700000000'],
+      ['Shortcut-Delivery', 'delivery-1'],
+      ['Shortcut-Signature', signature],
+    ];
+    const foreignMap = {
+      get: (name: string) => canonical.find(([key]) => key === name)?.[1],
+      [Symbol.iterator]: () => canonical[Symbol.iterator](),
+    };
+    expect(
+      await verifyShortcutWebhookHeaders('test-secret', body, foreignMap),
+    ).toEqual(verified);
+    const arrays = new Map(
+      canonical.map(([key, value]) => [key, [value, 'ignored']] as const),
+    );
+    expect(
+      await verifyShortcutWebhookHeaders('test-secret', body, arrays),
+    ).toEqual(verified);
+    const duplicates = new Map([
+      ...canonical.filter(([key]) => key !== 'Shortcut-Signature'),
+      ['Shortcut-Signature', '0'.repeat(64)],
+      ['shortcut-signature', signature],
+    ]);
+    const record = Object.fromEntries(duplicates);
+    expect(
+      await verifyShortcutWebhookHeaders('test-secret', body, record),
+    ).toEqual(verified);
+    expect(
+      await verifyShortcutWebhookHeaders('test-secret', body, duplicates),
+    ).toEqual(verified);
   });
 
   // A Map is a documented header source, and its get() matches case exactly,

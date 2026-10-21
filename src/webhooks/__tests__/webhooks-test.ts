@@ -342,6 +342,29 @@ describe('ShortcutWebhookClient.verify', () => {
     expect(delivery.payload).toEqual(observer);
   });
 
+  // The Payload-Signature fallback serves callers written against 3.4.x, not
+  // classic workspace webhooks: their v1 body (history generate-tx-map) has no
+  // installation, workspace2, or timestamp, so the client never accepts one.
+  it('rejects a classic workspace webhook body whatever its signature', async () => {
+    const classic = {
+      id: '5f1b4a6e-0000-4000-8000-000000000001',
+      changed_at: '2026-10-21T16:00:00Z',
+      version: 'v1',
+      primary_id: 123,
+      actor_name: 'Ada',
+      member_id: 'member-1',
+      actions: [
+        { id: 123, entity_type: 'story', action: 'update', name: 'Fix login' },
+      ],
+      references: [],
+    };
+    const error = await new ShortcutWebhookClient(secret)
+      .verify(await signed(classic))
+      .catch((caught: unknown) => caught);
+    expect((error as ShortcutWebhookError).code).toBe('invalid_body');
+    expect((error as ShortcutWebhookError).status).toBe(400);
+  });
+
   it('rejects an invalid configuration up front', () => {
     expect(() => new ShortcutWebhookClient('')).toThrow(TypeError);
     expect(() => new ShortcutWebhookClient(secret, { bodyLimit: 0 })).toThrow(
