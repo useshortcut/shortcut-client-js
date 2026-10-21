@@ -46,29 +46,17 @@ export interface ShortcutWebhookClientOptions {
   /** Maximum request-body size in bytes. Defaults to 2 MiB. */
   bodyLimit?: number;
   /**
-   * How far a delivery's timestamp may be from this clock, either way. A
-   * delivery verified by `Shortcut-Signature` is bound to a
-   * `Shortcut-Timestamp` that is fresh on every attempt, so the window is 300
-   * seconds by default and this option can only tighten it. A delivery
-   * verified by `Payload-Signature` alone carries only the payload
-   * `timestamp`, which a redelivery keeps from the first attempt, so that
-   * window is off by default and this option turns it on as given. Session
-   * events are only accepted with `Shortcut-Signature`, so they always get
-   * the `Shortcut-Timestamp` window.
+   * How far a delivery's timestamp may be from this clock, either way. For
+   * `Shortcut-Timestamp` the window is 300 seconds and this can only tighten
+   * it. For a `Payload-Signature` delivery it checks the payload `timestamp`,
+   * which redeliveries keep, so that check is off unless this is set.
    */
   timestampToleranceMs?: number;
   /**
    * Accept `Payload-Signature` when `Shortcut-Signature` is absent. On by
-   * default, for code written against 3.4.x, which passes only that header or
-   * signs test deliveries with `signShortcutWebhookBody()`. Shortcut signs
-   * every agent-application delivery, the validation ping included, with
-   * `Shortcut-Signature`, so set this to `false` once your deliveries arrive
-   * with `signatureScheme === 'shortcut-signature'`: only then does
-   * the timestamp window stop a captured observer or interaction delivery
-   * from being replayed, since a replay can drop the new headers and verify
-   * by `Payload-Signature`. A request that carries `Shortcut-Signature` is
-   * never verified by `Payload-Signature`, and a session event is never
-   * accepted without `Shortcut-Signature`, whatever this says.
+   * default for code written against 3.4.x. Turn it off once deliveries arrive
+   * with `signatureScheme === 'shortcut-signature'`, since a replay can strip
+   * the new headers. Session events always require `Shortcut-Signature`.
    */
   allowLegacySignature?: boolean;
   /** Only accept deliveries for this workspace id; others receive `403`. */
@@ -83,16 +71,9 @@ export interface ShortcutVerifiedDelivery {
   /** The exact bytes that were verified. */
   rawBody: Uint8Array;
   /**
-   * The `Shortcut-Delivery` header when the delivery carried one
-   * (`signatureScheme === 'shortcut-signature'`). That is a per-delivery key
-   * that every retry of the delivery reuses, so persist it and acknowledge a
-   * duplicate without processing it again.
-   *
-   * Under the `Payload-Signature` fallback, which session events never take,
-   * it is the payload `id` instead. For observer and interaction deliveries
-   * that is the key of the transaction that produced them. One save can produce several
-   * interaction deliveries (an assignment and a mention, say) that all carry
-   * it, so it is not a per-delivery key there.
+   * The `Shortcut-Delivery` header, which every retry of a delivery reuses.
+   * Under the `Payload-Signature` fallback it is the payload `id`, which
+   * several interaction deliveries from one save can share.
    */
   deliveryId?: string;
   /** Which signature header verified the delivery. */
@@ -218,10 +199,8 @@ export class ShortcutWebhookClient {
    * Verifies the signature, size, and shape of a delivery already read into
    * memory. Throws {@link ShortcutWebhookError} with the status to return.
    *
-   * @param headers The request headers, as a Fetch `Headers` object, a
-   *   `Map`, or a record like Node's `req.headers`, so `Shortcut-Signature` can be
-   *   checked. A bare string is the `Payload-Signature` value alone, which
-   *   `allowLegacySignature: false` rejects, as does every session event.
+   * @param headers The request headers (Fetch `Headers`, a `Map`, or Node's
+   *   `req.headers`), or the bare `Payload-Signature` value.
    */
   async verifyBody(
     rawBody: Uint8Array,

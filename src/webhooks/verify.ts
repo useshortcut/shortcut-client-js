@@ -26,19 +26,11 @@ const TIMESTAMP_TOLERANCE_SECONDS = 300;
 const TIMESTAMP_PATTERN = /^\d{1,18}$/;
 
 /**
- * Where to read a request's headers from: a Fetch `Headers` object, a `Map`,
- * or a record like Node's `IncomingMessage.headers`. Every source is read the
- * same way: the exact lowercase name first, then any other case among its
- * entries, skipping entries whose value is `undefined` or `null`. An array
- * value gives its first element. A source that joins a repeated header into
- * one string, as `Headers` and Node do, is read as given, so a repeated
- * signature header never verifies. A header that is present but empty, or not
- * a string, counts as present: an empty `Shortcut-Signature` is rejected, not
- * treated as absent. A source with a `get()` is searched by case only when it
- * is iterable over `[name, value]` pairs, as `Headers` and every `Map` are.
- * Distinct from
- * {@link ShortcutWebhookSignatureHeaders}, the record
- * {@link signShortcutWebhookHeaders} produces.
+ * A request's headers: a Fetch `Headers` object, a `Map`, or a record like
+ * Node's `IncomingMessage.headers`. A header is matched by its lowercase name,
+ * then by any other case. An array value gives its first element. A present
+ * but empty header counts as present, so an empty `Shortcut-Signature` is
+ * rejected rather than treated as absent.
  */
 export type ShortcutWebhookHeaderSource =
   | { get(name: string): string | readonly string[] | null | undefined }
@@ -61,18 +53,11 @@ export type ShortcutWebhookSignatureScheme =
 export interface ShortcutWebhookSignatureOptions {
   /**
    * Accept `Payload-Signature` when `Shortcut-Signature` is absent. On by
-   * default, for code written against 3.4.x, which passes only that header or
-   * signs test deliveries with {@link signShortcutWebhookBody}. A request that
-   * carries `Shortcut-Signature`, and a session event, are never verified by
-   * `Payload-Signature`, whatever this says.
+   * default for code written against 3.4.x. Session events always require
+   * `Shortcut-Signature`.
    */
   allowLegacySignature?: boolean;
-  /**
-   * Reject a `Shortcut-Timestamp` further than this from the clock, either
-   * way. The window is 300 seconds by default and this can only tighten it:
-   * a larger value still leaves 300 seconds, since Shortcut's own retries are
-   * timestamped at each attempt and a wider window only helps a replay.
-   */
+  /** Reject a `Shortcut-Timestamp` further than this from the clock. Can only tighten the 300-second default. */
   timestampToleranceMs?: number;
 }
 
@@ -81,7 +66,7 @@ export type ShortcutWebhookSignatureResult =
   | { verified: true; scheme: 'payload-signature'; deliveryId?: undefined }
   | {
       verified: false;
-      /** `stale_timestamp` means the signature was genuine but `Shortcut-Timestamp` is outside the window: 300 seconds, or a tighter `timestampToleranceMs`. */
+      /** `stale_timestamp` means the signature was genuine but `Shortcut-Timestamp` is outside the window. */
       reason: 'invalid_signature' | 'stale_timestamp';
     };
 
@@ -235,9 +220,7 @@ async function hmacMatches(
  * WebCrypto, which is available on Node.js 20+, Cloudflare Workers, Deno, and
  * Bun. Prefer {@link verifyShortcutWebhookHeaders}, which checks
  * `Shortcut-Signature` and its timestamp window. Do not use it for session
- * events: it knows nothing of the payload, so it accepts a session event
- * signed by `Payload-Signature` alone, which Shortcut never sends and which
- * is how a captured event would be replayed.
+ * events, since it would accept one replayed without `Shortcut-Signature`.
  *
  * @param secret The agent app's webhook signing secret.
  * @param rawBody The exact request bytes. Passing a re-serialized string only
@@ -256,18 +239,13 @@ export async function verifyShortcutWebhookSignature(
 /**
  * Verifies a delivery's signature headers against the raw body. When
  * `Shortcut-Signature` is present it must verify over `Shortcut-Timestamp`,
- * `Shortcut-Delivery`, and the body, and the timestamp must be within 300
- * seconds of this clock, or within `timestampToleranceMs` when that is
- * tighter; a missing or malformed companion header, or a mismatch, is
- * rejected without consulting `Payload-Signature`. Only when
- * `Shortcut-Signature` is absent does `Payload-Signature` verify the body
- * alone, unless `allowLegacySignature` is `false` or the body is a session
- * event: Shortcut signs every session event with `Shortcut-Signature`, so one
- * without it had the timestamped headers stripped, as a replay would.
+ * `Shortcut-Delivery`, and the body, with the timestamp inside the window,
+ * and `Payload-Signature` is ignored. Only when it is absent does
+ * `Payload-Signature` verify the body alone, unless `allowLegacySignature` is
+ * `false` or the body is a session event, which Shortcut always signs with
+ * `Shortcut-Signature`.
  *
- * @param headers The request headers, as a Fetch `Headers` object, a `Map`,
- *   or a record like Node's `req.headers`; see
- *   {@link ShortcutWebhookHeaderSource} for how each is read.
+ * @param headers The request headers; see {@link ShortcutWebhookHeaderSource}.
  * @returns Which header verified the request, with the `Shortcut-Delivery`
  *   value for deduplication, or why it was rejected.
  */

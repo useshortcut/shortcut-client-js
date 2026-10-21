@@ -135,10 +135,9 @@ export interface ShortcutValidationPayload {
  * `plan[].status`, the prompt-context `trigger.type`, and the prompt
  * `signal`) list the values this version knows and also admit any other
  * string, because Shortcut adds values inside envelope `v1` without a version
- * bump. A guard that rejected
- * them would make every agent on this version answer 400 to the new
- * delivery, which Shortcut retries and dead-letters. Compare against the
- * known values and treat anything else as unknown.
+ * bump. Rejecting them would answer 400, which Shortcut retries and
+ * dead-letters. Compare against the known values and treat anything else as
+ * unknown.
  */
 
 export type ShortcutAgentSessionStatus =
@@ -327,13 +326,9 @@ export type ShortcutUnknownSessionEventType = `session.${string}` & {
 };
 
 /**
- * A `session.*` event whose `type` this version does not know. Shortcut adds
- * event types within envelope `v1`, and every subscribed agent receives every
- * session event, so the client verifies the signature and the fields that
- * bind it to a workspace and installation, answers `200` to keep the
- * session's later events flowing, and dispatches it to no handler. A new type
- * need not carry the session snapshot the known types do, so `session` is
- * unchecked. Read it from `verify()` or `verifyBody()` to log or persist it.
+ * A `session.*` event whose `type` this version does not know. The client
+ * checks only its workspace and installation binding, answers `200`, and
+ * dispatches it to no handler. Read it from `verify()` or `verifyBody()`.
  */
 export interface ShortcutUnknownSessionEventPayload extends ShortcutSessionEventBinding {
   type: ShortcutUnknownSessionEventType;

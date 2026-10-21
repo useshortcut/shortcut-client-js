@@ -15,10 +15,7 @@ import {
   signed,
 } from './fixtures';
 
-// Shortcut signs every agent webhook with Shortcut-Signature, the HMAC of
-// `${timestamp}.${delivery}.${body}`, and still sends the body-only
-// Payload-Signature until sc-322342. The clock is frozen so the 300-second
-// window has an exact boundary.
+// The clock is frozen so the 300-second window has an exact boundary.
 describe('Shortcut-Signature headers', () => {
   const now = 1_700_000_000;
   const client = new ShortcutWebhookClient(secret);
@@ -84,10 +81,6 @@ describe('Shortcut-Signature headers', () => {
     );
   });
 
-  // Under Shortcut-Signature the header is the per-delivery key. Under the
-  // Payload-Signature fallback the payload id stands in, and for observer and
-  // interaction bodies that is the transaction key, which every interaction
-  // one save produces shares. Session events have no fallback.
   it.each([
     ['an observer', observer, 'delivery-1'],
     ['an interaction', interaction, 'delivery-2'],
@@ -427,9 +420,6 @@ describe('Shortcut-Signature headers', () => {
     ).toEqual({ verified: true, scheme: 'payload-signature' });
   });
 
-  // Shortcut never sends a session event without Shortcut-Signature, so the
-  // standalone check refuses one signed by Payload-Signature alone, as the
-  // client does. Other bodies keep the fallback.
   it('verifyShortcutWebhookHeaders rejects a session event signed only by Payload-Signature', async () => {
     for (const body of [
       JSON.stringify(sessionPrompted),
@@ -467,9 +457,7 @@ describe('Shortcut-Signature headers', () => {
     ).toEqual({ verified: true, scheme: 'payload-signature' });
   });
 
-  // An iterable header source is read the way a header record is: the exact
-  // lowercase name first, then any other case, and an array's first value.
-  // That covers a Map from another realm, which fails instanceof Map.
+  // Covers a Map from another realm, which fails instanceof Map.
   it('reads iterable header sources the way it reads a header record', async () => {
     const body = '{"id":"evt_1"}';
     const signature =
@@ -511,9 +499,6 @@ describe('Shortcut-Signature headers', () => {
     ).toEqual(verified);
   });
 
-  // A header that is present but has no usable value is not absent: an
-  // empty Shortcut-Signature must not select the Payload-Signature fallback,
-  // and an exact key holding undefined must not hide another casing.
   it('treats a present but unusable Shortcut-Signature as present, and skips absent entries', async () => {
     const body = '{"id":"evt_1"}';
     const signature =
@@ -566,8 +551,6 @@ describe('Shortcut-Signature headers', () => {
     ).toEqual({ verified: false, reason: 'invalid_signature' });
   });
 
-  // A Map is a documented header source, and its get() matches case exactly,
-  // so header names written the way HTTP prints them must still be found.
   it('reads header names from a Map without regard to case', async () => {
     const body = '{"id":"evt_1"}';
     const headers = new Map([

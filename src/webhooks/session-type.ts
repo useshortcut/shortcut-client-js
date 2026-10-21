@@ -1,8 +1,4 @@
-/**
- * The one test of what counts as a session event. Classification in
- * `types.ts` and the Payload-Signature refusal in `verify.ts` both use it,
- * so they cannot drift apart. Not exported from the package.
- */
+/** Shared by `types.ts` and `verify.ts` so they agree on what a session event is. */
 export const isSessionEventType = (
   type: unknown,
 ): type is `session.${string}` =>

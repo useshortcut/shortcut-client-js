@@ -193,9 +193,6 @@ describe('ShortcutWebhookClient agent-session events', () => {
     expect(seen).toEqual(['mentioned:title:123']);
   });
 
-  // Every subscribed agent receives every session event, so an unknown
-  // session.* type is acknowledged (below) rather than rejected. An unknown
-  // type outside session.* is still rejected: nothing in this version sends one.
   it('acknowledges a session event of an unknown type without dispatching it', async () => {
     const { payload } = await client.verify(await signedSession(sessionClosed));
     expect(payload).toEqual(sessionClosed);
@@ -231,9 +228,6 @@ describe('ShortcutWebhookClient agent-session events', () => {
     expect((error as ShortcutWebhookError).code).toBe('wrong_workspace');
   });
 
-  // An event type added later need not carry today's session snapshot, so
-  // only the envelope that binds it to a workspace and installation is
-  // checked before it is acknowledged.
   it.each([
     ['no session', { ...sessionClosed, session: undefined }],
     ['a slimmer session', { ...sessionClosed, session: { id: session.id } }],
@@ -253,15 +247,9 @@ describe('ShortcutWebhookClient agent-session events', () => {
     },
   );
 
-  // A human prompt is the only content Shortcut sends today. A content type
-  // added within envelope v1 must still reach the handler, which compares
-  // content.type against the values it knows. Only a prompt must carry a text
-  // body: agent `action` content already has none.
   it.each([
     ['a text body', { type: 'command', body: '/retry' }, 'command'],
     ['no body', { type: 'reaction', emoji: '+1' }, 'reaction'],
-    // The backend writes an absent optional field as null, as action content
-    // already does for result.
     ['a null body', { type: 'reaction', body: null }, 'reaction'],
   ])(
     'dispatches a session.prompted whose content type this version does not know, with %s',
