@@ -260,6 +260,9 @@ describe('ShortcutWebhookClient agent-session events', () => {
   it.each([
     ['a text body', { type: 'command', body: '/retry' }, 'command'],
     ['no body', { type: 'reaction', emoji: '+1' }, 'reaction'],
+    // The backend writes an absent optional field as null, as action content
+    // already does for result.
+    ['a null body', { type: 'reaction', body: null }, 'reaction'],
   ])(
     'dispatches a session.prompted whose content type this version does not know, with %s',
     async (_label, content, contentType) => {

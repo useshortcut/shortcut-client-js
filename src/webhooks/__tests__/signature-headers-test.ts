@@ -511,6 +511,61 @@ describe('Shortcut-Signature headers', () => {
     ).toEqual(verified);
   });
 
+  // A header that is present but has no usable value is not absent: an
+  // empty Shortcut-Signature must not select the Payload-Signature fallback,
+  // and an exact key holding undefined must not hide another casing.
+  it('treats a present but unusable Shortcut-Signature as present, and skips absent entries', async () => {
+    const body = '{"id":"evt_1"}';
+    const signature =
+      '5f25068c9b8163303be6cecda87dc52af76e53409f703e6fea054f23b2fb5069';
+    const base = {
+      'shortcut-timestamp': '1700000000',
+      'shortcut-delivery': 'delivery-1',
+      'payload-signature':
+        'c0bd8e4de35355b11e7e98d53bb0d0122736ca05c58eb9c138a2dfa24725ac6d',
+    };
+    for (const empty of [[], [''], '']) {
+      const record = { ...base, 'shortcut-signature': empty };
+      expect(
+        await verifyShortcutWebhookHeaders('test-secret', body, record),
+      ).toEqual({ verified: false, reason: 'invalid_signature' });
+      expect(
+        await verifyShortcutWebhookHeaders(
+          'test-secret',
+          body,
+          new Map(Object.entries(record)),
+        ),
+      ).toEqual({ verified: false, reason: 'invalid_signature' });
+    }
+    const verified = {
+      verified: true,
+      scheme: 'shortcut-signature',
+      deliveryId: 'delivery-1',
+    };
+    const shadowed = {
+      ...base,
+      'shortcut-signature': undefined,
+      'Shortcut-Signature': signature,
+    };
+    expect(
+      await verifyShortcutWebhookHeaders('test-secret', body, shadowed),
+    ).toEqual(verified);
+    expect(
+      await verifyShortcutWebhookHeaders(
+        'test-secret',
+        body,
+        new Map(Object.entries(shadowed)),
+      ),
+    ).toEqual(verified);
+    // Fetch Headers joins a repeated header into one string, which is read
+    // as given and so never verifies.
+    const repeated = new Headers({ ...base, 'shortcut-signature': signature });
+    repeated.append('shortcut-signature', signature);
+    expect(
+      await verifyShortcutWebhookHeaders('test-secret', body, repeated),
+    ).toEqual({ verified: false, reason: 'invalid_signature' });
+  });
+
   // A Map is a documented header source, and its get() matches case exactly,
   // so header names written the way HTTP prints them must still be found.
   it('reads header names from a Map without regard to case', async () => {
