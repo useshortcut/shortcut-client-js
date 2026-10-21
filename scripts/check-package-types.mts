@@ -206,13 +206,15 @@ function describeUnknownSession(delivery: ShortcutVerifiedDelivery): string {
   if (!isShortcutUnknownSessionEventPayload(payload)) return '';
   const type: string = payload.type;
   const prefixed: boolean = payload.type.startsWith('session.');
-  const turn: number = payload.session.turn;
+  const installation: string = payload.installation_id;
+  // @ts-expect-error A type added later need not carry the session snapshot.
+  payload.session.turn;
   // @ts-expect-error An unknown session event carries only the envelope.
   payload.activity;
   // @ts-expect-error An unknown type is never a literal this version knows; compare through String() or a cast.
   const direct: boolean = payload.type === 'session.closed';
   const later: boolean = (payload.type as string) === 'session.closed';
-  return [payload.id, type, prefixed, turn, direct, later].join(' ');
+  return [payload.id, type, prefixed, installation, direct, later].join(' ');
 }
 void describeUnknownSession;
 void describeSession;

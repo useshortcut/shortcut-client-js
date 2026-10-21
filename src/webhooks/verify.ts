@@ -12,9 +12,8 @@ export const SHORTCUT_DELIVERY_HEADER = 'shortcut-delivery';
 /**
  * Header carrying the hex HMAC-SHA256 of the raw request body alone. With no
  * timestamp, a captured request verifies forever, so it is deprecated.
- * Senders that predate `Shortcut-Signature` send it alone; agent-application
- * senders that carry `Shortcut-Signature` send it beside the new headers until
- * a later release removes it.
+ * Classic workspace webhooks send it alone; agent-application deliveries send
+ * it beside the new headers until a later release removes it.
  */
 export const PAYLOAD_SIGNATURE_HEADER = 'payload-signature';
 /** @deprecated Renamed {@link PAYLOAD_SIGNATURE_HEADER} in 3.5.0; this alias is kept for 3.4.x callers. */
@@ -52,7 +51,7 @@ export type ShortcutWebhookSignatureScheme =
 export interface ShortcutWebhookSignatureOptions {
   /**
    * Accept `Payload-Signature` when `Shortcut-Signature` is absent. On by
-   * default, for senders that predate `Shortcut-Signature`. A request that
+   * default, for senders that sign only the body. A request that
    * carries `Shortcut-Signature` is never verified by `Payload-Signature`,
    * whatever this says.
    */
@@ -83,6 +82,14 @@ const INVALID: ShortcutWebhookSignatureResult = {
 };
 
 function readHeader(headers: ShortcutWebhookHeaderSource, name: string) {
+  if (headers instanceof Map) {
+    for (const [key, value] of headers) {
+      if (typeof key === 'string' && key.toLowerCase() === name) {
+        return typeof value === 'string' ? value : null;
+      }
+    }
+    return null;
+  }
   if ('get' in headers && typeof headers.get === 'function') {
     return headers.get(name) ?? null;
   }

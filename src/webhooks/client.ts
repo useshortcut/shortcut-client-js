@@ -52,20 +52,23 @@ export interface ShortcutWebhookClientOptions {
    * seconds by default and this option can only tighten it. A delivery
    * verified by `Payload-Signature` alone carries only the payload
    * `timestamp`, which a redelivery keeps from the first attempt, so that
-   * window is off by default and this option turns it on as given; session
-   * events carry no payload timestamp and are never rejected by it.
+   * window is off by default and this option turns it on as given. Session
+   * events are only accepted with `Shortcut-Signature`, so they always get
+   * the `Shortcut-Timestamp` window.
    */
   timestampToleranceMs?: number;
   /**
    * Accept `Payload-Signature` when `Shortcut-Signature` is absent. On by
-   * default, since senders that predate `Shortcut-Signature` send only
-   * `Payload-Signature`, as does the validation ping when a URL is saved.
-   * Set it to `false` once every delivery arrives with
-   * `signatureScheme === 'shortcut-signature'`: only then does the timestamp
-   * window stop a captured request from being replayed, since a replay can
-   * drop the new headers and verify by `Payload-Signature`. A request that
-   * carries `Shortcut-Signature` is never verified by `Payload-Signature`
-   * either way.
+   * default, for senders that sign only the body, such as classic workspace
+   * webhooks. Shortcut signs every agent-application delivery, the
+   * validation ping included, with `Shortcut-Signature`, so set this to
+   * `false` once your deliveries arrive with
+   * `signatureScheme === 'shortcut-signature'`: only then does
+   * the timestamp window stop a captured observer or interaction delivery
+   * from being replayed, since a replay can drop the new headers and verify
+   * by `Payload-Signature`. A request that carries `Shortcut-Signature` is
+   * never verified by `Payload-Signature`, and a session event is never
+   * accepted without `Shortcut-Signature`, whatever this says.
    */
   allowLegacySignature?: boolean;
   /** Only accept deliveries for this workspace id; others receive `403`. */
@@ -219,7 +222,7 @@ export class ShortcutWebhookClient {
    * @param headers The request headers, as a Fetch `Headers` object or a
    *   record like Node's `req.headers`, so `Shortcut-Signature` can be
    *   checked. A bare string is the `Payload-Signature` value alone, which
-   *   `allowLegacySignature: false` rejects.
+   *   `allowLegacySignature: false` rejects, as does every session event.
    */
   async verifyBody(
     rawBody: Uint8Array,
@@ -251,6 +254,12 @@ export class ShortcutWebhookClient {
       isShortcutSessionEventPayload(payload) ||
       isShortcutUnknownSessionEventPayload(payload)
     ) {
+      // Shortcut signs every session event with Shortcut-Signature, so one
+      // that verified by Payload-Signature alone had the timestamped headers
+      // stripped, as a replay of a captured event would.
+      if (check.scheme !== 'shortcut-signature') {
+        throw new ShortcutWebhookError('invalid_signature', 401);
+      }
       this.assertBoundTo(payload.workspace_id, payload.installation_id);
     } else if (!isShortcutValidationPayload(payload)) {
       if (

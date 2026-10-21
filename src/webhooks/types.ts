@@ -2,11 +2,11 @@
  * Payload shapes delivered to Shortcut Custom Agent webhooks.
  *
  * Every delivery is a JSON body signed with HMAC-SHA256 and the webhook
- * secret. Agent-application deliveries are moving to a signature over the
+ * secret. Agent-application deliveries are signed over the
  * `Shortcut-Timestamp`, the `Shortcut-Delivery` id, and the exact request
  * bytes, whose hex digest arrives in `Shortcut-Signature` beside the
- * body-only `Payload-Signature`; until that is deployed, and for classic
- * workspace webhooks after it, only `Payload-Signature` is sent. See
+ * body-only `Payload-Signature` until a later release drops it. Classic
+ * workspace webhooks send only `Payload-Signature`. See
  * `verify.ts` for both schemes and the Custom Agents reference for trigger
  * semantics.
  */
@@ -222,7 +222,8 @@ export interface ShortcutSessionPromptActivity {
   author_id: string;
   /** The elicitation activity this prompt answers. */
   in_reply_to: string | null;
-  content: { type: 'prompt'; body: string };
+  /** `prompt` for every prompt this version knows. Shortcut may add content types within envelope `v1`, each with a text `body`. */
+  content: { type: 'prompt' | (string & {}); body: string };
   /** `stop` asks the agent to finish the turn with a `response` or `error`. It does not advance the turn. */
   signal: 'stop' | (string & {}) | null;
   signal_metadata: null;
@@ -267,12 +268,16 @@ export interface ShortcutSessionPromptContext {
 
 export type ShortcutSessionEventType = 'session.created' | 'session.prompted';
 
-interface ShortcutSessionEventEnvelope {
+/** What binds a session event to its workspace and installation, whatever its `type`. */
+interface ShortcutSessionEventBinding {
   /** The event id. Retries reuse it, so persist it before answering. */
   id: string;
   version: 'v1';
   workspace_id: string;
   installation_id: string;
+}
+
+interface ShortcutSessionEventEnvelope extends ShortcutSessionEventBinding {
   session: ShortcutAgentSession;
 }
 
@@ -311,12 +316,15 @@ export type ShortcutUnknownSessionEventType = `session.${string}` & {
 /**
  * A `session.*` event whose `type` this version does not know. Shortcut adds
  * event types within envelope `v1`, and every subscribed agent receives every
- * session event, so the client verifies the envelope and answers `200` to
- * keep the session's later events flowing, but dispatches it to no handler.
- * Read it from `verify()` or `verifyBody()` to log or persist it.
+ * session event, so the client verifies the signature and the fields that
+ * bind it to a workspace and installation, answers `200` to keep the
+ * session's later events flowing, and dispatches it to no handler. A new type
+ * need not carry the session snapshot the known types do, so `session` is
+ * unchecked. Read it from `verify()` or `verifyBody()` to log or persist it.
  */
-export interface ShortcutUnknownSessionEventPayload extends ShortcutSessionEventEnvelope {
+export interface ShortcutUnknownSessionEventPayload extends ShortcutSessionEventBinding {
   type: ShortcutUnknownSessionEventType;
+  session?: unknown;
 }
 
 /**
@@ -507,7 +515,7 @@ function isShortcutSessionPromptActivity(
     isNonEmptyString(value.id) &&
     isPositiveInteger(value.turn) &&
     isRecord(value.content) &&
-    value.content.type === 'prompt' &&
+    isNonEmptyString(value.content.type) &&
     typeof value.content.body === 'string' &&
     (value.signal == null || isNonEmptyString(value.signal))
   );
@@ -524,11 +532,11 @@ function isShortcutSessionPromptContext(
   );
 }
 
-/** The `v1` envelope every `session.*` delivery carries, whatever its `type`. */
-function hasShortcutSessionEnvelope(
+/** The `v1` fields every `session.*` delivery carries, whatever its `type`. */
+function hasShortcutSessionEventBinding(
   payload: unknown,
 ): payload is Record<string, unknown> &
-  ShortcutSessionEventEnvelope & { type: string } {
+  ShortcutSessionEventBinding & { type: string } {
   return (
     isRecord(payload) &&
     typeof payload.type === 'string' &&
@@ -536,8 +544,7 @@ function hasShortcutSessionEnvelope(
     isNonEmptyString(payload.id) &&
     payload.version === 'v1' &&
     isNonEmptyString(payload.workspace_id) &&
-    isNonEmptyString(payload.installation_id) &&
-    isShortcutAgentSession(payload.session)
+    isNonEmptyString(payload.installation_id)
   );
 }
 
@@ -550,7 +557,12 @@ function hasShortcutSessionEnvelope(
 export function isShortcutSessionEventPayload(
   payload: unknown,
 ): payload is ShortcutSessionEventPayload {
-  if (!hasShortcutSessionEnvelope(payload)) return false;
+  if (
+    !hasShortcutSessionEventBinding(payload) ||
+    !isShortcutAgentSession(payload.session)
+  ) {
+    return false;
+  }
   switch (payload.type) {
     case 'session.created':
       return (
@@ -565,12 +577,12 @@ export function isShortcutSessionEventPayload(
   }
 }
 
-/** True for a well-formed `v1` session envelope whose `type` this version does not know. */
+/** True for a `v1` session event whose `type` this version does not know, bound to a workspace and installation. */
 export function isShortcutUnknownSessionEventPayload(
   payload: unknown,
 ): payload is ShortcutUnknownSessionEventPayload {
   return (
-    hasShortcutSessionEnvelope(payload) &&
+    hasShortcutSessionEventBinding(payload) &&
     !SESSION_EVENT_TYPES.has(payload.type)
   );
 }
