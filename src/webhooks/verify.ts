@@ -12,8 +12,8 @@ export const SHORTCUT_DELIVERY_HEADER = 'shortcut-delivery';
 /**
  * Header carrying the hex HMAC-SHA256 of the raw request body alone. With no
  * timestamp, a captured request verifies forever, so it is deprecated.
- * Classic workspace webhooks send it alone; agent-application deliveries send
- * it beside the new headers until a later release removes it.
+ * Agent-application deliveries carry it beside the new headers until a later
+ * release removes it.
  */
 export const PAYLOAD_SIGNATURE_HEADER = 'payload-signature';
 /** @deprecated Renamed {@link PAYLOAD_SIGNATURE_HEADER} in 3.5.0; this alias is kept for 3.4.x callers. */
@@ -24,15 +24,18 @@ const TIMESTAMP_TOLERANCE_SECONDS = 300;
 const TIMESTAMP_PATTERN = /^\d{1,18}$/;
 
 /**
- * Where to read a request's headers from, in either runtime's shape: a Fetch
- * `Headers` object (or anything with a `get()`, such as a `Map`), or a record
- * like Node's `IncomingMessage.headers`. Names are matched without regard to
- * case. Distinct from {@link ShortcutWebhookSignatureHeaders}, the record
+ * Where to read a request's headers from: a Fetch `Headers` object, a `Map`,
+ * or a record like Node's `IncomingMessage.headers`. Every source is read the
+ * same way: the exact lowercase name first, then any other case among its
+ * entries, and a multi-valued header's first value. A source with a `get()`
+ * is searched by case only when it is iterable over `[name, value]` pairs, as
+ * `Headers` and every `Map` are. Distinct from
+ * {@link ShortcutWebhookSignatureHeaders}, the record
  * {@link signShortcutWebhookHeaders} produces.
  */
 export type ShortcutWebhookHeaderSource =
-  | { get(name: string): string | null | undefined }
-  | Readonly<Record<string, string | string[] | undefined>>;
+  | { get(name: string): string | readonly string[] | null | undefined }
+  | Readonly<Record<string, string | readonly string[] | undefined>>;
 
 /** The headers Shortcut sends with one delivery attempt, keyed by lowercase name. */
 export type ShortcutWebhookSignatureHeaders = {
@@ -51,9 +54,10 @@ export type ShortcutWebhookSignatureScheme =
 export interface ShortcutWebhookSignatureOptions {
   /**
    * Accept `Payload-Signature` when `Shortcut-Signature` is absent. On by
-   * default, for senders that sign only the body. A request that
-   * carries `Shortcut-Signature` is never verified by `Payload-Signature`,
-   * whatever this says.
+   * default, for code written against 3.4.x, which passes only that header or
+   * signs test deliveries with {@link signShortcutWebhookBody}. A request that
+   * carries `Shortcut-Signature`, and a session event, are never verified by
+   * `Payload-Signature`, whatever this says.
    */
   allowLegacySignature?: boolean;
   /**
@@ -81,29 +85,56 @@ const INVALID: ShortcutWebhookSignatureResult = {
   reason: 'invalid_signature',
 };
 
-function readHeader(headers: ShortcutWebhookHeaderSource, name: string) {
-  if (headers instanceof Map) {
-    for (const [key, value] of headers) {
-      if (typeof key === 'string' && key.toLowerCase() === name) {
-        return typeof value === 'string' ? value : null;
-      }
+function headerValue(value: unknown): string | null {
+  const first: unknown = Array.isArray(value) ? value[0] : value;
+  return typeof first === 'string' ? first : null;
+}
+
+/** Reads `name`, which is lowercase, as {@link ShortcutWebhookHeaderSource} describes. */
+function readHeader(
+  headers: ShortcutWebhookHeaderSource,
+  name: string,
+): string | null {
+  const hasGet = 'get' in headers && typeof headers.get === 'function';
+  const exact = hasGet
+    ? headers.get(name)
+    : Object.hasOwn(headers, name)
+      ? (headers as Record<string, unknown>)[name]
+      : undefined;
+  if (exact != null) return headerValue(exact);
+  const entries: Iterable<unknown> =
+    Symbol.iterator in headers
+      ? (headers as Iterable<unknown>)
+      : hasGet
+        ? []
+        : Object.entries(headers);
+  for (const entry of entries) {
+    if (
+      Array.isArray(entry) &&
+      typeof entry[0] === 'string' &&
+      entry[0].toLowerCase() === name
+    ) {
+      return headerValue(entry[1]);
     }
-    return null;
   }
-  if ('get' in headers && typeof headers.get === 'function') {
-    return headers.get(name) ?? null;
+  return null;
+}
+
+const decoder = new TextDecoder();
+
+/** True for a JSON body whose `type` is `session.*`, whatever else it holds. */
+function isSessionEventBody(body: Uint8Array): boolean {
+  try {
+    const payload: unknown = JSON.parse(decoder.decode(body));
+    return (
+      typeof payload === 'object' &&
+      payload !== null &&
+      typeof (payload as { type?: unknown }).type === 'string' &&
+      (payload as { type: string }).type.startsWith('session.')
+    );
+  } catch {
+    return false;
   }
-  const record = headers as Readonly<
-    Record<string, string | string[] | undefined>
-  >;
-  const key =
-    name in record
-      ? name
-      : Object.keys(record).find(
-          (candidate) => candidate.toLowerCase() === name,
-        );
-  const value = key === undefined ? undefined : record[key];
-  return Array.isArray(value) ? (value[0] ?? null) : (value ?? null);
 }
 
 function parseSignature(
@@ -191,7 +222,9 @@ async function hmacMatches(
  * Verifies the deprecated body-only `Payload-Signature` in constant time using
  * WebCrypto, which is available on Node.js 20+, Cloudflare Workers, Deno, and
  * Bun. Prefer {@link verifyShortcutWebhookHeaders}, which checks
- * `Shortcut-Signature` and its timestamp window.
+ * `Shortcut-Signature` and its timestamp window. This function knows nothing
+ * of the payload, so it also accepts a session event, which Shortcut never
+ * sends without `Shortcut-Signature`.
  *
  * @param secret The agent app's webhook signing secret.
  * @param rawBody The exact request bytes. Passing a re-serialized string only
@@ -215,7 +248,9 @@ export async function verifyShortcutWebhookSignature(
  * tighter; a missing or malformed companion header, or a mismatch, is
  * rejected without consulting `Payload-Signature`. Only when
  * `Shortcut-Signature` is absent does `Payload-Signature` verify the body
- * alone, unless `allowLegacySignature` is `false`.
+ * alone, unless `allowLegacySignature` is `false` or the body is a session
+ * event: Shortcut signs every session event with `Shortcut-Signature`, so one
+ * without it had the timestamped headers stripped, as a replay would.
  *
  * @param headers The request headers, as a Fetch `Headers` object or a
  *   record like Node's `req.headers`.
@@ -233,7 +268,8 @@ export async function verifyShortcutWebhookHeaders(
   if (signature === null) {
     if (options.allowLegacySignature === false) return INVALID;
     const legacy = readHeader(headers, PAYLOAD_SIGNATURE_HEADER);
-    return (await hmacMatches(secret, body, legacy))
+    return (await hmacMatches(secret, body, legacy)) &&
+      !isSessionEventBody(body)
       ? { verified: true, scheme: 'payload-signature' }
       : INVALID;
   }

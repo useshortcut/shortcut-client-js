@@ -168,11 +168,16 @@ function describeSession(delivery: ShortcutVerifiedDelivery): string {
   // @ts-expect-error Session events carry workspace_id, not a workspace2 record.
   payload.workspace2;
   if (payload.type === 'session.prompted') {
-    const body: string = payload.activity.content.body;
+    const { content } = payload.activity;
+    // @ts-expect-error A content type added later need not carry a text body.
+    const unchecked: string = content.body;
+    void unchecked;
+    const body: string = content.body ?? '';
+    const later: string = content.type;
     const stop: boolean = payload.activity.signal === 'stop';
     // @ts-expect-error Only session.created carries the prompt context.
     payload.prompt_context;
-    return [version, turn, body, stop].join(' ');
+    return [version, turn, body, later, stop].join(' ');
   }
   const created: ShortcutSessionCreatedPayload = payload;
   const context: string = created.prompt_context.text;

@@ -345,6 +345,16 @@ describe('ShortcutWebhookClient agent-session events', () => {
       },
     ],
     [
+      'content whose body is not text',
+      {
+        ...sessionPrompted,
+        activity: {
+          ...sessionPrompted.activity,
+          content: { type: 'reaction', body: 1 },
+        },
+      },
+    ],
+    [
       'content without a type',
       {
         ...sessionPrompted,

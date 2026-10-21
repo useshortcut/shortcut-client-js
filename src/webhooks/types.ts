@@ -5,8 +5,7 @@
  * secret. Agent-application deliveries are signed over the
  * `Shortcut-Timestamp`, the `Shortcut-Delivery` id, and the exact request
  * bytes, whose hex digest arrives in `Shortcut-Signature` beside the
- * body-only `Payload-Signature` until a later release drops it. Classic
- * workspace webhooks send only `Payload-Signature`. See
+ * body-only `Payload-Signature` until a later release drops it. See
  * `verify.ts` for both schemes and the Custom Agents reference for trigger
  * semantics.
  */
@@ -209,6 +208,19 @@ export interface ShortcutAgentSession {
   closed_reason: ShortcutAgentSessionClosedReason | null;
 }
 
+/**
+ * What a person wrote. Every prompt this version knows is `prompt`, which
+ * always carries a text `body`. Shortcut may add content types within
+ * envelope `v1`, with fields of their own and no `body`, so compare `type`
+ * against the values you know.
+ */
+export interface ShortcutSessionPromptContent {
+  type: 'prompt' | (string & {});
+  /** The text. Always present for `prompt`. */
+  body?: string;
+  [field: string]: unknown;
+}
+
 /** The human prompt that caused a session event. */
 export interface ShortcutSessionPromptActivity {
   id: string;
@@ -222,8 +234,7 @@ export interface ShortcutSessionPromptActivity {
   author_id: string;
   /** The elicitation activity this prompt answers. */
   in_reply_to: string | null;
-  /** `prompt` for every prompt this version knows. Shortcut may add content types within envelope `v1`, each with a text `body`. */
-  content: { type: 'prompt' | (string & {}); body: string };
+  content: ShortcutSessionPromptContent;
   /** `stop` asks the agent to finish the turn with a `response` or `error`. It does not advance the turn. */
   signal: 'stop' | (string & {}) | null;
   signal_metadata: null;
@@ -516,7 +527,8 @@ function isShortcutSessionPromptActivity(
     isPositiveInteger(value.turn) &&
     isRecord(value.content) &&
     isNonEmptyString(value.content.type) &&
-    typeof value.content.body === 'string' &&
+    (typeof value.content.body === 'string' ||
+      (value.content.body === undefined && value.content.type !== 'prompt')) &&
     (value.signal == null || isNonEmptyString(value.signal))
   );
 }

@@ -59,11 +59,11 @@ export interface ShortcutWebhookClientOptions {
   timestampToleranceMs?: number;
   /**
    * Accept `Payload-Signature` when `Shortcut-Signature` is absent. On by
-   * default, for senders that sign only the body, such as classic workspace
-   * webhooks. Shortcut signs every agent-application delivery, the
-   * validation ping included, with `Shortcut-Signature`, so set this to
-   * `false` once your deliveries arrive with
-   * `signatureScheme === 'shortcut-signature'`: only then does
+   * default, for code written against 3.4.x, which passes only that header or
+   * signs test deliveries with `signShortcutWebhookBody()`. Shortcut signs
+   * every agent-application delivery, the validation ping included, with
+   * `Shortcut-Signature`, so set this to `false` once your deliveries arrive
+   * with `signatureScheme === 'shortcut-signature'`: only then does
    * the timestamp window stop a captured observer or interaction delivery
    * from being replayed, since a replay can drop the new headers and verify
    * by `Payload-Signature`. A request that carries `Shortcut-Signature` is
@@ -88,10 +88,9 @@ export interface ShortcutVerifiedDelivery {
    * that every retry of the delivery reuses, so persist it and acknowledge a
    * duplicate without processing it again.
    *
-   * Under the `Payload-Signature` fallback it is the payload `id` instead.
-   * For session events that is the event id, the value the header would
-   * carry. For observer and interaction deliveries it is the key of the
-   * transaction that produced them, and one save can produce several
+   * Under the `Payload-Signature` fallback, which only observer and
+   * interaction deliveries can take, it is the payload `id` instead: the key
+   * of the transaction that produced them. One save can produce several
    * interaction deliveries (an assignment and a mention, say) that all carry
    * it, so it is not a per-delivery key there.
    */
@@ -254,12 +253,6 @@ export class ShortcutWebhookClient {
       isShortcutSessionEventPayload(payload) ||
       isShortcutUnknownSessionEventPayload(payload)
     ) {
-      // Shortcut signs every session event with Shortcut-Signature, so one
-      // that verified by Payload-Signature alone had the timestamped headers
-      // stripped, as a replay of a captured event would.
-      if (check.scheme !== 'shortcut-signature') {
-        throw new ShortcutWebhookError('invalid_signature', 401);
-      }
       this.assertBoundTo(payload.workspace_id, payload.installation_id);
     } else if (!isShortcutValidationPayload(payload)) {
       if (
