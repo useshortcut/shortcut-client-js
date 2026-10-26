@@ -411,14 +411,15 @@ describe('ShortcutWebhookClient agent-session events', () => {
     ['a session event of an unknown type', sessionClosed],
   ])('rejects %s signed only by Payload-Signature', async (_label, event) => {
     const text = JSON.stringify(event);
+    const request = await signed(event);
+    const signature = await signShortcutWebhookBody(secret, text);
+    // Start each attempt only once its rejection is handled, so none can
+    // reject unobserved while another is awaited.
     for (const attempt of [
-      client.verify(await signed(event)),
-      client.verifyBody(
-        new TextEncoder().encode(text),
-        await signShortcutWebhookBody(secret, text),
-      ),
+      () => client.verify(request),
+      () => client.verifyBody(new TextEncoder().encode(text), signature),
     ]) {
-      const error = await attempt.catch((caught: unknown) => caught);
+      const error = await attempt().catch((caught: unknown) => caught);
       expect(error).toBeInstanceOf(ShortcutWebhookError);
       expect((error as ShortcutWebhookError).code).toBe('invalid_signature');
       expect((error as ShortcutWebhookError).status).toBe(401);
