@@ -18,7 +18,8 @@ import ShortcutClient, { ShortcutClient as NamedV3 } from '@shortcut/client';
 import ShortcutV4Client, { ShortcutV4Client as NamedV4, ShortcutOAuth } from '@shortcut/client/v4';
 import { applyRefresh, isShortcutV4RequestError, summarizeShortcutV4Error } from '@shortcut/client/v4';
 import type { ChecklistItemSetPosition, Member, MemberAgent, SetPosition, ShortcutAgentCapabilities, ShortcutOAuthRefreshTokens, ShortcutOAuthTokens, ShortcutV4ErrorBody, ShortcutV4ErrorSummary, ShortcutWorkspaceApi, WorkspaceOperation } from '@shortcut/client/v4';
-import { ShortcutWebhookClient } from '@shortcut/client/webhooks';
+import { PAYLOAD_SIGNATURE_HEADER, SHORTCUT_DELIVERY_HEADER, SHORTCUT_SIGNATURE_HEADER, SHORTCUT_TIMESTAMP_HEADER, SHORTCUT_WEBHOOK_SIGNATURE_HEADER, ShortcutWebhookClient, isShortcutSessionEventPayload, isShortcutUnknownSessionEventPayload, signShortcutWebhookHeaders, verifyShortcutWebhookHeaders } from '@shortcut/client/webhooks';
+import type { ShortcutAgentSession, ShortcutAgentSessionStatus, ShortcutSessionCreatedPayload, ShortcutSessionEventPayload, ShortcutSessionPromptContext, ShortcutSessionPromptedPayload, ShortcutUnknownSessionEventPayload, ShortcutValidationPayload, ShortcutVerifiedDelivery, ShortcutWebhookHeaderSource, ShortcutWebhookPayload, ShortcutWebhookSignatureHeaders, ShortcutWebhookSignatureResult, ShortcutWebhookSignatureScheme } from '@shortcut/client/webhooks';
 import axios, { type AxiosInstance } from 'axios';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 const legacy: ShortcutClient = new ShortcutClient('token');
@@ -128,6 +129,160 @@ void describeFailure;
 const summary: ShortcutV4ErrorSummary | null = summarizeShortcutV4Error(new Error('x'));
 const summarized: string | undefined = summary?.tag;
 void summarized;
+// Agent-session events (sc-322021): a verified payload may be a v1 session
+// envelope, and its type field narrows session.created from session.prompted.
+type SessionEventTypes = Assert<Equal<ShortcutSessionEventPayload['type'], 'session.created' | 'session.prompted'>>;
+type SessionEventVersion = Assert<Equal<Extract<ShortcutWebhookPayload, { type: 'session.created' }>, ShortcutSessionCreatedPayload>>;
+type SessionEventUnion = Assert<Equal<ShortcutSessionEventPayload, ShortcutSessionCreatedPayload | ShortcutSessionPromptedPayload>>;
+type SessionTurn = Assert<Equal<ShortcutAgentSession['turn'], number>>;
+type SessionEntity = Assert<Equal<ShortcutAgentSession['entity_type'], 'story' | 'epic' | (string & {})>>;
+type PromptSignal = Assert<Equal<ShortcutSessionPromptedPayload['activity']['signal'], 'stop' | (string & {}) | null>>;
+// Enum-like session fields are open: the known values stay distinct members
+// of the union, so they autocomplete and survive Extract, and a value this
+// version does not know is still assignable instead of a compile error.
+type KnownStatus = Assert<Equal<Extract<ShortcutAgentSessionStatus, 'pending' | 'complete'>, 'pending' | 'complete'>>;
+type KnownClosedReason = Assert<Equal<Extract<ShortcutAgentSession['closed_reason'], 'stop_timed_out' | null>, 'stop_timed_out' | null>>;
+type KnownTriggerType = Assert<Equal<Extract<NonNullable<ShortcutSessionPromptContext['trigger']>['type'], 'mentioned'>, 'mentioned'>>;
+const knownStatus: ShortcutAgentSessionStatus = 'awaiting_input';
+const newerStatus: ShortcutAgentSessionStatus = 'paused';
+const newerClosedReason: ShortcutAgentSession['closed_reason'] = 'archived';
+const newerEntityType: ShortcutAgentSession['entity_type'] = 'doc';
+const newerSignal: ShortcutSessionPromptedPayload['activity']['signal'] = 'pause';
+const newerTrigger: ShortcutSessionPromptContext['trigger'] = { type: 'poked', entity_type: 'story', entity_id: '1' };
+// A session trigger's per-type fields admit values Shortcut adds later and the
+// null the backend sends for a mention in a top-level comment.
+const newerContext: ShortcutSessionPromptContext['trigger'] = { type: 'mentioned', entity_type: 'story', entity_id: '1', context: 'title', comment_id: '9', comment_parent_id: null };
+void newerContext;
+type KnownPlanStatus = Assert<Equal<Extract<ShortcutAgentSession['plan'][number]['status'], 'in_progress'>, 'in_progress'>>;
+const newerPlanStatus: ShortcutAgentSession['plan'][number]['status'] = 'blocked';
+void [knownStatus, newerStatus, newerClosedReason, newerEntityType, newerSignal, newerTrigger, newerPlanStatus];
+// @ts-expect-error A session status is a string, never a number.
+const numericStatus: ShortcutAgentSessionStatus = 3;
+void numericStatus;
+type CreatedActivity = Assert<Equal<ShortcutSessionCreatedPayload['activity'], ShortcutSessionPromptedPayload['activity'] | undefined>>;
+function describeSession(delivery: ShortcutVerifiedDelivery): string {
+  const payload = delivery.payload;
+  if (!isShortcutSessionEventPayload(payload)) return '';
+  const version: 'v1' = payload.version;
+  const turn: number = payload.session.turn;
+  // @ts-expect-error Session events carry workspace_id, not a workspace2 record.
+  payload.workspace2;
+  if (payload.type === 'session.prompted') {
+    const { content } = payload.activity;
+    // @ts-expect-error A content type added later need not carry a text body.
+    const unchecked: string = content.body;
+    void unchecked;
+    const body: string = content.body ?? '';
+    const later: string = content.type;
+    const stop: boolean = payload.activity.signal === 'stop';
+    // @ts-expect-error Only session.created carries the prompt context.
+    payload.prompt_context;
+    return [version, turn, body, later, stop].join(' ');
+  }
+  const created: ShortcutSessionCreatedPayload = payload;
+  const context: string = created.prompt_context.text;
+  const trigger: string | undefined = created.prompt_context.trigger?.type;
+  // @ts-expect-error A session.created event may carry no opening prompt.
+  created.activity.content.body;
+  // A content type added later may carry a null body.
+  const opening: string | null | undefined = created.activity?.content.body;
+  return [context, trigger, opening].join(' ');
+}
+type PromptedWithoutContext = Assert<Equal<Extract<keyof ShortcutSessionPromptedPayload, 'prompt_context'>, never>>;
+// A session.* type this version does not know verifies as its own union
+// member. Its type is branded so that control-flow narrowing on a literal
+// (not only Extract, which tests assignability) still removes it, and the
+// guard's false branch keeps the known session payloads.
+const unknownSession: ShortcutWebhookPayload = {} as ShortcutUnknownSessionEventPayload;
+void unknownSession;
+function describeUnknownSession(delivery: ShortcutVerifiedDelivery): string {
+  const payload = delivery.payload;
+  if ('type' in payload && payload.type === 'validation') {
+    const validation: ShortcutValidationPayload = payload;
+    void validation;
+  }
+  if ('type' in payload && payload.type === 'session.created') {
+    const created: ShortcutSessionCreatedPayload = payload;
+    void created;
+  }
+  if (!isShortcutUnknownSessionEventPayload(payload) && isShortcutSessionEventPayload(payload)) {
+    const known: 'session.created' | 'session.prompted' = payload.type;
+    void known;
+  }
+  if (!isShortcutUnknownSessionEventPayload(payload)) return '';
+  const type: string = payload.type;
+  const prefixed: boolean = payload.type.startsWith('session.');
+  const installation: string = payload.installation_id;
+  // @ts-expect-error A type added later need not carry the session snapshot.
+  payload.session.turn;
+  // @ts-expect-error An unknown session event carries only the envelope.
+  payload.activity;
+  // @ts-expect-error An unknown type is never a literal this version knows; compare through String() or a cast.
+  const direct: boolean = payload.type === 'session.closed';
+  const later: boolean = (payload.type as string) === 'session.closed';
+  return [payload.id, type, prefixed, installation, direct, later].join(' ');
+}
+void describeUnknownSession;
+void describeSession;
+handler.on('session', (payload) => {
+  const sessionId: string = payload.session.id;
+  const known: 'session.created' | 'session.prompted' = payload.type;
+  void [sessionId, known];
+});
+handler.on('session.prompted', (payload) => {
+  const prompted: ShortcutSessionPromptedPayload = payload;
+  void prompted;
+});
+// An interaction delivery is validated per trigger type, so narrowing on the
+// event name gives the fields that type carries.
+handler.on('comment-reply', (payload) => {
+  const parent: string = payload.trigger.parent_comment_id;
+  void parent;
+});
+handler.on('mentioned', (payload) => {
+  const context: 'comment' | 'description' = payload.trigger.context;
+  const parent: string | null | undefined = payload.trigger.comment_parent_id;
+  void [context, parent];
+});
+// Timestamped signatures (sc-322332): the client verifies Shortcut-Signature
+// and falls back to Payload-Signature unless allowLegacySignature is false.
+// verifyBody takes the request headers in either runtime's shape, or the bare
+// Payload-Signature value as before.
+const strictWebhooks = new ShortcutWebhookClient('secret', { allowLegacySignature: false });
+void strictWebhooks;
+declare const incoming: IncomingMessage;
+webhooks.verifyBody(new Uint8Array(), incoming.headers);
+webhooks.verifyBody(new Uint8Array(), new Headers());
+webhooks.verifyBody(new Uint8Array(), 'payload-signature-hex');
+webhooks.verifyBody(new Uint8Array(), null);
+type HeaderNames = Assert<Equal<[typeof SHORTCUT_SIGNATURE_HEADER, typeof SHORTCUT_TIMESTAMP_HEADER, typeof SHORTCUT_DELIVERY_HEADER], ['shortcut-signature', 'shortcut-timestamp', 'shortcut-delivery']>>;
+type LegacyHeaderName = Assert<Equal<[typeof PAYLOAD_SIGNATURE_HEADER, typeof SHORTCUT_WEBHOOK_SIGNATURE_HEADER], ['payload-signature', 'payload-signature']>>;
+// A header source only needs a get(); a Map answers undefined for a missing name.
+verifyShortcutWebhookHeaders('secret', 'body', new Map<string, string>());
+type AcceptedHeaders = Assert<Equal<Parameters<typeof verifyShortcutWebhookHeaders>[2], ShortcutWebhookHeaderSource>>;
+type Schemes = Assert<Equal<ShortcutWebhookSignatureScheme, 'shortcut-signature' | 'payload-signature'>>;
+handler.on('observer', (_payload, delivery) => {
+  const id: string | undefined = delivery.deliveryId;
+  const scheme: ShortcutWebhookSignatureScheme = delivery.signatureScheme;
+  void [id, scheme];
+});
+async function resend(delivery: ShortcutVerifiedDelivery): Promise<string> {
+  const signed: ShortcutWebhookSignatureHeaders = await signShortcutWebhookHeaders('secret', delivery.rawBody, { deliveryId: delivery.deliveryId ?? 'd', timestamp: '1700000000' });
+  const legacyValue: string = signed['payload-signature'];
+  // A signed header set is a plain string record, so it serves as HeadersInit.
+  const request = new Request('https://x', { method: 'POST', body: 'x', headers: signed });
+  const result: ShortcutWebhookSignatureResult = await verifyShortcutWebhookHeaders('secret', delivery.rawBody, request.headers, { allowLegacySignature: false, timestampToleranceMs: 60_000 });
+  if (result.verified) {
+    const verifiedScheme: ShortcutWebhookSignatureScheme = result.scheme;
+    const verifiedId: string | undefined = result.deliveryId;
+    return [legacyValue, verifiedScheme, verifiedId].join(' ');
+  }
+  const reason: 'invalid_signature' | 'stale_timestamp' = result.reason;
+  // @ts-expect-error A rejected result carries no scheme.
+  result.scheme;
+  return reason;
+}
+void resend;
 `;
 // A Workers-style project: no Node types at all, only the DOM's Fetch API.
 // The webhooks declarations must not reach for `node:http`.
@@ -139,8 +294,13 @@ client.workspace('acme').getWhoami();
 const webhooks = new ShortcutWebhookClient('s');
 const handler = webhooks.createHandler();
 handler.on('mentioned', async () => {});
+handler.on('session.created', async (_payload, delivery) => {
+  const id: string | undefined = delivery.deliveryId;
+  void id;
+});
 const response: Promise<Response> = handler(new Request('https://x'));
 webhooks.verify(new Request('https://x'));
+webhooks.verifyBody(new Uint8Array(), new Headers());
 export default { fetch: handler };
 `;
 try {

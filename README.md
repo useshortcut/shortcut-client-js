@@ -141,7 +141,11 @@ const client = new ShortcutV4Client({
 
 ### `@shortcut/client/webhooks`
 
-Deliveries are signed with HMAC-SHA256 over the raw request body; the hex digest arrives in the `Payload-Signature` header. `ShortcutWebhookClient` verifies the signature in constant time, caps the body (2 MiB by default), rejects payloads that lack the delivery envelope or carry an unrecognized action or trigger shape, and optionally pins deliveries to one workspace or installation. `createHandler()` works as a Fetch handler and as a Node.js `(req, res)` handler, and dispatches typed payloads by kind and by interaction trigger. The Node handler is typed structurally (`ShortcutNodeRequest`, `ShortcutNodeResponse`), so the entrypoint's declarations never import `node:http` and other runtimes need no `@types/node`.
+`ShortcutWebhookClient` verifies the signature on each delivery, caps the body (2 MiB by default), rejects payloads that lack the delivery envelope or carry an unrecognized action or trigger shape, and optionally pins deliveries to one workspace or installation. `createHandler()` works as a Fetch handler and as a Node.js `(req, res)` handler, and dispatches typed payloads by kind and by interaction trigger. The Node handler is typed structurally (`ShortcutNodeRequest`, `ShortcutNodeResponse`), so the entrypoint's declarations never import `node:http` and other runtimes need no `@types/node`.
+
+Shortcut signs agent-application webhooks with three headers. That covers observer, interaction, and session deliveries, and the validation ping sent when a URL is saved. `Shortcut-Timestamp` is the Unix time in seconds when Shortcut sent that attempt, and each retry gets a new one. `Shortcut-Delivery` is an id that stays the same across retries of one delivery. For session events it equals the event `id`. `Shortcut-Signature` is the lowercase hex HMAC-SHA256 of `${timestamp}.${delivery}.${body}` over the raw body bytes, keyed with the webhook secret. Each delivery also carries `Payload-Signature`, the HMAC of the body alone, until a later release drops it.
+
+When `Shortcut-Signature` is present, the client verifies it in constant time and rejects a `Shortcut-Timestamp` more than 300 seconds from its clock in either direction. `timestampToleranceMs` can tighten that window. If a companion header is missing or the signature doesn't match, the client rejects the request and ignores `Payload-Signature`. The client falls back to `Payload-Signature` only when `Shortcut-Signature` is absent, and never for a session event. Shortcut signs every session event with `Shortcut-Signature`, so the client answers `401` to one that verifies only by `Payload-Signature`. `delivery.signatureScheme` reports which header verified each delivery.
 
 ```ts
 import { ShortcutWebhookClient } from '@shortcut/client/webhooks';
@@ -151,8 +155,10 @@ const webhooks = new ShortcutWebhookClient(process.env.WEBHOOK_SECRET, {
 });
 const handler = webhooks.createHandler();
 
-handler.on('mentioned', async (payload) => {
-  // payload.trigger is narrowed to the `mentioned` shape
+handler.on('mentioned', async (payload, delivery) => {
+  // payload.trigger is narrowed to the `mentioned` shape.
+  // A retry reuses delivery.deliveryId, so skip a delivery you already
+  // handled.
 });
 handler.on('observer', async (payload) => {
   for (const action of payload.actions) {
@@ -164,7 +170,31 @@ export default { fetch: handler }; // Cloudflare Workers
 // http.createServer(handler);      // Node.js
 ```
 
-For frameworks that already read the body, `verify(request)` and `verifyBody(bytes, signature)` return the verified payload or throw a `ShortcutWebhookError` carrying the HTTP status to return. `signShortcutWebhookBody()` produces a valid signature for testing an agent locally.
+`deliveryId` is a per-delivery key only when `delivery.signatureScheme` is `'shortcut-signature'`. Under the `Payload-Signature` fallback it is the payload `id`. For observer and interaction deliveries that id belongs to the transaction that produced them, so every interaction from one save shares it.
+
+The fallback exists for code written against 3.4.x, which passes the bare `Payload-Signature` value or signs test deliveries with `signShortcutWebhookBody()`. It applies to observer, interaction, and validation deliveries, never to session events. Turn it off once your deliveries arrive with `delivery.signatureScheme === 'shortcut-signature'` and nothing that signs only the body still calls your endpoint. Until then, the 300-second window doesn't stop a replayed observer or interaction delivery, because a captured request can drop the new headers and verify by `Payload-Signature`.
+
+```ts
+const webhooks = new ShortcutWebhookClient(process.env.WEBHOOK_SECRET, {
+  allowLegacySignature: false, // only after every delivery carries Shortcut-Signature
+});
+```
+
+An installation that enabled agent sessions (`PUT /api/v4/{workspace}/agent-sessions/subscription`) receives `session.created` and `session.prompted` events instead of interaction deliveries. They use the v1 session envelope (`id`, `version`, `type`, `workspace_id`, `installation_id`, `session`) and the same signature headers, and carry no `actor`, `timestamp`, or `workspace2`. `session.created` adds `prompt_context`, plus the opening `activity` when a person wrote one. `session.prompted` adds the human `activity` and no `prompt_context`. A stop request is a `session.prompted` event whose `activity.signal` is `"stop"`. The handler dispatches these events under `session`, `session.created`, and `session.prompted`, and `isShortcutSessionEventPayload()` narrows a verified payload to `ShortcutSessionEventPayload`.
+
+A `session.*` event of a type this release doesn't know still verifies, as `ShortcutUnknownSessionEventPayload`. The client checks only its `id`, `version`, `workspace_id`, and `installation_id`, and the handler answers `200` without dispatching it, so a new event type never stalls a session. To log or persist one, narrow it with `isShortcutUnknownSessionEventPayload()`. The enum-like fields (`session.status`, `session.closed_reason`, `session.entity_type`, `session.plan[].status`, `prompt_context.trigger.type`, `prompt_context.trigger.context`, `activity.content.type`, `activity.signal`) type the values this release knows and accept any other string, so a value Shortcut adds within envelope `v1` still verifies. Compare against the known values and treat the rest as unknown.
+
+```ts
+handler.on('session.prompted', async (payload) => {
+  if (payload.activity.signal === 'stop') {
+    // publish a final `response` or `error` activity on payload.session.turn
+  }
+});
+```
+
+For frameworks that already read the body, `verify(request)` and `verifyBody(bytes, headers)` return the verified payload with its `deliveryId` and `signatureScheme`, or throw a `ShortcutWebhookError` carrying the HTTP status to return. `verifyBody` takes a Fetch `Headers` object, a `Map`, a header record like Node's `req.headers`, or the bare `Payload-Signature` value as in 3.4.x. A repeated header that the source joins into one string never verifies. An empty `Shortcut-Signature` counts as present, so the client rejects it.
+
+`verifyShortcutWebhookHeaders(secret, body, headers)` runs the same signature check, including the session-event refusal, without validating the payload. It reports which header verified the request or why it failed. `verifyShortcutWebhookSignature(secret, body, signature)`, kept from 3.4.x, checks `Payload-Signature` alone and never reads the payload. Don't use it for session events, since it would accept one replayed without its timestamped headers. `signShortcutWebhookHeaders(secret, body, { deliveryId })` produces all four headers for testing an agent locally. `signShortcutWebhookBody()` produces only `Payload-Signature`, which works for observer and interaction tests but not for session events.
 
 The v4 client is generated from `schema/shortcut.v4.openapi.json`, which `yarn sync:schema:v4` downloads and normalizes (the published document names responses and request bodies numerically).
 

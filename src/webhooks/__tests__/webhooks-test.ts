@@ -12,61 +12,7 @@ import {
   signShortcutWebhookBody,
   verifyShortcutWebhookSignature,
 } from '../index';
-
-const secret = 'signing-secret';
-const observer = {
-  id: 'delivery-1',
-  version: 'v2',
-  timestamp: new Date().toISOString(),
-  actor: {
-    displayable_name: 'Ada',
-    member_id: 'member-1',
-    mention_name: 'ada',
-  },
-  workspace2: { id: 'workspace-1', url_slug: 'acme' },
-  installation_id: 'install-1',
-  actions: [
-    {
-      action: 'update',
-      id: 123,
-      entity_type: 'story',
-      global_id: 'v2:s:workspace-1:123',
-      app_url: null,
-      changes: [],
-    },
-  ],
-};
-const interaction = {
-  ...observer,
-  id: 'delivery-2',
-  actions: undefined,
-  trigger: {
-    type: 'mentioned',
-    entity_type: 'story',
-    entity_id: '123',
-    context: 'comment',
-    comment_id: '9',
-  },
-};
-
-async function signed(
-  body: unknown,
-  options: { secret?: string; headers?: Record<string, string> } = {},
-) {
-  const text = JSON.stringify(body);
-  return new Request('https://agent.example/webhook', {
-    method: 'POST',
-    body: text,
-    headers: {
-      'content-type': 'application/json',
-      'payload-signature': await signShortcutWebhookBody(
-        options.secret ?? secret,
-        text,
-      ),
-      ...options.headers,
-    },
-  });
-}
+import { interaction, observer, secret, signed } from './fixtures';
 
 describe('verifyShortcutWebhookSignature', () => {
   it('accepts the raw body signed with the secret and rejects everything else', async () => {
@@ -237,6 +183,7 @@ describe('ShortcutWebhookClient.verify', () => {
   it('passes the actor mention name through and accepts actors without one', async () => {
     const client = new ShortcutWebhookClient(secret);
     const { payload } = await client.verify(await signed(observer));
+    if (!isShortcutObserverPayload(payload)) throw new Error('narrowed');
     expect(payload.actor).toEqual({
       displayable_name: 'Ada',
       member_id: 'member-1',
@@ -248,6 +195,9 @@ describe('ShortcutWebhookClient.verify', () => {
         actor: { displayable_name: 'Automation', automation_id: 'a-1' },
       }),
     );
+    if (!isShortcutObserverPayload(anonymous.payload)) {
+      throw new Error('narrowed');
+    }
     expect(anonymous.payload.actor.mention_name).toBeUndefined();
   });
 
@@ -394,6 +344,29 @@ describe('ShortcutWebhookClient.verify', () => {
     );
     expect(delivery.deliveryId).toBe('delivery-1');
     expect(delivery.payload).toEqual(observer);
+  });
+
+  // The Payload-Signature fallback serves callers written against 3.4.x, not
+  // classic workspace webhooks: their v1 body (history generate-tx-map) has no
+  // installation, workspace2, or timestamp, so the client never accepts one.
+  it('rejects a classic workspace webhook body whatever its signature', async () => {
+    const classic = {
+      id: '5f1b4a6e-0000-4000-8000-000000000001',
+      changed_at: '2026-10-21T16:00:00Z',
+      version: 'v1',
+      primary_id: 123,
+      actor_name: 'Ada',
+      member_id: 'member-1',
+      actions: [
+        { id: 123, entity_type: 'story', action: 'update', name: 'Fix login' },
+      ],
+      references: [],
+    };
+    const error = await new ShortcutWebhookClient(secret)
+      .verify(await signed(classic))
+      .catch((caught: unknown) => caught);
+    expect((error as ShortcutWebhookError).code).toBe('invalid_body');
+    expect((error as ShortcutWebhookError).status).toBe(400);
   });
 
   it('rejects an invalid configuration up front', () => {
