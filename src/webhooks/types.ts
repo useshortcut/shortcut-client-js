@@ -107,7 +107,7 @@ export type ShortcutInteractionTrigger =
       entity_id: string;
       context: 'comment' | 'description';
       comment_id?: string;
-      /** For a `comment` context: the parent comment's id when the mentioning comment is a reply, `null` when it is top-level. */
+      /** For a `comment` context on a Story: the parent comment's id when the mentioning comment is a reply, `null` when it is top-level. Always `null` for an Epic comment, even a reply. */
       comment_parent_id?: string | null;
     };
 
@@ -263,7 +263,7 @@ export interface ShortcutSessionTrigger {
   parent_comment_id?: string;
   /** `mentioned` only. The values this version knows, or one Shortcut added later. */
   context?: 'comment' | 'description' | (string & {});
-  /** `mentioned` in a comment: the parent comment's id for a reply, `null` for a top-level comment. */
+  /** `mentioned` in a Story comment: the parent comment's id for a reply, `null` for a top-level comment. Always `null` for an Epic comment, even a reply. */
   comment_parent_id?: string | null;
 }
 
