@@ -57,7 +57,11 @@ export interface ShortcutWebhookSignatureOptions {
    * `Shortcut-Signature`.
    */
   allowLegacySignature?: boolean;
-  /** Reject a `Shortcut-Timestamp` further than this from the clock. Can only tighten the 300-second default. */
+  /**
+   * Reject a `Shortcut-Timestamp` further than this from the clock. Can only
+   * tighten the 300-second default. Anything but a positive number throws a
+   * `TypeError`, as the client constructor does.
+   */
   timestampToleranceMs?: number;
 }
 
@@ -255,6 +259,15 @@ export async function verifyShortcutWebhookHeaders(
   headers: ShortcutWebhookHeaderSource,
   options: ShortcutWebhookSignatureOptions = {},
 ): Promise<ShortcutWebhookSignatureResult> {
+  const tolerance = options.timestampToleranceMs;
+  if (
+    tolerance !== undefined &&
+    (!Number.isFinite(tolerance) || tolerance <= 0)
+  ) {
+    throw new TypeError(
+      'verifyShortcutWebhookHeaders: timestampToleranceMs must be a positive number',
+    );
+  }
   const body = toBytes(rawBody);
   const signature = readHeader(headers, SHORTCUT_SIGNATURE_HEADER);
   if (signature === null) {
@@ -273,19 +286,14 @@ export async function verifyShortcutWebhookHeaders(
   const content = signedContent(timestamp, deliveryId, body);
   if (!(await hmacMatches(secret, content, signature))) return INVALID;
   const skew = Math.abs(Math.floor(Date.now() / 1000) - Number(timestamp));
-  if (skew > toleranceSeconds(options.timestampToleranceMs)) {
+  const window =
+    tolerance === undefined
+      ? TIMESTAMP_TOLERANCE_SECONDS
+      : Math.min(TIMESTAMP_TOLERANCE_SECONDS, tolerance / 1000);
+  if (skew > window) {
     return { verified: false, reason: 'stale_timestamp' };
   }
   return { verified: true, scheme: 'shortcut-signature', deliveryId };
-}
-
-/** The 300-second window, tightened to `timestampToleranceMs` when that is a smaller positive number. */
-function toleranceSeconds(timestampToleranceMs: number | undefined): number {
-  return timestampToleranceMs !== undefined &&
-    Number.isFinite(timestampToleranceMs) &&
-    timestampToleranceMs > 0
-    ? Math.min(TIMESTAMP_TOLERANCE_SECONDS, timestampToleranceMs / 1000)
-    : TIMESTAMP_TOLERANCE_SECONDS;
 }
 
 /**
