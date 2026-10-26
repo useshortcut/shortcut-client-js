@@ -393,6 +393,15 @@ describe('Shortcut-Signature headers', () => {
         timestampToleranceMs: 60_000,
       }),
     ).toEqual({ verified: false, reason: 'stale_timestamp' });
+    // An unset environment variable gives NaN, which must not quietly mean
+    // the full window, as the client constructor already enforces.
+    for (const timestampToleranceMs of [0, -1, Number.NaN, Infinity]) {
+      await expect(
+        verifyShortcutWebhookHeaders('test-secret', body, headers, {
+          timestampToleranceMs,
+        }),
+      ).rejects.toThrow(TypeError);
+    }
     vi.setSystemTime((now + 301) * 1000);
     expect(
       await verifyShortcutWebhookHeaders('test-secret', body, headers),
