@@ -13,9 +13,8 @@ export const SHORTCUT_TIMESTAMP_HEADER = 'shortcut-timestamp';
 export const SHORTCUT_DELIVERY_HEADER = 'shortcut-delivery';
 /**
  * Header carrying the hex HMAC-SHA256 of the raw request body alone. With no
- * timestamp, a captured request verifies forever, so it is deprecated.
- * Agent-application deliveries carry it beside the new headers until a later
- * release removes it.
+ * timestamp, a captured request verifies forever, so it is deprecated, and
+ * Shortcut no longer sends it on agent-application deliveries.
  */
 export const PAYLOAD_SIGNATURE_HEADER = 'payload-signature';
 /** @deprecated Renamed {@link PAYLOAD_SIGNATURE_HEADER} in 3.5.0; this alias is kept for 3.4.x callers. */
@@ -41,7 +40,7 @@ export type ShortcutWebhookSignatureHeaders = {
   'shortcut-timestamp': string;
   'shortcut-signature': string;
   'shortcut-delivery': string;
-  /** The deprecated body-only signature Shortcut still sends; see {@link PAYLOAD_SIGNATURE_HEADER}. */
+  /** The deprecated body-only signature, which Shortcut no longer sends; see {@link PAYLOAD_SIGNATURE_HEADER}. */
   'payload-signature': string;
 };
 
@@ -52,9 +51,9 @@ export type ShortcutWebhookSignatureScheme =
 
 export interface ShortcutWebhookSignatureOptions {
   /**
-   * Accept `Payload-Signature` when `Shortcut-Signature` is absent. On by
-   * default for code written against 3.4.x. Session events always require
-   * `Shortcut-Signature`.
+   * Accept `Payload-Signature` when `Shortcut-Signature` is absent. Off by
+   * default since 3.6.0, because Shortcut no longer sends it. Session events
+   * always require `Shortcut-Signature`.
    */
   allowLegacySignature?: boolean;
   /**
@@ -244,10 +243,10 @@ export async function verifyShortcutWebhookSignature(
  * Verifies a delivery's signature headers against the raw body. When
  * `Shortcut-Signature` is present it must verify over `Shortcut-Timestamp`,
  * `Shortcut-Delivery`, and the body, with the timestamp inside the window,
- * and `Payload-Signature` is ignored. Only when it is absent does
- * `Payload-Signature` verify the body alone, unless `allowLegacySignature` is
- * `false` or the body is a session event, which Shortcut always signs with
- * `Shortcut-Signature`.
+ * and `Payload-Signature` is ignored. When it is absent, the request is
+ * rejected, unless `allowLegacySignature` is `true`: then `Payload-Signature`
+ * verifies the body alone, except for a session event, which Shortcut always
+ * signs with `Shortcut-Signature`.
  *
  * @param headers The request headers; see {@link ShortcutWebhookHeaderSource}.
  * @returns Which header verified the request, with the `Shortcut-Delivery`
@@ -271,7 +270,7 @@ export async function verifyShortcutWebhookHeaders(
   const body = toBytes(rawBody);
   const signature = readHeader(headers, SHORTCUT_SIGNATURE_HEADER);
   if (signature === null) {
-    if (options.allowLegacySignature === false) return INVALID;
+    if (options.allowLegacySignature !== true) return INVALID;
     const legacy = readHeader(headers, PAYLOAD_SIGNATURE_HEADER);
     return (await hmacMatches(secret, body, legacy)) &&
       !isSessionEventBody(body)
@@ -297,7 +296,8 @@ export async function verifyShortcutWebhookHeaders(
 }
 
 /**
- * Computes the deprecated `Payload-Signature` value for a body. Prefer
+ * Computes the deprecated `Payload-Signature` value for a body. A client
+ * accepts it only with `allowLegacySignature: true`. Prefer
  * {@link signShortcutWebhookHeaders}, which produces every header Shortcut
  * sends.
  */
@@ -310,8 +310,9 @@ export async function signShortcutWebhookBody(
 
 /**
  * Computes the headers Shortcut sends with one delivery attempt of `rawBody`,
- * for signing test deliveries against a local agent. The timestamp defaults
- * to now. The result is a plain string record, so it serves as `HeadersInit`.
+ * plus the `Payload-Signature` it no longer sends, for signing test
+ * deliveries against a local agent. The timestamp defaults to now. The result
+ * is a plain string record, so it serves as `HeadersInit`.
  */
 export async function signShortcutWebhookHeaders(
   secret: string,

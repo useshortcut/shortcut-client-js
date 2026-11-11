@@ -10,9 +10,16 @@ import {
   isShortcutObserverPayload,
   shortcutWebhookEventType,
   signShortcutWebhookBody,
+  signShortcutWebhookHeaders,
   verifyShortcutWebhookSignature,
 } from '../index';
-import { interaction, observer, secret, signed } from './fixtures';
+import {
+  interaction,
+  observer,
+  secret,
+  signed,
+  signedLegacy,
+} from './fixtures';
 
 describe('verifyShortcutWebhookSignature', () => {
   it('accepts the raw body signed with the secret and rejects everything else', async () => {
@@ -155,7 +162,9 @@ describe('ShortcutWebhookClient.verify', () => {
           body: text,
           headers: {
             'content-type': 'application/json',
-            'payload-signature': await signShortcutWebhookBody(secret, text),
+            ...(await signShortcutWebhookHeaders(secret, text, {
+              deliveryId: 'delivery-1',
+            })),
           },
         });
       },
@@ -322,17 +331,25 @@ describe('ShortcutWebhookClient.verify', () => {
     expect((install as ShortcutWebhookError).code).toBe('wrong_installation');
   });
 
-  it('enforces a timestamp window only when asked', async () => {
+  it('checks the payload timestamp of a Payload-Signature delivery only when asked', async () => {
     const stale = { ...observer, timestamp: '2020-01-01T00:00:00.000Z' };
-    await expect(client.verify(await signed(stale))).resolves.toBeDefined();
+    const legacy = new ShortcutWebhookClient(secret, {
+      allowLegacySignature: true,
+    });
+    await expect(
+      legacy.verify(await signedLegacy(stale)),
+    ).resolves.toBeDefined();
     const strict = new ShortcutWebhookClient(secret, {
+      allowLegacySignature: true,
       timestampToleranceMs: 60_000,
     });
     const error = await strict
-      .verify(await signed(stale))
+      .verify(await signedLegacy(stale))
       .catch((caught: unknown) => caught);
     expect((error as ShortcutWebhookError).code).toBe('stale_timestamp');
-    await expect(strict.verify(await signed(observer))).resolves.toBeDefined();
+    await expect(
+      strict.verify(await signedLegacy(observer)),
+    ).resolves.toBeDefined();
   });
 
   it('verifies a body delivered as a pooled Node Buffer', async () => {
@@ -340,7 +357,9 @@ describe('ShortcutWebhookClient.verify', () => {
     const body = Buffer.from(text);
     const delivery = await client.verifyBody(
       body,
-      await signShortcutWebhookBody(secret, text),
+      await signShortcutWebhookHeaders(secret, text, {
+        deliveryId: 'delivery-1',
+      }),
     );
     expect(delivery.deliveryId).toBe('delivery-1');
     expect(delivery.payload).toEqual(observer);
@@ -362,8 +381,10 @@ describe('ShortcutWebhookClient.verify', () => {
       ],
       references: [],
     };
-    const error = await new ShortcutWebhookClient(secret)
-      .verify(await signed(classic))
+    const error = await new ShortcutWebhookClient(secret, {
+      allowLegacySignature: true,
+    })
+      .verify(await signedLegacy(classic))
       .catch((caught: unknown) => caught);
     expect((error as ShortcutWebhookError).code).toBe('invalid_body');
     expect((error as ShortcutWebhookError).status).toBe(400);
@@ -491,7 +512,9 @@ describe('ShortcutWebhookClient.createHandler', () => {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
-          'payload-signature': await signShortcutWebhookBody(secret, text),
+          ...(await signShortcutWebhookHeaders(secret, text, {
+            deliveryId: 'delivery-1',
+          })),
         },
         destroy() {},
         async *[Symbol.asyncIterator]() {

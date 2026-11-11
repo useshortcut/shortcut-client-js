@@ -139,10 +139,32 @@ export const sessionClosed = {
   session: { ...session, status: 'complete', closed_reason: 'access_revoked' },
 };
 
-export async function signed(
-  body: unknown,
-  options: { secret?: string; headers?: Record<string, string> } = {},
-) {
+interface SignOptions {
+  secret?: string;
+  headers?: Record<string, string>;
+}
+
+// Signed with Shortcut-Signature, whose Shortcut-Delivery is the payload id,
+// as Shortcut sends every agent-application delivery.
+export async function signed(body: unknown, options: SignOptions = {}) {
+  const text = JSON.stringify(body);
+  const id = (body as { id?: unknown }).id;
+  return new Request('https://agent.example/webhook', {
+    method: 'POST',
+    body: text,
+    headers: {
+      'content-type': 'application/json',
+      ...(await signShortcutWebhookHeaders(options.secret ?? secret, text, {
+        deliveryId: typeof id === 'string' && id ? id : 'delivery-1',
+      })),
+      ...options.headers,
+    },
+  });
+}
+
+// Signed only with the body-only Payload-Signature, as 3.4.x test code signs
+// a delivery and as a replay that strips the timestamped headers arrives.
+export async function signedLegacy(body: unknown, options: SignOptions = {}) {
   const text = JSON.stringify(body);
   return new Request('https://agent.example/webhook', {
     method: 'POST',
@@ -154,23 +176,6 @@ export async function signed(
         text,
       ),
       ...options.headers,
-    },
-  });
-}
-
-// Session events as Shortcut sends them: with Shortcut-Signature, whose
-// Shortcut-Delivery is the event id, beside Payload-Signature.
-export async function signedSession(body: unknown) {
-  const text = JSON.stringify(body);
-  const id = (body as { id?: unknown }).id;
-  return new Request('https://agent.example/webhook', {
-    method: 'POST',
-    body: text,
-    headers: {
-      'content-type': 'application/json',
-      ...(await signShortcutWebhookHeaders(secret, text, {
-        deliveryId: typeof id === 'string' && id ? id : 'delivery-1',
-      })),
     },
   });
 }

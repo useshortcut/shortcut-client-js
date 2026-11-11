@@ -4,10 +4,9 @@
  * Every delivery is a JSON body signed with HMAC-SHA256 and the webhook
  * secret. Agent-application deliveries are signed over the
  * `Shortcut-Timestamp`, the `Shortcut-Delivery` id, and the exact request
- * bytes, whose hex digest arrives in `Shortcut-Signature` beside the
- * body-only `Payload-Signature` until a later release drops it. See
- * `verify.ts` for both schemes and the Custom Agents reference for trigger
- * semantics.
+ * bytes, whose hex digest arrives in `Shortcut-Signature`. Shortcut no
+ * longer sends the body-only `Payload-Signature`. See `verify.ts` for both
+ * schemes and the Custom Agents reference for trigger semantics.
  */
 
 import { isSessionEventType } from './session-type';

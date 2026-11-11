@@ -53,10 +53,12 @@ export interface ShortcutWebhookClientOptions {
    */
   timestampToleranceMs?: number;
   /**
-   * Accept `Payload-Signature` when `Shortcut-Signature` is absent. On by
-   * default for code written against 3.4.x. Turn it off once deliveries arrive
-   * with `signatureScheme === 'shortcut-signature'`, since a replay can strip
-   * the new headers. Session events always require `Shortcut-Signature`.
+   * Accept `Payload-Signature` when `Shortcut-Signature` is absent. Off by
+   * default since 3.6.0, because Shortcut no longer sends `Payload-Signature`
+   * and a captured request verifies by it forever. Turn it on only for code
+   * written against 3.4.x that passes the bare value or signs test deliveries
+   * with `signShortcutWebhookBody()`. Session events always require
+   * `Shortcut-Signature`.
    */
   allowLegacySignature?: boolean;
   /** Only accept deliveries for this workspace id; others receive `403`. */
@@ -190,7 +192,7 @@ export class ShortcutWebhookClient {
     this.secret = secret;
     this.bodyLimit = bodyLimit;
     this.timestampToleranceMs = tolerance;
-    this.allowLegacySignature = options.allowLegacySignature ?? true;
+    this.allowLegacySignature = options.allowLegacySignature ?? false;
     this.workspaceId = options.workspaceId;
     this.installationId = options.installationId;
   }
@@ -200,7 +202,8 @@ export class ShortcutWebhookClient {
    * memory. Throws {@link ShortcutWebhookError} with the status to return.
    *
    * @param headers The request headers (Fetch `Headers`, a `Map`, or Node's
-   *   `req.headers`), or the bare `Payload-Signature` value.
+   *   `req.headers`), or the bare `Payload-Signature` value, which verifies
+   *   only when `allowLegacySignature` is `true`.
    */
   async verifyBody(
     rawBody: Uint8Array,

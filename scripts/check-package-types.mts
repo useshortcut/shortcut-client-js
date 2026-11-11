@@ -244,12 +244,16 @@ handler.on('mentioned', (payload) => {
   const parent: string | null | undefined = payload.trigger.comment_parent_id;
   void [context, parent];
 });
-// Timestamped signatures (sc-322332): the client verifies Shortcut-Signature
-// and falls back to Payload-Signature unless allowLegacySignature is false.
-// verifyBody takes the request headers in either runtime's shape, or the bare
-// Payload-Signature value as before.
+// Timestamped signatures (sc-322332): the client verifies Shortcut-Signature.
+// Since 3.6.0 (sc-322342) it falls back to Payload-Signature only when
+// allowLegacySignature is true. verifyBody takes the request headers in
+// either runtime's shape, or the bare Payload-Signature value, which then
+// verifies only under that opt-in.
 const strictWebhooks = new ShortcutWebhookClient('secret', { allowLegacySignature: false });
-void strictWebhooks;
+const legacyWebhooks = new ShortcutWebhookClient('secret', { allowLegacySignature: true });
+void [strictWebhooks, legacyWebhooks];
+legacyWebhooks.verifyBody(new Uint8Array(), 'payload-signature-hex');
+verifyShortcutWebhookHeaders('secret', 'body', new Headers(), { allowLegacySignature: true });
 declare const incoming: IncomingMessage;
 webhooks.verifyBody(new Uint8Array(), incoming.headers);
 webhooks.verifyBody(new Uint8Array(), new Headers());
