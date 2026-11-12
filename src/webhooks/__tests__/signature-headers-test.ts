@@ -12,13 +12,16 @@ import {
   observer,
   secret,
   sessionPrompted,
-  signed,
+  signedLegacy,
 } from './fixtures';
 
 // The clock is frozen so the 300-second window has an exact boundary.
 describe('Shortcut-Signature headers', () => {
   const now = 1_700_000_000;
   const client = new ShortcutWebhookClient(secret);
+  const legacyClient = new ShortcutWebhookClient(secret, {
+    allowLegacySignature: true,
+  });
 
   beforeEach(() => {
     vi.useFakeTimers({ now: now * 1000, toFake: ['Date'] });
@@ -92,7 +95,7 @@ describe('Shortcut-Signature headers', () => {
       );
       expect(header.signatureScheme).toBe('shortcut-signature');
       expect(header.deliveryId).toBe('a0b1c2d3-header-id');
-      const legacy = await client.verify(await signed(body));
+      const legacy = await legacyClient.verify(await signedLegacy(body));
       expect(legacy.signatureScheme).toBe('payload-signature');
       expect(legacy.deliveryId).toBe(payloadId);
     },
@@ -229,12 +232,16 @@ describe('Shortcut-Signature headers', () => {
         signedRequest(observer, { headers: { 'shortcut-delivery': '' } }),
     ],
   ])('rejects %s with %s', async (_label, code, make) => {
-    const error = await client
-      .verify(await make())
-      .catch((caught: unknown) => caught);
-    expect(error).toBeInstanceOf(ShortcutWebhookError);
-    expect((error as ShortcutWebhookError).code).toBe(code);
-    expect((error as ShortcutWebhookError).status).toBe(401);
+    // Every request here also carries a valid Payload-Signature, which the
+    // fallback must not reach once Shortcut-Signature is present.
+    for (const verifier of [client, legacyClient]) {
+      const error = await verifier
+        .verify(await make())
+        .catch((caught: unknown) => caught);
+      expect(error).toBeInstanceOf(ShortcutWebhookError);
+      expect((error as ShortcutWebhookError).code).toBe(code);
+      expect((error as ShortcutWebhookError).status).toBe(401);
+    }
   });
 
   it('accepts a timestamp exactly 300 seconds from the clock, either way', async () => {
@@ -246,36 +253,61 @@ describe('Shortcut-Signature headers', () => {
     }
   });
 
-  it('falls back to Payload-Signature only when Shortcut-Signature is absent, unless disabled', async () => {
-    const legacy = await client.verify(await signed(observer));
+  it.each([
+    ['by default', client],
+    [
+      'with allowLegacySignature: false',
+      new ShortcutWebhookClient(secret, { allowLegacySignature: false }),
+    ],
+  ])(
+    'rejects a delivery signed only by Payload-Signature %s',
+    async (_label, strict) => {
+      const text = JSON.stringify(observer);
+      const signature = await signShortcutWebhookBody(secret, text);
+      for (const body of [observer, interaction, { type: 'validation' }]) {
+        const error = await strict
+          .verify(await signedLegacy(body))
+          .catch((caught: unknown) => caught);
+        expect(error).toBeInstanceOf(ShortcutWebhookError);
+        expect((error as ShortcutWebhookError).code).toBe('invalid_signature');
+        expect((error as ShortcutWebhookError).status).toBe(401);
+      }
+      // The bare 3.4.x value is a Payload-Signature too.
+      const bare = await strict
+        .verifyBody(Buffer.from(text), signature)
+        .catch((caught: unknown) => caught);
+      expect((bare as ShortcutWebhookError).code).toBe('invalid_signature');
+      const handler = strict.createHandler();
+      expect((await handler(await signedLegacy(observer))).status).toBe(401);
+      expect((await handler(await signedRequest(observer))).status).toBe(200);
+      const accepted = await strict.verify(await signedRequest(observer));
+      expect(accepted.signatureScheme).toBe('shortcut-signature');
+    },
+  );
+
+  it('falls back to Payload-Signature when allowLegacySignature is true and Shortcut-Signature is absent', async () => {
+    const legacy = await legacyClient.verify(await signedLegacy(observer));
     expect(legacy.signatureScheme).toBe('payload-signature');
     expect(legacy.deliveryId).toBe('delivery-1');
-    const strict = new ShortcutWebhookClient(secret, {
-      allowLegacySignature: false,
-    });
-    const error = await strict
-      .verify(await signed(observer))
-      .catch((caught: unknown) => caught);
-    expect(error).toBeInstanceOf(ShortcutWebhookError);
-    expect((error as ShortcutWebhookError).code).toBe('invalid_signature');
-    expect((error as ShortcutWebhookError).status).toBe(401);
-    const accepted = await strict.verify(await signedRequest(observer));
-    expect(accepted.signatureScheme).toBe('shortcut-signature');
-    const handler = strict.createHandler();
-    expect((await handler(await signed(observer))).status).toBe(401);
-    expect((await handler(await signedRequest(observer))).status).toBe(200);
+    const handler = legacyClient.createHandler();
+    expect((await handler(await signedLegacy(interaction))).status).toBe(200);
     const text = JSON.stringify(observer);
-    const bare = await strict
-      .verifyBody(
-        Buffer.from(text),
-        await signShortcutWebhookBody(secret, text),
-      )
-      .catch((caught: unknown) => caught);
-    expect((bare as ShortcutWebhookError).code).toBe('invalid_signature');
+    const bare = await legacyClient.verifyBody(
+      Buffer.from(text),
+      await signShortcutWebhookBody(secret, text),
+    );
+    expect(bare.signatureScheme).toBe('payload-signature');
+    expect(bare.payload).toEqual(observer);
+    const current = await legacyClient.verify(
+      await signedRequest(observer, { deliveryId: 'header-id' }),
+    );
+    expect(current.signatureScheme).toBe('shortcut-signature');
+    expect(current.deliveryId).toBe('header-id');
   });
 
   it('bounds Shortcut-Timestamp, not the payload timestamp, by timestampToleranceMs', async () => {
     const strict = new ShortcutWebhookClient(secret, {
+      allowLegacySignature: true,
       timestampToleranceMs: 60_000,
     });
     const stale = { ...observer, timestamp: '2020-01-01T00:00:00.000Z' };
@@ -283,7 +315,7 @@ describe('Shortcut-Signature headers', () => {
       stale,
     );
     const legacy = await strict
-      .verify(await signed(stale))
+      .verify(await signedLegacy(stale))
       .catch((caught: unknown) => caught);
     expect((legacy as ShortcutWebhookError).code).toBe('stale_timestamp');
     const recent = await strict.verify(
@@ -410,26 +442,38 @@ describe('Shortcut-Signature headers', () => {
       'payload-signature':
         'c0bd8e4de35355b11e7e98d53bb0d0122736ca05c58eb9c138a2dfa24725ac6d',
     };
+    for (const options of [undefined, { allowLegacySignature: false }]) {
+      expect(
+        await verifyShortcutWebhookHeaders(
+          'test-secret',
+          body,
+          legacy,
+          options,
+        ),
+      ).toEqual({ verified: false, reason: 'invalid_signature' });
+    }
+    const allowLegacy = { allowLegacySignature: true };
     expect(
-      await verifyShortcutWebhookHeaders('test-secret', body, legacy),
+      await verifyShortcutWebhookHeaders(
+        'test-secret',
+        body,
+        legacy,
+        allowLegacy,
+      ),
     ).toEqual({ verified: true, scheme: 'payload-signature' });
     expect(
-      await verifyShortcutWebhookHeaders('test-secret', body, legacy, {
-        allowLegacySignature: false,
-      }),
+      await verifyShortcutWebhookHeaders('test-secret', body, {}, allowLegacy),
     ).toEqual({ verified: false, reason: 'invalid_signature' });
-    expect(await verifyShortcutWebhookHeaders('test-secret', body, {})).toEqual(
-      { verified: false, reason: 'invalid_signature' },
-    );
     // A header bag whose get() answers undefined for a missing header, as a
     // Map does, has no Shortcut-Signature.
     const bag = new Map(Object.entries(legacy));
     expect(
-      await verifyShortcutWebhookHeaders('test-secret', body, bag),
+      await verifyShortcutWebhookHeaders('test-secret', body, bag, allowLegacy),
     ).toEqual({ verified: true, scheme: 'payload-signature' });
   });
 
-  it('verifyShortcutWebhookHeaders rejects a session event signed only by Payload-Signature', async () => {
+  it('verifyShortcutWebhookHeaders rejects a session event signed only by Payload-Signature, even with allowLegacySignature', async () => {
+    const allowLegacy = { allowLegacySignature: true };
     for (const body of [
       JSON.stringify(sessionPrompted),
       '{"type":"session.closed"}',
@@ -437,10 +481,9 @@ describe('Shortcut-Signature headers', () => {
       const legacy = {
         'payload-signature': await signShortcutWebhookBody(secret, body),
       };
-      expect(await verifyShortcutWebhookHeaders(secret, body, legacy)).toEqual({
-        verified: false,
-        reason: 'invalid_signature',
-      });
+      expect(
+        await verifyShortcutWebhookHeaders(secret, body, legacy, allowLegacy),
+      ).toEqual({ verified: false, reason: 'invalid_signature' });
       expect(
         await verifyShortcutWebhookHeaders(
           secret,
@@ -457,12 +500,17 @@ describe('Shortcut-Signature headers', () => {
     }
     const observerBody = JSON.stringify(observer);
     expect(
-      await verifyShortcutWebhookHeaders(secret, observerBody, {
-        'payload-signature': await signShortcutWebhookBody(
-          secret,
-          observerBody,
-        ),
-      }),
+      await verifyShortcutWebhookHeaders(
+        secret,
+        observerBody,
+        {
+          'payload-signature': await signShortcutWebhookBody(
+            secret,
+            observerBody,
+          ),
+        },
+        allowLegacy,
+      ),
     ).toEqual({ verified: true, scheme: 'payload-signature' });
   });
 
@@ -518,16 +566,23 @@ describe('Shortcut-Signature headers', () => {
       'payload-signature':
         'c0bd8e4de35355b11e7e98d53bb0d0122736ca05c58eb9c138a2dfa24725ac6d',
     };
+    const allowLegacy = { allowLegacySignature: true };
     for (const empty of [[], [''], '']) {
       const record = { ...base, 'shortcut-signature': empty };
       expect(
-        await verifyShortcutWebhookHeaders('test-secret', body, record),
+        await verifyShortcutWebhookHeaders(
+          'test-secret',
+          body,
+          record,
+          allowLegacy,
+        ),
       ).toEqual({ verified: false, reason: 'invalid_signature' });
       expect(
         await verifyShortcutWebhookHeaders(
           'test-secret',
           body,
           new Map(Object.entries(record)),
+          allowLegacy,
         ),
       ).toEqual({ verified: false, reason: 'invalid_signature' });
     }
@@ -581,15 +636,22 @@ describe('Shortcut-Signature headers', () => {
       scheme: 'shortcut-signature',
       deliveryId: 'delivery-1',
     });
+    const allowLegacy = { allowLegacySignature: true };
     headers.set('Shortcut-Signature', '0'.repeat(64));
     expect(
-      await verifyShortcutWebhookHeaders('test-secret', body, headers),
+      await verifyShortcutWebhookHeaders(
+        'test-secret',
+        body,
+        headers,
+        allowLegacy,
+      ),
     ).toEqual({ verified: false, reason: 'invalid_signature' });
     expect(
       await verifyShortcutWebhookHeaders(
         'test-secret',
         body,
         new Map([['Payload-Signature', headers.get('Payload-Signature')]]),
+        allowLegacy,
       ),
     ).toEqual({ verified: true, scheme: 'payload-signature' });
   });

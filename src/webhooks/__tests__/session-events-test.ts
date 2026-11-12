@@ -18,7 +18,7 @@ import {
   sessionPrompted,
   sessionStop,
   signed,
-  signedSession,
+  signedLegacy,
 } from './fixtures';
 
 describe('ShortcutWebhookClient agent-session events', () => {
@@ -36,9 +36,7 @@ describe('ShortcutWebhookClient agent-session events', () => {
     );
     expect(delivery.deliveryId).toBe(event.id);
     expect(delivery.payload).toEqual(event);
-    expect((await client.verify(await signedSession(event))).payload).toEqual(
-      event,
-    );
+    expect((await client.verify(await signed(event))).payload).toEqual(event);
     const { payload } = delivery;
     expect(isShortcutSessionEventPayload(payload)).toBe(true);
     expect(isShortcutObserverPayload(payload)).toBe(false);
@@ -52,9 +50,7 @@ describe('ShortcutWebhookClient agent-session events', () => {
   });
 
   it('accepts a session.prompted event, which carries no prompt context', async () => {
-    const { payload } = await client.verify(
-      await signedSession(sessionPrompted),
-    );
+    const { payload } = await client.verify(await signed(sessionPrompted));
     expect(payload).toEqual(sessionPrompted);
     if (!isShortcutSessionEventPayload(payload)) throw new Error('narrowed');
     expect(payload.type).toBe('session.prompted');
@@ -64,15 +60,13 @@ describe('ShortcutWebhookClient agent-session events', () => {
     handler.on('session.prompted', (prompted) => {
       seen.push(prompted.activity.content.body ?? '');
     });
-    expect((await handler(await signedSession(sessionPrompted))).status).toBe(
-      200,
-    );
+    expect((await handler(await signed(sessionPrompted))).status).toBe(200);
     expect(seen).toEqual(['Use the backend repository.']);
   });
 
   it('accepts a session.created event without an opening prompt', async () => {
     const { activity: _activity, ...silent } = sessionCreated;
-    const { payload } = await client.verify(await signedSession(silent));
+    const { payload } = await client.verify(await signed(silent));
     expect(payload).toEqual(silent);
     expect(isShortcutSessionEventPayload(payload)).toBe(true);
   });
@@ -161,7 +155,7 @@ describe('ShortcutWebhookClient agent-session events', () => {
     ],
   ])('accepts a signed session event with %s', async (_label, event) => {
     expect(isShortcutSessionEventPayload(event)).toBe(true);
-    const { payload } = await client.verify(await signedSession(event));
+    const { payload } = await client.verify(await signed(event));
     expect(payload).toEqual(event);
     expect(shortcutWebhookEventType(payload)).toBe('session');
   });
@@ -188,13 +182,13 @@ describe('ShortcutWebhookClient agent-session events', () => {
       const trigger = payload.prompt_context.trigger;
       seen.push(`${trigger?.type}:${trigger?.context}:${trigger?.entity_id}`);
     });
-    const response = await handler(await signedSession(mentionedInTitle));
+    const response = await handler(await signed(mentionedInTitle));
     expect(response.status).toBe(200);
     expect(seen).toEqual(['mentioned:title:123']);
   });
 
   it('acknowledges a session event of an unknown type without dispatching it', async () => {
-    const { payload } = await client.verify(await signedSession(sessionClosed));
+    const { payload } = await client.verify(await signed(sessionClosed));
     expect(payload).toEqual(sessionClosed);
     expect(isShortcutSessionEventPayload(payload)).toBe(false);
     expect(isShortcutUnknownSessionEventPayload(payload)).toBe(true);
@@ -215,7 +209,7 @@ describe('ShortcutWebhookClient agent-session events', () => {
         seen.push(event);
       });
     }
-    const response = await handler(await signedSession(sessionClosed));
+    const response = await handler(await signed(sessionClosed));
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ ok: true });
     expect(seen).toEqual([]);
@@ -223,7 +217,7 @@ describe('ShortcutWebhookClient agent-session events', () => {
       workspaceId: 'workspace-2',
     });
     const error = await bound
-      .verify(await signedSession(sessionClosed))
+      .verify(await signed(sessionClosed))
       .catch((caught: unknown) => caught);
     expect((error as ShortcutWebhookError).code).toBe('wrong_workspace');
   });
@@ -241,7 +235,7 @@ describe('ShortcutWebhookClient agent-session events', () => {
       handler.on('session', () => {
         seen.push('session');
       });
-      const response = await handler(await signedSession(event));
+      const response = await handler(await signed(event));
       expect(response.status).toBe(200);
       expect(seen).toEqual([]);
     },
@@ -264,7 +258,7 @@ describe('ShortcutWebhookClient agent-session events', () => {
       handler.on('session.prompted', (payload) => {
         seen.push(payload.activity.content.type);
       });
-      const response = await handler(await signedSession(event));
+      const response = await handler(await signed(event));
       expect(response.status).toBe(200);
       expect(seen).toEqual([contentType]);
     },
@@ -367,7 +361,7 @@ describe('ShortcutWebhookClient agent-session events', () => {
     expect(isShortcutUnknownSessionEventPayload(payload)).toBe(false);
     expect(shortcutWebhookEventType(payload)).toBeUndefined();
     const error = await client
-      .verify(await signedSession(payload))
+      .verify(await signed(payload))
       .catch((caught: unknown) => caught);
     expect(error).toBeInstanceOf(ShortcutWebhookError);
     expect((error as ShortcutWebhookError).code).toBe('invalid_body');
@@ -380,18 +374,16 @@ describe('ShortcutWebhookClient agent-session events', () => {
       installationId: 'install-1',
     });
     await expect(
-      bound.verify(await signedSession(sessionCreated)),
+      bound.verify(await signed(sessionCreated)),
     ).resolves.toBeDefined();
     const workspace = await bound
-      .verify(
-        await signedSession({ ...sessionCreated, workspace_id: 'workspace-2' }),
-      )
+      .verify(await signed({ ...sessionCreated, workspace_id: 'workspace-2' }))
       .catch((caught: unknown) => caught);
     expect((workspace as ShortcutWebhookError).code).toBe('wrong_workspace');
     expect((workspace as ShortcutWebhookError).status).toBe(403);
     const install = await bound
       .verify(
-        await signedSession({
+        await signed({
           ...sessionCreated,
           installation_id: 'install-2',
         }),
@@ -409,24 +401,34 @@ describe('ShortcutWebhookClient agent-session events', () => {
     ['a session.prompted event', sessionPrompted],
     ['a stop request', sessionStop],
     ['a session event of an unknown type', sessionClosed],
-  ])('rejects %s signed only by Payload-Signature', async (_label, event) => {
-    const text = JSON.stringify(event);
-    const request = await signed(event);
-    const signature = await signShortcutWebhookBody(secret, text);
-    // Start each attempt only once its rejection is handled, so none can
-    // reject unobserved while another is awaited.
-    for (const attempt of [
-      () => client.verify(request),
-      () => client.verifyBody(new TextEncoder().encode(text), signature),
-    ]) {
-      const error = await attempt().catch((caught: unknown) => caught);
-      expect(error).toBeInstanceOf(ShortcutWebhookError);
-      expect((error as ShortcutWebhookError).code).toBe('invalid_signature');
-      expect((error as ShortcutWebhookError).status).toBe(401);
-    }
-    const handler = client.createHandler();
-    expect((await handler(await signed(event))).status).toBe(401);
-  });
+  ])(
+    'rejects %s signed only by Payload-Signature, even with allowLegacySignature',
+    async (_label, event) => {
+      const text = JSON.stringify(event);
+      const signature = await signShortcutWebhookBody(secret, text);
+      for (const verifier of [
+        client,
+        new ShortcutWebhookClient(secret, { allowLegacySignature: true }),
+      ]) {
+        const request = await signedLegacy(event);
+        // Start each attempt only once its rejection is handled, so none can
+        // reject unobserved while another is awaited.
+        for (const attempt of [
+          () => verifier.verify(request),
+          () => verifier.verifyBody(new TextEncoder().encode(text), signature),
+        ]) {
+          const error = await attempt().catch((caught: unknown) => caught);
+          expect(error).toBeInstanceOf(ShortcutWebhookError);
+          expect((error as ShortcutWebhookError).code).toBe(
+            'invalid_signature',
+          );
+          expect((error as ShortcutWebhookError).status).toBe(401);
+        }
+        const handler = verifier.createHandler();
+        expect((await handler(await signedLegacy(event))).status).toBe(401);
+      }
+    },
+  );
 
   it('dispatches session events by kind and by event type', async () => {
     const handler = new ShortcutWebhookClient(secret).createHandler();
@@ -449,7 +451,7 @@ describe('ShortcutWebhookClient agent-session events', () => {
       seen.push('interaction');
     });
     for (const event of [sessionCreated, sessionPrompted, sessionStop]) {
-      const response = await handler(await signedSession(event));
+      const response = await handler(await signed(event));
       expect(response.status).toBe(200);
     }
     expect(seen).toEqual([
